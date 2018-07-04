@@ -3,12 +3,15 @@ module Main exposing (main)
 import Html exposing (..)
 import Dict
 import List.Extra
+import Keyboard
+import Time
 
 
 type alias Model =
     { level : Level
     , width : Int
     , height : Int
+    , keys : Keys
     }
 
 
@@ -24,6 +27,24 @@ main =
 
 type Msg
     = NoOp
+    | KeyPressed Keyboard.KeyCode
+    | KeyDown Keyboard.KeyCode
+    | KeyUp Keyboard.KeyCode
+    | GameTick Time.Time
+
+
+type alias Keys =
+    { left : KeyStatus
+    , right : KeyStatus
+    , up : KeyStatus
+    , down : KeyStatus
+    }
+
+
+type KeyStatus
+    = NotPressed
+    | WasPressed
+    | IsPressed
 
 
 type alias Actor =
@@ -57,13 +78,49 @@ init =
         }
     , width = 12
     , height = 12
+    , keys =
+        { left = NotPressed
+        , right = NotPressed
+        , up = NotPressed
+        , down = NotPressed
+        }
     }
         ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model ! []
+    case msg of
+        KeyPressed keyCode ->
+            (updateKeyState model IsPressed keyCode) ! []
+
+        KeyDown keyCode ->
+            (updateKeyState model IsPressed keyCode) ! []
+
+        KeyUp keyCode ->
+            (updateKeyState model WasPressed keyCode) ! []
+
+        GameTick time ->
+            let
+                handlePressedKey keyStatus =
+                    case keyStatus of
+                        WasPressed ->
+                            NotPressed
+
+                        other ->
+                            other
+
+                handledPressedKeys =
+                    { left = handlePressedKey model.left
+                    , right = handlePressedKey model.right
+                    , up = handlePressedKey model.up
+                    , down = handlePressedKey model.down
+                    }
+            in
+                { model | keys = handledPressedKeys } ! []
+
+        NoOp ->
+            model ! []
 
 
 view : Model -> Html Msg
@@ -220,4 +277,48 @@ diamond =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Keyboard.presses KeyPressed
+        , Keyboard.downs KeyDown
+        , Keyboard.ups KeyUp
+        , Time.every (500 Time.millisecond) GameTick
+        ]
+
+
+updateKeyState : Model -> KeyStatus -> Keyboard.KeyCode -> Model
+updateKeyState model status keyCode =
+    let
+        keys =
+            model.keys
+    in
+        case keyCode of
+            37 ->
+                let
+                    newKeys =
+                        { keys | left = status }
+                in
+                    { model | keys = newKeys }
+
+            38 ->
+                let
+                    newKeys =
+                        { keys | up = status }
+                in
+                    { model | keys = newKeys }
+
+            39 ->
+                let
+                    newKeys =
+                        { keys | right = status }
+                in
+                    { model | keys = newKeys }
+
+            40 ->
+                let
+                    newKeys =
+                        { keys | down = status }
+                in
+                    { model | keys = newKeys }
+
+            _ ->
+                model

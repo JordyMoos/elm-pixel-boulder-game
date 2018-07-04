@@ -1,26 +1,7 @@
 
-
-trait Component
-class RenderComponent extends Component
-class TransformComponent extends Component
-class RigidComponent extends Component
-
-
-class Actor (components: List[Component])
-
-
-// Split in update and render-able actors?
-val actors: List[Actor]
-
-class View (grid: HashMap[(int, int), Pixel])
-
-class Pixel(color: RGB)
-
-
-update() {
-    view = getInactiveView()
-    
-    actors.update()
-    view = actors.render(view)
-}
-
+Collect key state
+When a tick happens depend action on key state
+    - If a key is pressed and released then it must still count as a press in the game-update
+    - game-update must invoke the real release after handing the update
+    - Key status can thus be: IsPressed - WasPressed - NotPressed
+        - And WasPressed must then be reset to NotPressed
