@@ -1,10 +1,15 @@
 module Main exposing (main)
 
 import Html exposing (..)
+import Dict
+import List.Extra
 
 
 type alias Model =
-    {}
+    { level : Level
+    , width : Int
+    , height : Int
+    }
 
 
 main : Program Never Model Msg
@@ -21,9 +26,39 @@ type Msg
     = NoOp
 
 
+type alias Actor =
+    { id : Int
+    , components : Dict.Dict String Component
+    }
+
+
+type Component
+    = TransformComponent Int Int
+    | RenderComponent String
+
+
+type alias Level =
+    { actors : List Actor
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
-    {} ! []
+    { level =
+        { actors =
+            [ createPlayer 5 8
+            , createRock 0 0
+            , createRock 10 0
+            , createRock 8 2
+            , createRock 7 7
+            , createRock 4 2
+            , createDiamond 8 11
+            ]
+        }
+    , width = 12
+    , height = 12
+    }
+        ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -35,12 +70,117 @@ view : Model -> Html Msg
 view model =
     div
         []
-        (List.concat <|
-            List.repeat 12 <|
-                List.append
-                    (List.repeat 12 dirt)
-                    [ br [] [] ]
+        (List.range 0 (model.height - 1)
+            |> List.map
+                (\y ->
+                    List.range 0 (model.width - 1)
+                        |> List.map
+                            (\x ->
+                                let
+                                    maybeActor =
+                                        List.Extra.find
+                                            (\actor ->
+                                                Dict.get "transform" actor.components
+                                                    |> Maybe.andThen
+                                                        (\component ->
+                                                            case component of
+                                                                TransformComponent cx cy ->
+                                                                    Just <| cx == x && cy == y
+
+                                                                _ ->
+                                                                    Nothing
+                                                        )
+                                                    |> Maybe.withDefault False
+                                            )
+                                            model.level.actors
+                                in
+                                    case maybeActor of
+                                        Just actor ->
+                                            Dict.get "render" actor.components
+                                                |> Maybe.andThen
+                                                    (\component ->
+                                                        case component of
+                                                            RenderComponent string ->
+                                                                Just <| text <| String.concat [ "[", string, "]" ]
+
+                                                            _ ->
+                                                                Nothing
+                                                    )
+                                                |> Maybe.withDefault empty
+
+                                        Nothing ->
+                                            empty
+                            )
+                        |> List.append [ br [] [] ]
+                )
+            |> List.concat
         )
+
+
+createWall : Int -> Int -> Actor
+createWall x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "@" )
+            ]
+    }
+
+
+createDirt : Int -> Int -> Actor
+createDirt x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "." )
+            ]
+    }
+
+
+createPlayer : Int -> Int -> Actor
+createPlayer x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "P" )
+            ]
+    }
+
+
+createDead : Int -> Int -> Actor
+createDead x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "X" )
+            ]
+    }
+
+
+createRock : Int -> Int -> Actor
+createRock x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "O" )
+            ]
+    }
+
+
+createDiamond : Int -> Int -> Actor
+createDiamond x y =
+    { id = 0
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent x y )
+            , ( "render", RenderComponent "*" )
+            ]
+    }
 
 
 empty : Html Msg
