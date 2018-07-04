@@ -1,10 +1,10 @@
 module Main exposing (main)
 
 import Html exposing (..)
-import List.Extra
 import Keyboard
 import Time
 import Dict exposing (Dict)
+import Dict.Extra
 
 
 type alias Model =
@@ -86,8 +86,8 @@ init =
         { actors =
             Dict.fromList
                 [ ( 1, createPlayer 1 5 8 )
+                , ( 2, createRock 2 0 0 )
 
-                --            , createRock 0 0
                 --            , createRock 10 0
                 --            , createRock 8 2
                 --            , createRock 7 7
@@ -227,47 +227,43 @@ isMoving status =
 
 view : Model -> Html Msg
 view model =
-    div [] []
+    div
+        []
+        (List.range 0 (model.height - 1)
+            |> List.map
+                (\y ->
+                    List.range 0 (model.width - 1)
+                        |> List.map
+                            (\x ->
+                                let
+                                    maybeActor =
+                                        Dict.Extra.find
+                                            (\actorId actor ->
+                                                getTransformComponent actor.components
+                                                    |> Maybe.andThen
+                                                        (\componentData ->
+                                                            Just <| componentData.x == x && componentData.y == y
+                                                        )
+                                                    |> Maybe.withDefault False
+                                            )
+                                            model.level.actors
+                                in
+                                    case maybeActor of
+                                        Just ( actorId, actor ) ->
+                                            getRenderComponent actor.components
+                                                |> Maybe.andThen
+                                                    (\componentData ->
+                                                        Just <| text <| String.concat [ "[", componentData.string, "]" ]
+                                                    )
+                                                |> Maybe.withDefault empty
 
-
-
---    div
---        []
---        (List.range 0 (model.height - 1)
---            |> List.map
---                (\y ->
---                    List.range 0 (model.width - 1)
---                        |> List.map
---                            (\x ->
---                                let
---                                    maybeActor =
---                                        List.Extra.find
---                                            (\actor ->
---                                                getTransformComponent actor.components
---                                                    |> Maybe.andThen
---                                                        (\componentData ->
---                                                            Just <| componentData.x == x && componentData.y == y
---                                                        )
---                                                    |> Maybe.withDefault False
---                                            )
---                                            model.level.actors
---                                in
---                                    case maybeActor of
---                                        Just actor ->
---                                            getRenderComponent actor.components
---                                                |> Maybe.andThen
---                                                    (\componentData ->
---                                                        Just <| text <| String.concat [ "[", componentData.string, "]" ]
---                                                    )
---                                                |> Maybe.withDefault empty
---
---                                        Nothing ->
---                                            empty
---                            )
---                        |> List.append [ br [] [] ]
---                )
---            |> List.concat
---        )
+                                        Nothing ->
+                                            empty
+                            )
+                        |> List.append [ br [] [] ]
+                )
+            |> List.concat
+        )
 
 
 getTransformComponent : Dict String Component -> Maybe TransformComponentData
@@ -340,9 +336,9 @@ createPlayer id x y =
 --    }
 
 
-createRock : Int -> Int -> Actor
-createRock x y =
-    { id = 0
+createRock : Int -> Int -> Int -> Actor
+createRock id x y =
+    { id = id
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
@@ -373,7 +369,7 @@ subscriptions model =
         [ Keyboard.presses KeyPressed
         , Keyboard.downs KeyDown
         , Keyboard.ups KeyUp
-        , Time.every (1000 * Time.millisecond) GameTick
+        , Time.every (200 * Time.millisecond) GameTick
         ]
 
 
