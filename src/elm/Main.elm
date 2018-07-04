@@ -149,7 +149,6 @@ update msg model =
                                         (Dict.toList actor.components)
                             in
                                 Dict.insert actorId updatedActor actors
-                         -- Need update actor in actors
                         )
                         actors
                         (Dict.toList actors)
