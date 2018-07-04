@@ -2,7 +2,7 @@
 
 ```
 [ ] = Empty
-[@] = Wall
+[#] = Wall
 [.] = Dirt
 [P] = Player
 [X] = Dead Player

@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Html exposing (..)
-import Dict
 import List.Extra
 import Keyboard
 import Time
@@ -49,13 +48,29 @@ type KeyStatus
 
 type alias Actor =
     { id : Int
-    , components : Dict.Dict String Component
+    , components : List Component
     }
 
 
+type alias TransformComponentData =
+    { x : Int
+    , y : Int
+    }
+
+
+type alias RenderComponentData =
+    { string : String
+    }
+
+
+type alias MoveComponentData =
+    ()
+
+
 type Component
-    = TransformComponent Int Int
-    | RenderComponent String
+    = TransformComponent TransformComponentData
+    | RenderComponent RenderComponentData
+    | MoveComponent MoveComponentData
 
 
 type alias Level =
@@ -102,8 +117,35 @@ update msg model =
 
         GameTick time ->
             let
+                level =
+                    model.level
+
+                actors =
+                    level.actors
+
                 keys =
                     model.keys
+
+                newActors =
+                    List.foldr
+                        (\actor actors ->
+                            let
+                                updatedActor =
+                                    List.foldr
+                                        (\component actor ->
+                                            actor
+                                        )
+                                        actor
+                                        actor.components
+                            in
+                                actors
+                         -- Need update actor in actors
+                        )
+                        actors
+                        actors
+
+                newLevel =
+                    { level | actors = newActors }
 
                 handlePressedKey keyStatus =
                     case keyStatus of
@@ -120,7 +162,11 @@ update msg model =
                     , down = handlePressedKey keys.down
                     }
             in
-                { model | keys = handledPressedKeys } ! []
+                { model
+                    | keys = handledPressedKeys
+                    , level = newLevel
+                }
+                    ! []
 
         NoOp ->
             model ! []
@@ -140,15 +186,10 @@ view model =
                                     maybeActor =
                                         List.Extra.find
                                             (\actor ->
-                                                Dict.get "transform" actor.components
+                                                getTransformComponent actor.components
                                                     |> Maybe.andThen
-                                                        (\component ->
-                                                            case component of
-                                                                TransformComponent cx cy ->
-                                                                    Just <| cx == x && cy == y
-
-                                                                _ ->
-                                                                    Nothing
+                                                        (\componentData ->
+                                                            Just <| componentData.x == x && componentData.y == y
                                                         )
                                                     |> Maybe.withDefault False
                                             )
@@ -156,15 +197,10 @@ view model =
                                 in
                                     case maybeActor of
                                         Just actor ->
-                                            Dict.get "render" actor.components
+                                            getRenderComponent actor.components
                                                 |> Maybe.andThen
-                                                    (\component ->
-                                                        case component of
-                                                            RenderComponent string ->
-                                                                Just <| text <| String.concat [ "[", string, "]" ]
-
-                                                            _ ->
-                                                                Nothing
+                                                    (\componentData ->
+                                                        Just <| text <| String.concat [ "[", componentData.string, "]" ]
                                                     )
                                                 |> Maybe.withDefault empty
 
@@ -177,14 +213,60 @@ view model =
         )
 
 
+getTransformComponent : List Component -> Maybe TransformComponentData
+getTransformComponent components =
+    List.Extra.find
+        (\component ->
+            case component of
+                TransformComponent _ ->
+                    True
+
+                _ ->
+                    False
+        )
+        components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    TransformComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
+getRenderComponent : List Component -> Maybe RenderComponentData
+getRenderComponent components =
+    List.Extra.find
+        (\component ->
+            case component of
+                RenderComponent _ ->
+                    True
+
+                _ ->
+                    False
+        )
+        components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    RenderComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
 createWall : Int -> Int -> Actor
 createWall x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "@" )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "#" }
+        , MoveComponent ()
+        ]
     }
 
 
@@ -192,10 +274,9 @@ createDirt : Int -> Int -> Actor
 createDirt x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "." )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "." }
+        ]
     }
 
 
@@ -203,10 +284,9 @@ createPlayer : Int -> Int -> Actor
 createPlayer x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "P" )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "P" }
+        ]
     }
 
 
@@ -214,10 +294,9 @@ createDead : Int -> Int -> Actor
 createDead x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "X" )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "X" }
+        ]
     }
 
 
@@ -225,10 +304,9 @@ createRock : Int -> Int -> Actor
 createRock x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "O" )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "O" }
+        ]
     }
 
 
@@ -236,46 +314,15 @@ createDiamond : Int -> Int -> Actor
 createDiamond x y =
     { id = 0
     , components =
-        Dict.fromList
-            [ ( "transform", TransformComponent x y )
-            , ( "render", RenderComponent "*" )
-            ]
+        [ TransformComponent { x = x, y = y }
+        , RenderComponent { string = "*" }
+        ]
     }
 
 
 empty : Html Msg
 empty =
     text "[ ]"
-
-
-wall : Html Msg
-wall =
-    text "[@]"
-
-
-dirt : Html Msg
-dirt =
-    text "[.]"
-
-
-player : Html Msg
-player =
-    text "[P]"
-
-
-dead : Html Msg
-dead =
-    text "[X]"
-
-
-rock : Html Msg
-rock =
-    text "[O]"
-
-
-diamond : Html Msg
-diamond =
-    text "[*]"
 
 
 subscriptions : Model -> Sub Msg
