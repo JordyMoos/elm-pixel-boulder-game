@@ -102,6 +102,9 @@ update msg model =
 
         GameTick time ->
             let
+                keys =
+                    model.keys
+
                 handlePressedKey keyStatus =
                     case keyStatus of
                         WasPressed ->
@@ -111,10 +114,10 @@ update msg model =
                             other
 
                 handledPressedKeys =
-                    { left = handlePressedKey model.left
-                    , right = handlePressedKey model.right
-                    , up = handlePressedKey model.up
-                    , down = handlePressedKey model.down
+                    { left = handlePressedKey keys.left
+                    , right = handlePressedKey keys.right
+                    , up = handlePressedKey keys.up
+                    , down = handlePressedKey keys.down
                     }
             in
                 { model | keys = handledPressedKeys } ! []
@@ -281,7 +284,7 @@ subscriptions model =
         [ Keyboard.presses KeyPressed
         , Keyboard.downs KeyDown
         , Keyboard.ups KeyUp
-        , Time.every (500 Time.millisecond) GameTick
+        , Time.every (500 * Time.millisecond) GameTick
         ]
 
 
