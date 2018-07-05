@@ -5,6 +5,7 @@ import Keyboard
 import Time
 import Dict exposing (Dict)
 import Dict.Extra
+import Maybe.Extra
 
 
 type alias Model =
@@ -12,7 +13,6 @@ type alias Model =
     , width : Int
     , height : Int
     , keys : Keys
-    , nextActorId : Int
     }
 
 
@@ -60,52 +60,61 @@ type alias TransformComponentData =
     }
 
 
-type alias RenderComponentData =
-    { string : String
+type alias CurrentPositionRenderComponentData =
+    { token : String
     }
 
 
-type alias MoveComponentData =
+type alias AdditionalPositionsRenderComponentData =
+    { positions : List RenderablePosition
+    }
+
+
+type alias RenderablePosition =
+    { xOffset : Int
+    , yOffset : Int
+    , token : String
+    }
+
+
+type alias PlayerInputComponentData =
     ()
 
 
 type Component
     = TransformComponent TransformComponentData
-    | RenderComponent RenderComponentData
-    | MoveComponent MoveComponentData
+    | CurrentPositionRenderComponent CurrentPositionRenderComponentData
+    | AdditionalPositionRenderComponent AdditionalPositionsRenderComponentData
+    | PlayerInputComponent PlayerInputComponentData
 
 
 type alias Level =
     { actors : Dict Int Actor
+    , nextActorId : Int
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    { level =
-        { actors =
-            Dict.fromList
-                [ ( 1, createPlayer 1 5 8 )
-                , ( 2, createRock 2 0 0 )
-
-                --            , createRock 10 0
-                --            , createRock 8 2
-                --            , createRock 7 7
-                --            , createRock 4 2
-                --            , createDiamond 8 11
-                ]
+    let
+        level =
+            { actors = Dict.fromList []
+            , nextActorId = 1
+            }
+                |> addPlayer 5 8
+                |> addRock 1 1
+    in
+        { level = level
+        , width = 12
+        , height = 12
+        , keys =
+            { left = NotPressed
+            , right = NotPressed
+            , up = NotPressed
+            , down = NotPressed
+            }
         }
-    , width = 12
-    , height = 12
-    , keys =
-        { left = NotPressed
-        , right = NotPressed
-        , up = NotPressed
-        , down = NotPressed
-        }
-    , nextActorId = 2
-    }
-        ! []
+            ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,8 +148,8 @@ update msg model =
                                     List.foldr
                                         (\( key, component ) actor ->
                                             case component of
-                                                MoveComponent _ ->
-                                                    handleUpdateMoveComponent keys actor
+                                                PlayerInputComponent _ ->
+                                                    handleUpdatePlayerInputComponent keys actor
 
                                                 _ ->
                                                     actor
@@ -181,8 +190,8 @@ update msg model =
             model ! []
 
 
-handleUpdateMoveComponent : Keys -> Actor -> Actor
-handleUpdateMoveComponent keys actor =
+handleUpdatePlayerInputComponent : Keys -> Actor -> Actor
+handleUpdatePlayerInputComponent keys actor =
     case getTransformComponent actor.components of
         Just data ->
             let
@@ -234,35 +243,89 @@ view model =
                     List.range 0 (model.width - 1)
                         |> List.map
                             (\x ->
-                                let
-                                    maybeActor =
-                                        Dict.Extra.find
-                                            (\actorId actor ->
-                                                getTransformComponent actor.components
-                                                    |> Maybe.andThen
-                                                        (\componentData ->
-                                                            Just <| componentData.x == x && componentData.y == y
-                                                        )
-                                                    |> Maybe.withDefault False
-                                            )
-                                            model.level.actors
-                                in
-                                    case maybeActor of
-                                        Just ( actorId, actor ) ->
-                                            getRenderComponent actor.components
-                                                |> Maybe.andThen
-                                                    (\componentData ->
-                                                        Just <| text <| String.concat [ "[", componentData.string, "]" ]
-                                                    )
-                                                |> Maybe.withDefault empty
-
-                                        Nothing ->
-                                            empty
+                                getPixel x y model.level.actors
+                                    |> Maybe.withDefault empty
                             )
                         |> List.append [ br [] [] ]
                 )
             |> List.concat
         )
+
+
+getPixel : Int -> Int -> Dict Int Actor -> Maybe (Html Msg)
+getPixel x y actors =
+    Dict.foldr
+        (\actorId actor acc ->
+            (getCurrentPositionRenderComponent actor.components
+                |> Maybe.andThen
+                    (\renderData ->
+                        getTransformComponent actor.components
+                            |> Maybe.andThen
+                                (\transformData ->
+                                    if transformData.x == x && transformData.y == y then
+                                        Just renderData.token
+                                    else
+                                        Nothing
+                                )
+                    )
+            )
+                :: (getAdditionalPositionRenderComponent actor.components
+                        |> Maybe.andThen
+                            (\renderData ->
+                                List.map
+                                    (\{ xOffset, yOffset, token } ->
+                                        getTransformComponent actor.components
+                                            |> Maybe.andThen
+                                                (\transformData ->
+                                                    if transformData.x + xOffset == x && transformData.y + yOffset == y then
+                                                        Just token
+                                                    else
+                                                        Nothing
+                                                )
+                                    )
+                                    renderData.positions
+                                    |> Maybe.Extra.values
+                                    |> List.head
+                            )
+                   )
+                :: acc
+        )
+        []
+        actors
+        |> Maybe.Extra.values
+        |> List.head
+        |> Maybe.andThen
+            (\token ->
+                Just <| text <| "[" ++ token ++ "]"
+            )
+
+
+
+--getPixelOld : Int -> Int -> List Actor -> Maybe (Html Msg)
+--getPixelOld x y actors =
+--    let
+--        maybeActor =
+--            Dict.Extra.find
+--                (\actorId actor ->
+--                    getTransformComponent actor.components
+--                        |> Maybe.andThen
+--                            (\componentData ->
+--                                Just <| componentData.x == x && componentData.y == y
+--                            )
+--                        |> Maybe.withDefault False
+--                )
+--                actors
+--    in
+--        case maybeActor of
+--            Just ( actorId, actor ) ->
+--                getCurrentPositionRenderComponent actor.components
+--                    |> Maybe.andThen
+--                        (\componentData ->
+--                            Just <| text <| String.concat [ "[", componentData.token, "]" ]
+--                        )
+--
+--            Nothing ->
+--                Nothing
 
 
 getTransformComponent : Dict String Component -> Maybe TransformComponentData
@@ -279,13 +342,13 @@ getTransformComponent components =
             )
 
 
-getRenderComponent : Dict String Component -> Maybe RenderComponentData
-getRenderComponent components =
+getCurrentPositionRenderComponent : Dict String Component -> Maybe CurrentPositionRenderComponentData
+getCurrentPositionRenderComponent components =
     Dict.get "render" components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    RenderComponent data ->
+                    CurrentPositionRenderComponent data ->
                         Just data
 
                     _ ->
@@ -293,23 +356,30 @@ getRenderComponent components =
             )
 
 
+getAdditionalPositionRenderComponent : Dict String Component -> Maybe AdditionalPositionsRenderComponentData
+getAdditionalPositionRenderComponent components =
+    Dict.get "additional-render" components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    AdditionalPositionRenderComponent data ->
+                        Just data
 
---createWall : Int -> Int -> Actor
---createWall x y =
---    { id = 0
---    , components =
---        [ TransformComponent { x = x, y = y }
---        , RenderComponent { string = "#" }
---        ]
---    }
---createDirt : Int -> Int -> Actor
---createDirt x y =
---    { id = 0
---    , components =
---        [ TransformComponent { x = x, y = y }
---        , RenderComponent { string = "." }
---        ]
---    }
+                    _ ->
+                        Nothing
+            )
+
+
+addPlayer : Int -> Int -> Level -> Level
+addPlayer x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createPlayer level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
 
 
 createPlayer : Int -> Int -> Int -> Actor
@@ -318,21 +388,36 @@ createPlayer id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
-            , ( "render", RenderComponent { string = "P" } )
-            , ( "move", MoveComponent () )
+            , ( "render", CurrentPositionRenderComponent { token = "P" } )
+            , ( "additional-render"
+              , AdditionalPositionRenderComponent
+                    { positions =
+                        [ { xOffset = -1
+                          , yOffset = 0
+                          , token = "p"
+                          }
+                        , { xOffset = 1
+                          , yOffset = 0
+                          , token = "p"
+                          }
+                        ]
+                    }
+              )
+            , ( "player-input", PlayerInputComponent () )
             ]
     }
 
 
-
---createDead : Int -> Int -> Actor
---createDead x y =
---    { id = 0
---    , components =
---        [ TransformComponent { x = x, y = y }
---        , RenderComponent { string = "X" }
---        ]
---    }
+addRock : Int -> Int -> Level -> Level
+addRock x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createRock level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
 
 
 createRock : Int -> Int -> Int -> Actor
@@ -341,20 +426,9 @@ createRock id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
-            , ( "render", RenderComponent { string = "O" } )
+            , ( "render", CurrentPositionRenderComponent { token = "O" } )
             ]
     }
-
-
-
---createDiamond : Int -> Int -> Actor
---createDiamond x y =
---    { id = 0
---    , components =
---        [ TransformComponent { x = x, y = y }
---        , RenderComponent { string = "*" }
---        ]
---    }
 
 
 empty : Html Msg
