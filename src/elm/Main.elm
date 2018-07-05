@@ -78,7 +78,20 @@ type alias RenderablePosition =
 
 
 type alias PlayerInputComponentData =
-    ()
+    { movingState : MovingState
+    }
+
+
+type alias MovingTowardsData =
+    { xOffset : Int
+    , yOffset : Int
+    , completionPercentage : Int
+    }
+
+
+type MovingState
+    = NotMoving
+    | MovingTowards MovingTowardsData
 
 
 type Component
@@ -148,9 +161,15 @@ update msg model =
                                     List.foldr
                                         (\( key, component ) actor ->
                                             case component of
-                                                PlayerInputComponent _ ->
-                                                    handleUpdatePlayerInputComponent keys actor
+                                                PlayerInputComponent data ->
+                                                    case data.movingState of
+                                                        NotMoving ->
+                                                            handleUpdatePlayerInputComponent keys actor
 
+                                                        MovingTowards towardsData ->
+                                                            handleMovingTowards actor
+
+                                                -- Handle moving towards
                                                 _ ->
                                                     actor
                                         )
@@ -195,32 +214,62 @@ handleUpdatePlayerInputComponent keys actor =
     case getTransformComponent actor.components of
         Just data ->
             let
-                newX =
+                ( xOffset, yOffset ) =
                     if isMoving keys.left then
-                        data.x - 1
+                        ( -1, 0 )
                     else if isMoving keys.right then
-                        data.x + 1
-                    else
-                        data.x
-
-                newY =
-                    if isMoving keys.up then
-                        data.y - 1
+                        ( 1, 0 )
+                    else if isMoving keys.up then
+                        ( 0, -1 )
                     else if isMoving keys.down then
-                        data.y + 1
+                        ( 0, 1 )
                     else
-                        data.y
+                        ( 0, 0 )
 
-                newComponents =
-                    Dict.insert
-                        "transform"
-                        (TransformComponent { data | x = newX, y = newY })
-                        actor.components
+                newActor =
+                    case ( xOffset, yOffset ) of
+                        ( 0, 0 ) ->
+                            -- Not moving
+                            actor
+
+                        ( xOffset, yOffset ) ->
+                            let
+                                newComponents =
+                                    Dict.insert
+                                        "player-input"
+                                        (PlayerInputComponent
+                                            { movingState =
+                                                MovingTowards
+                                                    { xOffset = xOffset
+                                                    , yOffset = yOffset
+                                                    , completionPercentage = 0
+                                                    }
+                                            }
+                                        )
+                                        actor.components
+                                        |> Dict.insert
+                                            "additional-render"
+                                            (AdditionalPositionRenderComponent
+                                                { positions =
+                                                    [ { xOffset = xOffset
+                                                      , yOffset = yOffset
+                                                      , token = "p"
+                                                      }
+                                                    ]
+                                                }
+                                            )
+                            in
+                                { actor | components = newComponents }
             in
-                { actor | components = newComponents }
+                newActor
 
         _ ->
             actor
+
+
+handleMovingTowards : Actor -> Actor
+handleMovingTowards actor =
+    actor
 
 
 isMoving : KeyStatus -> Bool
@@ -403,7 +452,11 @@ createPlayer id x y =
                         ]
                     }
               )
-            , ( "player-input", PlayerInputComponent () )
+            , ( "player-input"
+              , PlayerInputComponent
+                    { movingState = NotMoving
+                    }
+              )
             ]
     }
 
