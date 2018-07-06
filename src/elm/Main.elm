@@ -157,20 +157,17 @@ init =
                 }
             }
                 |> addPlayer 4 4
-                |> addRock 1 1
-                |> addDiamond 4 8
-                |> addDiamond 7 3
-                |> addDirt 4 5
-                |> addDirt 4 6
-                |> addDirt 4 7
-                |> addDirt 5 5
-                |> addDirt 5 6
-                |> addDirt 5 7
-                |> addDirt 6 5
-                |> addDirt 6 6
-                |> addDirt 6 7
+                |> addDirt 6 4
+                |> addDirt 7 4
+                |> addDirt 8 4
+                |> addDirt 9 4
+                |> addRock 7 1
+                |> addDiamond 8 1
                 |> addWall 4 11
+                |> addWall 5 11
+                |> addWall 6 11
                 |> addWall 7 11
+                |> addWall 8 11
     in
         { level = level
         , width = 12
@@ -240,6 +237,9 @@ update msg model =
 
                                                         CanSquashComponent ->
                                                             trySquashingThings level actor
+
+                                                        PhysicsComponent physics ->
+                                                            tryApplyPhysics time level actor physics
 
                                                         _ ->
                                                             level
@@ -315,49 +315,54 @@ applyForce time level actor direction =
             )
         |> Maybe.andThen
             (\( transformData, offset, newPosition ) ->
-                let
-                    newComponents =
-                        Dict.insert
-                            "transform"
-                            (TransformComponent
-                                { transformData
-                                    | movingState =
-                                        MovingTowards
-                                            { x = newPosition.x
-                                            , y = newPosition.y
-                                            , startTime = time
-                                            , endTime = time + movingTime
-                                            , completionPercentage = 0.0
-                                            }
-                                }
-                            )
-                            actor.components
-                            |> Dict.insert
-                                "additional-render"
-                                (AdditionalPositionRenderComponent
-                                    { positions =
-                                        [ { xOffset = offset.x
-                                          , yOffset = offset.y
-                                          , token =
-                                                getCurrentPositionRenderComponent actor.components
-                                                    |> Maybe.andThen
-                                                        (\renderData ->
-                                                            Just renderData.token
-                                                        )
-                                                    |> Maybe.withDefault " "
-                                          }
-                                        ]
-                                    }
-                                )
-
-                    newActors =
-                        Dict.insert
-                            actor.id
-                            { actor | components = newComponents }
-                            level.actors
-                in
-                    Just { level | actors = newActors }
+                Just (handleMovement time level actor transformData offset newPosition)
             )
+
+
+handleMovement : Time.Time -> Level -> Actor -> TransformComponentData -> Position -> Position -> Level
+handleMovement time level actor transformData offset newPosition =
+    let
+        newComponents =
+            Dict.insert
+                "transform"
+                (TransformComponent
+                    { transformData
+                        | movingState =
+                            MovingTowards
+                                { x = newPosition.x
+                                , y = newPosition.y
+                                , startTime = time
+                                , endTime = time + movingTime
+                                , completionPercentage = 0.0
+                                }
+                    }
+                )
+                actor.components
+                |> Dict.insert
+                    "additional-render"
+                    (AdditionalPositionRenderComponent
+                        { positions =
+                            [ { xOffset = offset.x
+                              , yOffset = offset.y
+                              , token =
+                                    getCurrentPositionRenderComponent actor.components
+                                        |> Maybe.andThen
+                                            (\renderData ->
+                                                Just renderData.token
+                                            )
+                                        |> Maybe.withDefault " "
+                              }
+                            ]
+                        }
+                    )
+
+        newActors =
+            Dict.insert
+                actor.id
+                { actor | components = newComponents }
+                level.actors
+    in
+        { level | actors = newActors }
 
 
 hasRigidComponent : Dict String Component -> Bool
@@ -421,6 +426,48 @@ calculateInputForce keys =
         Just Down
     else
         Nothing
+
+
+tryApplyPhysics : Time.Time -> Level -> Actor -> PhysicsComponentData -> Level
+tryApplyPhysics time level actor physics =
+    if physics.affectedByGravity then
+        getTransformComponent actor.components
+            |> Maybe.andThen
+                (\transformData ->
+                    case transformData.movingState of
+                        NotMoving ->
+                            Just transformData
+
+                        _ ->
+                            -- Can not update physics when already moving
+                            Nothing
+                )
+            |> Maybe.andThen
+                (\transformData ->
+                    -- Get the actor below us
+                    let
+                        offset =
+                            getOffsetFromForce Down
+
+                        belowPosition =
+                            addPositions { x = transformData.x, y = transformData.y } offset
+                    in
+                        case getActorWhoClaimed level.actors belowPosition of
+                            Nothing ->
+                                -- Do movement
+                                Just ( transformData, offset, belowPosition )
+
+                            -- @todo be able to rollover if below is a circle
+                            _ ->
+                                Nothing
+                )
+            |> Maybe.andThen
+                (\( transformData, offset, newPosition ) ->
+                    Just (handleMovement time level actor transformData offset newPosition)
+                )
+            |> Maybe.withDefault level
+    else
+        level
 
 
 tryToCollectDiamond : Level -> Actor -> Level
