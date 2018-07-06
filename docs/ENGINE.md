@@ -5,3 +5,10 @@ When a tick happens depend action on key state
     - game-update must invoke the real release after handing the update
     - Key status can thus be: IsPressed - WasPressed - NotPressed
         - And WasPressed must then be reset to NotPressed
+
+
+Input needs to change
+    If I hit top first and then left, all in game tick then i will walk left.
+    While i should walk left because that was first.
+    We need to store directions in een event list instead of this record.
+    

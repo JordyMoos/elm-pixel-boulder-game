@@ -8,6 +8,11 @@ import Dict.Extra
 import Maybe.Extra
 
 
+movingTime : Time.Time
+movingTime =
+    300 * Time.millisecond
+
+
 type alias Model =
     { level : Level
     , width : Int
@@ -83,9 +88,11 @@ type alias PlayerInputComponentData =
 
 
 type alias MovingTowardsData =
-    { xOffset : Int
-    , yOffset : Int
-    , completionPercentage : Int
+    { x : Int
+    , y : Int
+    , startTime : Time.Time
+    , endTime : Time.Time
+    , completionPercentage : Float
     }
 
 
@@ -164,12 +171,11 @@ update msg model =
                                                 PlayerInputComponent data ->
                                                     case data.movingState of
                                                         NotMoving ->
-                                                            handleUpdatePlayerInputComponent keys actor
+                                                            handleUpdatePlayerInputComponent time keys actor
 
                                                         MovingTowards towardsData ->
-                                                            handleMovingTowards actor
+                                                            handleMovingTowards time towardsData actor
 
-                                                -- Handle moving towards
                                                 _ ->
                                                     actor
                                         )
@@ -209,10 +215,10 @@ update msg model =
             model ! []
 
 
-handleUpdatePlayerInputComponent : Keys -> Actor -> Actor
-handleUpdatePlayerInputComponent keys actor =
+handleUpdatePlayerInputComponent : Time.Time -> Keys -> Actor -> Actor
+handleUpdatePlayerInputComponent time keys actor =
     case getTransformComponent actor.components of
-        Just data ->
+        Just transformData ->
             let
                 ( xOffset, yOffset ) =
                     if isMoving keys.left then
@@ -225,51 +231,90 @@ handleUpdatePlayerInputComponent keys actor =
                         ( 0, 1 )
                     else
                         ( 0, 0 )
+            in
+                case ( xOffset, yOffset ) of
+                    ( 0, 0 ) ->
+                        -- Not moving
+                        actor
 
-                newActor =
-                    case ( xOffset, yOffset ) of
-                        ( 0, 0 ) ->
-                            -- Not moving
-                            actor
-
-                        ( xOffset, yOffset ) ->
-                            let
-                                newComponents =
-                                    Dict.insert
-                                        "player-input"
-                                        (PlayerInputComponent
-                                            { movingState =
-                                                MovingTowards
-                                                    { xOffset = xOffset
-                                                    , yOffset = yOffset
-                                                    , completionPercentage = 0
-                                                    }
+                    ( xOffset, yOffset ) ->
+                        let
+                            newComponents =
+                                Dict.insert
+                                    "player-input"
+                                    (PlayerInputComponent
+                                        { movingState =
+                                            MovingTowards
+                                                { x = transformData.x + xOffset
+                                                , y = transformData.y + yOffset
+                                                , startTime = time
+                                                , endTime = time + movingTime
+                                                , completionPercentage = 0.0
+                                                }
+                                        }
+                                    )
+                                    actor.components
+                                    |> Dict.insert
+                                        "additional-render"
+                                        (AdditionalPositionRenderComponent
+                                            { positions =
+                                                [ { xOffset = xOffset
+                                                  , yOffset = yOffset
+                                                  , token = "p" -- @todo Should be inherit from "render" component i think?
+                                                  }
+                                                ]
                                             }
                                         )
-                                        actor.components
-                                        |> Dict.insert
-                                            "additional-render"
-                                            (AdditionalPositionRenderComponent
-                                                { positions =
-                                                    [ { xOffset = xOffset
-                                                      , yOffset = yOffset
-                                                      , token = "p"
-                                                      }
-                                                    ]
-                                                }
-                                            )
-                            in
-                                { actor | components = newComponents }
-            in
-                newActor
+                        in
+                            { actor | components = newComponents }
 
         _ ->
             actor
 
 
-handleMovingTowards : Actor -> Actor
-handleMovingTowards actor =
-    actor
+handleMovingTowards : Time.Time -> MovingTowardsData -> Actor -> Actor
+handleMovingTowards currentTime towardsData actor =
+    if currentTime > towardsData.endTime then
+        let
+            newComponents =
+                Dict.insert
+                    "player-input"
+                    (PlayerInputComponent
+                        { movingState = NotMoving
+                        }
+                    )
+                    actor.components
+                    |> Dict.remove "additional-render"
+                    |> Dict.insert
+                        "transform"
+                        (TransformComponent
+                            { x = towardsData.x
+                            , y = towardsData.y
+                            }
+                        )
+        in
+            { actor | components = newComponents }
+    else
+        let
+            newComponents =
+                Dict.insert
+                    "player-input"
+                    (PlayerInputComponent
+                        { movingState =
+                            MovingTowards
+                                { towardsData
+                                    | completionPercentage = calculateCompletionPercentage towardsData.startTime towardsData.endTime currentTime
+                                }
+                        }
+                    )
+                    actor.components
+        in
+            { actor | components = newComponents }
+
+
+calculateCompletionPercentage : Time.Time -> Time.Time -> Time.Time -> Float
+calculateCompletionPercentage startTime endTime currentTime =
+    100 / (endTime - startTime) * (currentTime - startTime)
 
 
 isMoving : KeyStatus -> Bool
@@ -349,34 +394,6 @@ getPixel x y actors =
             )
 
 
-
---getPixelOld : Int -> Int -> List Actor -> Maybe (Html Msg)
---getPixelOld x y actors =
---    let
---        maybeActor =
---            Dict.Extra.find
---                (\actorId actor ->
---                    getTransformComponent actor.components
---                        |> Maybe.andThen
---                            (\componentData ->
---                                Just <| componentData.x == x && componentData.y == y
---                            )
---                        |> Maybe.withDefault False
---                )
---                actors
---    in
---        case maybeActor of
---            Just ( actorId, actor ) ->
---                getCurrentPositionRenderComponent actor.components
---                    |> Maybe.andThen
---                        (\componentData ->
---                            Just <| text <| String.concat [ "[", componentData.token, "]" ]
---                        )
---
---            Nothing ->
---                Nothing
-
-
 getTransformComponent : Dict String Component -> Maybe TransformComponentData
 getTransformComponent components =
     Dict.get "transform" components
@@ -438,20 +455,6 @@ createPlayer id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "P" } )
-            , ( "additional-render"
-              , AdditionalPositionRenderComponent
-                    { positions =
-                        [ { xOffset = -1
-                          , yOffset = 0
-                          , token = "p"
-                          }
-                        , { xOffset = 1
-                          , yOffset = 0
-                          , token = "p"
-                          }
-                        ]
-                    }
-              )
             , ( "player-input"
               , PlayerInputComponent
                     { movingState = NotMoving
@@ -495,7 +498,7 @@ subscriptions model =
         [ Keyboard.presses KeyPressed
         , Keyboard.downs KeyDown
         , Keyboard.ups KeyUp
-        , Time.every (200 * Time.millisecond) GameTick
+        , Time.every (80 * Time.millisecond) GameTick
         ]
 
 
