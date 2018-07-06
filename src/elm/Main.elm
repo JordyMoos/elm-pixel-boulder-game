@@ -4,7 +4,6 @@ import Html exposing (..)
 import Keyboard
 import Time
 import Dict exposing (Dict)
-import Dict.Extra
 import Maybe.Extra
 
 
@@ -106,11 +105,17 @@ type Component
     | CurrentPositionRenderComponent CurrentPositionRenderComponentData
     | AdditionalPositionRenderComponent AdditionalPositionsRenderComponentData
     | PlayerInputComponent PlayerInputComponentData
+    | DiamondCollectorComponent
+    | DiamondComponent
 
 
 type alias Level =
     { actors : Dict Int Actor
     , nextActorId : Int
+    , diamonds :
+        { total : Int
+        , collected : Int
+        }
     }
 
 
@@ -120,9 +125,15 @@ init =
         level =
             { actors = Dict.fromList []
             , nextActorId = 1
+            , diamonds =
+                { total = 0
+                , collected = 0
+                }
             }
                 |> addPlayer 5 8
                 |> addRock 1 1
+                |> addDiamond 7 8
+                |> addDiamond 7 10
     in
         { level = level
         , width = 12
@@ -160,35 +171,41 @@ update msg model =
                 keys =
                     model.keys
 
-                newActors =
+                newLevel =
                     List.foldr
-                        (\( actorId, actor ) actors ->
+                        (\( actorId, actor ) level ->
                             let
-                                updatedActor =
+                                ( _, updatedLevel ) =
                                     List.foldr
-                                        (\( key, component ) actor ->
-                                            case component of
-                                                PlayerInputComponent data ->
-                                                    case data.movingState of
-                                                        NotMoving ->
-                                                            handleUpdatePlayerInputComponent time keys actor
+                                        (\( key, component ) ( actor, level ) ->
+                                            let
+                                                updatedLevel =
+                                                    case component of
+                                                        PlayerInputComponent data ->
+                                                            case data.movingState of
+                                                                NotMoving ->
+                                                                    handleUpdatePlayerInputComponent time keys actor
+                                                                        |> updateActor level actor.id
 
-                                                        MovingTowards towardsData ->
-                                                            handleMovingTowards time towardsData actor
+                                                                MovingTowards towardsData ->
+                                                                    handleMovingTowards time towardsData actor
+                                                                        |> updateActor level actor.id
 
-                                                _ ->
-                                                    actor
+                                                        DiamondCollectorComponent ->
+                                                            tryToCollectDiamond level actor
+
+                                                        _ ->
+                                                            level
+                                            in
+                                                ( actor, updatedLevel )
                                         )
-                                        actor
+                                        ( actor, level )
                                         (Dict.toList actor.components)
                             in
-                                Dict.insert actorId updatedActor actors
+                                updatedLevel
                         )
-                        actors
+                        level
                         (Dict.toList actors)
-
-                newLevel =
-                    { level | actors = newActors }
 
                 handlePressedKey keyStatus =
                     case keyStatus of
@@ -213,6 +230,57 @@ update msg model =
 
         NoOp ->
             model ! []
+
+
+tryToCollectDiamond : Level -> Actor -> Level
+tryToCollectDiamond level focusedActor =
+    case getTransformComponent focusedActor.components of
+        Just focusedTransformData ->
+            Dict.foldr
+                (\actorId actor level ->
+                    if Dict.member "diamond" actor.components then
+                        case getTransformComponent actor.components of
+                            Just diamondTransformData ->
+                                if diamondTransformData == focusedTransformData then
+                                    let
+                                        newActors =
+                                            Dict.remove actorId level.actors
+
+                                        diamonds =
+                                            level.diamonds
+
+                                        newDiamonds =
+                                            { diamonds | collected = diamonds.collected + 1 }
+                                    in
+                                        { level
+                                            | actors = newActors
+                                            , diamonds = newDiamonds
+                                        }
+                                else
+                                    level
+
+                            _ ->
+                                level
+                    else
+                        level
+                )
+                level
+                level.actors
+
+        Nothing ->
+            level
+
+
+updateActor : Level -> Int -> Actor -> Level
+updateActor level actorId actor =
+    let
+        newActors =
+            Dict.insert
+                actorId
+                actor
+                level.actors
+    in
+        { level | actors = newActors }
 
 
 handleUpdatePlayerInputComponent : Time.Time -> Keys -> Actor -> Actor
@@ -260,7 +328,13 @@ handleUpdatePlayerInputComponent time keys actor =
                                             { positions =
                                                 [ { xOffset = xOffset
                                                   , yOffset = yOffset
-                                                  , token = "p" -- @todo Should be inherit from "render" component i think?
+                                                  , token =
+                                                        getCurrentPositionRenderComponent actor.components
+                                                            |> Maybe.andThen
+                                                                (\renderData ->
+                                                                    Just renderData.token
+                                                                )
+                                                            |> Maybe.withDefault " "
                                                   }
                                                 ]
                                             }
@@ -269,7 +343,11 @@ handleUpdatePlayerInputComponent time keys actor =
                             { actor | components = newComponents }
 
         _ ->
-            actor
+            let
+                _ =
+                    Debug.log "error" "no transform data"
+            in
+                actor
 
 
 handleMovingTowards : Time.Time -> MovingTowardsData -> Actor -> Actor
@@ -460,6 +538,7 @@ createPlayer id x y =
                     { movingState = NotMoving
                     }
               )
+            , ( "diamond-collector", DiamondCollectorComponent )
             ]
     }
 
@@ -483,6 +562,40 @@ createRock id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "O" } )
+            ]
+    }
+
+
+addDiamond : Int -> Int -> Level -> Level
+addDiamond x y level =
+    let
+        diamonds =
+            level.diamonds
+
+        newDiamonds =
+            { diamonds | total = diamonds.total + 1 }
+
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createDiamond level.nextActorId x y)
+                level.actors
+    in
+        { level
+            | actors = actors
+            , nextActorId = level.nextActorId + 1
+            , diamonds = newDiamonds
+        }
+
+
+createDiamond : Int -> Int -> Int -> Actor
+createDiamond id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { x = x, y = y } )
+            , ( "render", CurrentPositionRenderComponent { token = "*" } )
+            , ( "diamond", DiamondComponent )
             ]
     }
 
