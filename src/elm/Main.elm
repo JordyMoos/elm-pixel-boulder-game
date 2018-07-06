@@ -6,11 +6,19 @@ import Time
 import Dict exposing (Dict)
 import Dict.Extra
 import Maybe.Extra
+import Color exposing (Color)
+import Canvas
+import Canvas.Point
 
 
 movingTime : Time.Time
 movingTime =
     300 * Time.millisecond
+
+
+pixelSize : Int
+pixelSize =
+    20
 
 
 type alias Model =
@@ -67,7 +75,7 @@ type alias TransformComponentData =
 
 
 type alias CurrentPositionRenderComponentData =
-    { token : String
+    { color : Color
     }
 
 
@@ -79,7 +87,7 @@ type alias AdditionalPositionsRenderComponentData =
 type alias RenderablePosition =
     { xOffset : Int
     , yOffset : Int
-    , token : String
+    , color : Color
     }
 
 
@@ -344,13 +352,13 @@ handleMovement time level actor transformData offset newPosition =
                         { positions =
                             [ { xOffset = offset.x
                               , yOffset = offset.y
-                              , token =
+                              , color =
                                     getCurrentPositionRenderComponent actor.components
                                         |> Maybe.andThen
                                             (\renderData ->
-                                                Just renderData.token
+                                                Just renderData.color
                                             )
-                                        |> Maybe.withDefault " "
+                                        |> Maybe.withDefault Color.white
                               }
                             ]
                         }
@@ -551,76 +559,6 @@ updateActor level actorId actor =
         { level | actors = newActors }
 
 
-
-{-
-   handleUpdatePlayerInputComponent : Time.Time -> Keys -> Actor -> Actor
-   handleUpdatePlayerInputComponent time keys actor =
-       case getTransformComponent actor.components of
-           Just transformData ->
-               let
-                   ( xOffset, yOffset ) =
-                       if isMoving keys.left then
-                           ( -1, 0 )
-                       else if isMoving keys.right then
-                           ( 1, 0 )
-                       else if isMoving keys.up then
-                           ( 0, -1 )
-                       else if isMoving keys.down then
-                           ( 0, 1 )
-                       else
-                           ( 0, 0 )
-               in
-                   case ( xOffset, yOffset ) of
-                       ( 0, 0 ) ->
-                           -- Not moving
-                           actor
-
-                       ( xOffset, yOffset ) ->
-                           let
-                               newComponents =
-                                   Dict.insert
-                                       "player-input"
-                                       (PlayerInputComponent
-                                           { movingState =
-                                               MovingTowards
-                                                   { x = transformData.x + xOffset
-                                                   , y = transformData.y + yOffset
-                                                   , startTime = time
-                                                   , endTime = time + movingTime
-                                                   , completionPercentage = 0.0
-                                                   }
-                                           }
-                                       )
-                                       actor.components
-                                       |> Dict.insert
-                                           "additional-render"
-                                           (AdditionalPositionRenderComponent
-                                               { positions =
-                                                   [ { xOffset = xOffset
-                                                     , yOffset = yOffset
-                                                     , token =
-                                                           getCurrentPositionRenderComponent actor.components
-                                                               |> Maybe.andThen
-                                                                   (\renderData ->
-                                                                       Just renderData.token
-                                                                   )
-                                                               |> Maybe.withDefault " "
-                                                     }
-                                                   ]
-                                               }
-                                           )
-                           in
-                               { actor | components = newComponents }
-
-           _ ->
-               let
-                   _ =
-                       Debug.log "error" "no transform data"
-               in
-                   actor
--}
-
-
 handleMovingTowards : Time.Time -> TransformComponentData -> MovingTowardsData -> Actor -> Actor
 handleMovingTowards currentTime transformData towardsData actor =
     if currentTime > towardsData.endTime then
@@ -672,26 +610,57 @@ isMoving status =
             True
 
 
+
+{-
+   view : Model -> Html Msg
+   view model =
+       div
+           []
+           (List.range 0 (model.height - 1)
+               |> List.map
+                   (\y ->
+                       List.range 0 (model.width - 1)
+                           |> List.map
+                               (\x ->
+                                   getPixel x y model.level.actors
+                                       |> Maybe.withDefault empty
+                               )
+                           |> List.append [ br [] [] ]
+                   )
+               |> List.concat
+           )
+
+
+    [ Canvas.FillStyle Color.blue
+    , Canvas.FillRect
+        (Canvas.Point.fromInts ( 0, 0 ))
+        (Canvas.Size 20 20)
+    ]
+
+-}
+
+
 view : Model -> Html Msg
 view model =
-    div
-        []
-        (List.range 0 (model.height - 1)
-            |> List.map
-                (\y ->
-                    List.range 0 (model.width - 1)
-                        |> List.map
-                            (\x ->
-                                getPixel x y model.level.actors
-                                    |> Maybe.withDefault empty
-                            )
-                        |> List.append [ br [] [] ]
-                )
-            |> List.concat
-        )
+    Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
+        |> Canvas.batch
+            (List.range 0 (model.height - 1)
+                |> List.map
+                    (\y ->
+                        List.range 0 (model.width - 1)
+                            |> List.map
+                                (\x ->
+                                    getPixel x y model.level.actors
+                                        |> Maybe.withDefault []
+                                )
+                            |> List.concat
+                    )
+                |> List.concat
+            )
+        |> Canvas.toHtml []
 
 
-getPixel : Int -> Int -> Dict Int Actor -> Maybe (Html Msg)
+getPixel : Int -> Int -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
 getPixel x y actors =
     Dict.foldr
         (\actorId actor acc ->
@@ -702,7 +671,7 @@ getPixel x y actors =
                             |> Maybe.andThen
                                 (\transformData ->
                                     if transformData.x == x && transformData.y == y then
-                                        Just renderData.token
+                                        Just ( transformData.x, transformData.y, renderData.color )
                                     else
                                         Nothing
                                 )
@@ -712,12 +681,12 @@ getPixel x y actors =
                         |> Maybe.andThen
                             (\renderData ->
                                 List.map
-                                    (\{ xOffset, yOffset, token } ->
+                                    (\{ xOffset, yOffset, color } ->
                                         getTransformComponent actor.components
                                             |> Maybe.andThen
                                                 (\transformData ->
                                                     if transformData.x + xOffset == x && transformData.y + yOffset == y then
-                                                        Just token
+                                                        Just ( transformData.x, transformData.y, color )
                                                     else
                                                         Nothing
                                                 )
@@ -734,9 +703,18 @@ getPixel x y actors =
         |> Maybe.Extra.values
         |> List.head
         |> Maybe.andThen
-            (\token ->
-                Just <| text <| "[" ++ token ++ "]"
+            (\( x, y, color ) ->
+                Just <| asPixel x y color
             )
+
+
+asPixel : Int -> Int -> Color -> List Canvas.DrawOp
+asPixel x y color =
+    [ Canvas.FillStyle color
+    , Canvas.FillRect
+        (Canvas.Point.fromInts ( x * pixelSize, y * pixelSize ))
+        (Canvas.Size pixelSize pixelSize)
+    ]
 
 
 getTransformComponent : Dict String Component -> Maybe TransformComponentData
@@ -799,7 +777,7 @@ createPlayer id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { token = "P" } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.darkGreen } )
             , ( "player-input", PlayerInputComponent )
             , ( "diamond-collector", DiamondCollectorComponent )
             , ( "can-squash", CanSquashComponent )
@@ -833,7 +811,7 @@ createRock id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { token = "O" } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.gray } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -864,7 +842,7 @@ createDirt id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { token = "." } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.lightBrown } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
@@ -895,7 +873,7 @@ createWall id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { token = "#" } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.black } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -936,7 +914,7 @@ createDiamond id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { token = "*" } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.blue } )
             , ( "diamond", DiamondComponent )
             , ( "physics"
               , PhysicsComponent
