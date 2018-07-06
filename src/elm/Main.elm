@@ -225,10 +225,15 @@ update msg model =
                                                                 |> Maybe.andThen (\direction -> applyForce time level actor direction)
                                                                 |> Maybe.withDefault level
 
-                                                        --NotMoving ->
-                                                        --    handleUpdatePlayerInputComponent time keys actor
-                                                        --        |> updateActor level actor.id
-                                                        --
+                                                        TransformComponent transformData ->
+                                                            case transformData.movingState of
+                                                                MovingTowards movingData ->
+                                                                    handleMovingTowards time transformData movingData actor
+                                                                        |> updateActor level actor.id
+
+                                                                _ ->
+                                                                    level
+
                                                         --MovingTowards towardsData ->
                                                         --    handleMovingTowards time towardsData actor
                                                         --        |> updateActor level actor.id
@@ -559,47 +564,43 @@ updateActor level actorId actor =
                        Debug.log "error" "no transform data"
                in
                    actor
-
-
-   handleMovingTowards : Time.Time -> MovingTowardsData -> Actor -> Actor
-   handleMovingTowards currentTime towardsData actor =
-       if currentTime > towardsData.endTime then
-           let
-               newComponents =
-                   Dict.insert
-                       "player-input"
-                       (PlayerInputComponent
-                           { movingState = NotMoving
-                           }
-                       )
-                       actor.components
-                       |> Dict.remove "additional-render"
-                       |> Dict.insert
-                           "transform"
-                           (TransformComponent
-                               { x = towardsData.x
-                               , y = towardsData.y
-                               }
-                           )
-           in
-               { actor | components = newComponents }
-       else
-           let
-               newComponents =
-                   Dict.insert
-                       "player-input"
-                       (PlayerInputComponent
-                           { movingState =
-                               MovingTowards
-                                   { towardsData
-                                       | completionPercentage = calculateCompletionPercentage towardsData.startTime towardsData.endTime currentTime
-                                   }
-                           }
-                       )
-                       actor.components
-           in
-               { actor | components = newComponents }
 -}
+
+
+handleMovingTowards : Time.Time -> TransformComponentData -> MovingTowardsData -> Actor -> Actor
+handleMovingTowards currentTime transformData towardsData actor =
+    if currentTime > towardsData.endTime then
+        let
+            newComponents =
+                Dict.insert
+                    "transform"
+                    (TransformComponent
+                        { x = towardsData.x
+                        , y = towardsData.y
+                        , movingState = NotMoving
+                        }
+                    )
+                    actor.components
+                    |> Dict.remove "additional-render"
+        in
+            { actor | components = newComponents }
+    else
+        let
+            newComponents =
+                Dict.insert
+                    "transform"
+                    (TransformComponent
+                        { transformData
+                            | movingState =
+                                MovingTowards
+                                    { towardsData
+                                        | completionPercentage = calculateCompletionPercentage towardsData.startTime towardsData.endTime currentTime
+                                    }
+                        }
+                    )
+                    actor.components
+        in
+            { actor | components = newComponents }
 
 
 calculateCompletionPercentage : Time.Time -> Time.Time -> Time.Time -> Float
