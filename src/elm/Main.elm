@@ -903,7 +903,7 @@ createDirt id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.lightBrown } )
+            , ( "render", CurrentPositionRenderComponent { color = Color.brown } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
