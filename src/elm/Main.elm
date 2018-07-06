@@ -100,6 +100,18 @@ type MovingState
     | MovingTowards MovingTowardsData
 
 
+type Shape
+    = Circle
+    | Square
+
+
+type alias PhysicsComponentData =
+    { mass : Int
+    , shape : Shape
+    , affectedByGravity : Bool
+    }
+
+
 type Component
     = TransformComponent TransformComponentData
     | CurrentPositionRenderComponent CurrentPositionRenderComponentData
@@ -109,6 +121,7 @@ type Component
     | DiamondComponent
     | SquashableComponent
     | CanSquashComponent
+    | PhysicsComponent PhysicsComponentData
 
 
 type alias Level =
@@ -145,6 +158,8 @@ init =
                 |> addDirt 6 5
                 |> addDirt 6 6
                 |> addDirt 6 7
+                |> addWall 4 11
+                |> addWall 7 11
     in
         { level = level
         , width = 12
@@ -584,6 +599,13 @@ createPlayer id x y =
               )
             , ( "diamond-collector", DiamondCollectorComponent )
             , ( "can-squash", CanSquashComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 10
+                    , shape = Square
+                    , affectedByGravity = False
+                    }
+              )
             ]
     }
 
@@ -607,6 +629,13 @@ createRock id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "O" } )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 20
+                    , shape = Circle
+                    , affectedByGravity = True
+                    }
+              )
             ]
     }
 
@@ -631,6 +660,43 @@ createDirt id x y =
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "." } )
             , ( "squashable", SquashableComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 1
+                    , shape = Square
+                    , affectedByGravity = False
+                    }
+              )
+            ]
+    }
+
+
+addWall : Int -> Int -> Level -> Level
+addWall x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createWall level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+
+
+createWall : Int -> Int -> Int -> Actor
+createWall id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { x = x, y = y } )
+            , ( "render", CurrentPositionRenderComponent { token = "#" } )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 100
+                    , shape = Square
+                    , affectedByGravity = False
+                    }
+              )
             ]
     }
 
@@ -665,6 +731,13 @@ createDiamond id x y =
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "*" } )
             , ( "diamond", DiamondComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 100
+                    , shape = Square
+                    , affectedByGravity = True
+                    }
+              )
             ]
     }
 
