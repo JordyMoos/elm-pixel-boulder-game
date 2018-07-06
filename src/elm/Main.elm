@@ -173,7 +173,7 @@ init =
                 |> addRock 7 9
                 |> addRock 7 10
                 |> addRock 7 2
-                |> addDiamond 8 1
+                |> addDiamond 8 2
                 |> addWall 4 11
                 |> addWall 5 11
                 |> addWall 6 11
@@ -392,7 +392,15 @@ getActorWhoClaimed actors position =
                         if transformData.x == position.x && transformData.y == position.y then
                             Just actor
                         else
-                            Nothing
+                            case transformData.movingState of
+                                MovingTowards towardsData ->
+                                    if towardsData.x == position.x && towardsData.y == position.y then
+                                        Just actor
+                                    else
+                                        Nothing
+
+                                _ ->
+                                    Nothing
                     )
                 |> Maybe.Extra.isJust
         )
