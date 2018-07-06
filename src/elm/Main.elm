@@ -358,7 +358,7 @@ handleMovement time level actor transformData offset newPosition =
                                             (\renderData ->
                                                 Just renderData.color
                                             )
-                                        |> Maybe.withDefault Color.white
+                                        |> Maybe.withDefault Color.yellow
                               }
                             ]
                         }
@@ -686,7 +686,7 @@ getPixel x y actors =
                                             |> Maybe.andThen
                                                 (\transformData ->
                                                     if transformData.x + xOffset == x && transformData.y + yOffset == y then
-                                                        Just ( transformData.x, transformData.y, color )
+                                                        Just ( x, y, color )
                                                     else
                                                         Nothing
                                                 )
