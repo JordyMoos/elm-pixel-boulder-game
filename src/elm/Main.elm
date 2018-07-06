@@ -170,12 +170,16 @@ init =
                 |> addDirt 8 4
                 |> addDirt 9 4
                 |> addRock 7 1
+                |> addRock 7 9
+                |> addRock 7 10
+                |> addRock 7 2
                 |> addDiamond 8 1
                 |> addWall 4 11
                 |> addWall 5 11
                 |> addWall 6 11
                 |> addWall 7 11
                 |> addWall 8 11
+                |> addWall 9 11
     in
         { level = level
         , width = 12
@@ -465,9 +469,43 @@ tryApplyPhysics time level actor physics =
                                 -- Do movement
                                 Just ( transformData, offset, belowPosition )
 
-                            -- @todo be able to rollover if below is a circle
-                            _ ->
-                                Nothing
+                            Just belowActor ->
+                                -- Checking if actor can roll over
+                                case physics.shape of
+                                    Circle ->
+                                        case getPhysicsComponent belowActor.components of
+                                            Just belowPhysics ->
+                                                case belowPhysics.shape of
+                                                    Circle ->
+                                                        if canRollLeft level transformData then
+                                                            let
+                                                                offset =
+                                                                    getOffsetFromForce Left
+
+                                                                leftPosition =
+                                                                    addPositions { x = transformData.x, y = transformData.y } offset
+                                                            in
+                                                                Just ( transformData, offset, leftPosition )
+                                                        else if canRollRight level transformData then
+                                                            let
+                                                                offset =
+                                                                    getOffsetFromForce Right
+
+                                                                rightPosition =
+                                                                    addPositions { x = transformData.x, y = transformData.y } offset
+                                                            in
+                                                                Just ( transformData, offset, rightPosition )
+                                                        else
+                                                            Nothing
+
+                                                    _ ->
+                                                        Nothing
+
+                                            _ ->
+                                                Nothing
+
+                                    _ ->
+                                        Nothing
                 )
             |> Maybe.andThen
                 (\( transformData, offset, newPosition ) ->
@@ -476,6 +514,37 @@ tryApplyPhysics time level actor physics =
             |> Maybe.withDefault level
     else
         level
+
+
+canRollLeft : Level -> TransformComponentData -> Bool
+canRollLeft =
+    canRoll Left
+
+
+canRollRight : Level -> TransformComponentData -> Bool
+canRollRight =
+    canRoll Right
+
+
+canRoll : Direction -> Level -> TransformComponentData -> Bool
+canRoll direction level transformData =
+    let
+        position =
+            { x = transformData.x, y = transformData.y }
+
+        sidePosition =
+            addPositions position <| getOffsetFromForce direction
+
+        sideBottomPosition =
+            addPositions sidePosition <| getOffsetFromForce Down
+    in
+        isEmpty level sidePosition && isEmpty level sideBottomPosition
+
+
+isEmpty : Level -> Position -> Bool
+isEmpty level position =
+    getActorWhoClaimed level.actors position
+        |> Maybe.Extra.isNothing
 
 
 tryToCollectDiamond : Level -> Actor -> Level
@@ -610,36 +679,6 @@ isMoving status =
             True
 
 
-
-{-
-   view : Model -> Html Msg
-   view model =
-       div
-           []
-           (List.range 0 (model.height - 1)
-               |> List.map
-                   (\y ->
-                       List.range 0 (model.width - 1)
-                           |> List.map
-                               (\x ->
-                                   getPixel x y model.level.actors
-                                       |> Maybe.withDefault empty
-                               )
-                           |> List.append [ br [] [] ]
-                   )
-               |> List.concat
-           )
-
-
-    [ Canvas.FillStyle Color.blue
-    , Canvas.FillRect
-        (Canvas.Point.fromInts ( 0, 0 ))
-        (Canvas.Size 20 20)
-    ]
-
--}
-
-
 view : Model -> Html Msg
 view model =
     Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
@@ -724,6 +763,20 @@ getTransformComponent components =
             (\component ->
                 case component of
                     TransformComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
+getPhysicsComponent : Dict String Component -> Maybe PhysicsComponentData
+getPhysicsComponent components =
+    Dict.get "physics" components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    PhysicsComponent data ->
                         Just data
 
                     _ ->
@@ -919,7 +972,7 @@ createDiamond id x y =
             , ( "physics"
               , PhysicsComponent
                     { mass = 100
-                    , shape = Square
+                    , shape = Circle
                     , affectedByGravity = True
                     }
               )
