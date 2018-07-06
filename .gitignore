@@ -6,3 +6,4 @@ repl-temp-*
 .npmrc
 .idea
 node_modules
+dist
