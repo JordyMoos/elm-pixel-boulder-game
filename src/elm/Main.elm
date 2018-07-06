@@ -132,6 +132,7 @@ type Component
     | SquashableComponent
     | CanSquashComponent
     | PhysicsComponent PhysicsComponentData
+    | RigidComponent
 
 
 type alias Level =
@@ -305,8 +306,12 @@ applyForce time level actor direction =
                         Nothing ->
                             Just ( transformData, offset, newPosition )
 
-                        _ ->
-                            Nothing
+                        Just actor ->
+                            if hasRigidComponent actor.components then
+                                Nothing
+                                -- @todo add a branch in case can push the component in that spot
+                            else
+                                Just ( transformData, offset, newPosition )
             )
         |> Maybe.andThen
             (\( transformData, offset, newPosition ) ->
@@ -353,6 +358,11 @@ applyForce time level actor direction =
                 in
                     Just { level | actors = newActors }
             )
+
+
+hasRigidComponent : Dict String Component -> Bool
+hasRigidComponent =
+    Dict.member "rigid"
 
 
 getActorWhoClaimed : Dict Int Actor -> Position -> Maybe Actor
@@ -746,6 +756,7 @@ createPlayer id x y =
             , ( "player-input", PlayerInputComponent )
             , ( "diamond-collector", DiamondCollectorComponent )
             , ( "can-squash", CanSquashComponent )
+            , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
                     { mass = 10
@@ -776,6 +787,7 @@ createRock id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
             , ( "render", CurrentPositionRenderComponent { token = "O" } )
+            , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
                     { mass = 20
@@ -837,6 +849,7 @@ createWall id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
             , ( "render", CurrentPositionRenderComponent { token = "#" } )
+            , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
                     { mass = 100
