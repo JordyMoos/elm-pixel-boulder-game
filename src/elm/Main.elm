@@ -234,9 +234,6 @@ update msg model =
                                                                 _ ->
                                                                     level
 
-                                                        --MovingTowards towardsData ->
-                                                        --    handleMovingTowards time towardsData actor
-                                                        --        |> updateActor level actor.id
                                                         DiamondCollectorComponent ->
                                                             tryToCollectDiamond level actor
 
