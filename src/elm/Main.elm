@@ -107,6 +107,8 @@ type Component
     | PlayerInputComponent PlayerInputComponentData
     | DiamondCollectorComponent
     | DiamondComponent
+    | SquashableComponent
+    | CanSquashComponent
 
 
 type alias Level =
@@ -130,10 +132,19 @@ init =
                 , collected = 0
                 }
             }
-                |> addPlayer 5 8
+                |> addPlayer 4 4
                 |> addRock 1 1
-                |> addDiamond 7 8
-                |> addDiamond 7 10
+                |> addDiamond 4 8
+                |> addDiamond 7 3
+                |> addDirt 4 5
+                |> addDirt 4 6
+                |> addDirt 4 7
+                |> addDirt 5 5
+                |> addDirt 5 6
+                |> addDirt 5 7
+                |> addDirt 6 5
+                |> addDirt 6 6
+                |> addDirt 6 7
     in
         { level = level
         , width = 12
@@ -193,6 +204,9 @@ update msg model =
 
                                                         DiamondCollectorComponent ->
                                                             tryToCollectDiamond level actor
+
+                                                        CanSquashComponent ->
+                                                            trySquashingThings level actor
 
                                                         _ ->
                                                             level
@@ -256,6 +270,36 @@ tryToCollectDiamond level focusedActor =
                                             | actors = newActors
                                             , diamonds = newDiamonds
                                         }
+                                else
+                                    level
+
+                            _ ->
+                                level
+                    else
+                        level
+                )
+                level
+                level.actors
+
+        Nothing ->
+            level
+
+
+trySquashingThings : Level -> Actor -> Level
+trySquashingThings level focusedActor =
+    case getTransformComponent focusedActor.components of
+        Just focusedTransformData ->
+            Dict.foldr
+                (\actorId actor level ->
+                    if Dict.member "squashable" actor.components then
+                        case getTransformComponent actor.components of
+                            Just squashableTransformData ->
+                                if squashableTransformData == focusedTransformData then
+                                    let
+                                        newActors =
+                                            Dict.remove actorId level.actors
+                                    in
+                                        { level | actors = newActors }
                                 else
                                     level
 
@@ -539,6 +583,7 @@ createPlayer id x y =
                     }
               )
             , ( "diamond-collector", DiamondCollectorComponent )
+            , ( "can-squash", CanSquashComponent )
             ]
     }
 
@@ -562,6 +607,30 @@ createRock id x y =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y } )
             , ( "render", CurrentPositionRenderComponent { token = "O" } )
+            ]
+    }
+
+
+addDirt : Int -> Int -> Level -> Level
+addDirt x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createDirt level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+
+
+createDirt : Int -> Int -> Int -> Actor
+createDirt id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { x = x, y = y } )
+            , ( "render", CurrentPositionRenderComponent { token = "." } )
+            , ( "squashable", SquashableComponent )
             ]
     }
 
