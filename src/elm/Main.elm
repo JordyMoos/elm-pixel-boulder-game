@@ -13,7 +13,7 @@ import Canvas.Point
 
 movingTime : Time.Time
 movingTime =
-    300 * Time.millisecond
+    400 * Time.millisecond
 
 
 pixelSize : Int
@@ -74,7 +74,7 @@ type alias TransformComponentData =
     }
 
 
-type alias CurrentPositionRenderComponentData =
+type alias TransformRenderComponentData =
     { color : Color
     }
 
@@ -132,7 +132,7 @@ type alias PhysicsComponentData =
 
 type Component
     = TransformComponent TransformComponentData
-    | CurrentPositionRenderComponent CurrentPositionRenderComponentData
+    | TransformRenderComponent TransformRenderComponentData
     | AdditionalPositionRenderComponent AdditionalPositionsRenderComponentData
     | PlayerInputComponent
     | DiamondCollectorComponent
@@ -350,23 +350,6 @@ handleMovement time level actor transformData offset newPosition =
                     }
                 )
                 actor.components
-                |> Dict.insert
-                    "additional-render"
-                    (AdditionalPositionRenderComponent
-                        { positions =
-                            [ { xOffset = offset.x
-                              , yOffset = offset.y
-                              , color =
-                                    getCurrentPositionRenderComponent actor.components
-                                        |> Maybe.andThen
-                                            (\renderData ->
-                                                Just renderData.color
-                                            )
-                                        |> Maybe.withDefault Color.yellow
-                              }
-                            ]
-                        }
-                    )
 
         newActors =
             Dict.insert
@@ -650,7 +633,6 @@ handleMovingTowards currentTime transformData towardsData actor =
                         }
                     )
                     actor.components
-                    |> Dict.remove "additional-render"
         in
             { actor | components = newComponents }
     else
@@ -711,16 +693,29 @@ getPixel : Int -> Int -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
 getPixel x y actors =
     Dict.foldr
         (\actorId actor acc ->
-            (getCurrentPositionRenderComponent actor.components
+            (getTransformRenderComponent actor.components
                 |> Maybe.andThen
                     (\renderData ->
                         getTransformComponent actor.components
                             |> Maybe.andThen
                                 (\transformData ->
                                     if transformData.x == x && transformData.y == y then
-                                        Just ( transformData.x, transformData.y, renderData.color )
+                                        case transformData.movingState of
+                                            MovingTowards towardsData ->
+                                                Just ( transformData.x, transformData.y, calculateColor renderData.color (100.0 - towardsData.completionPercentage) )
+
+                                            _ ->
+                                                Just ( transformData.x, transformData.y, renderData.color )
                                     else
-                                        Nothing
+                                        case transformData.movingState of
+                                            MovingTowards towardsData ->
+                                                if towardsData.x == x && towardsData.y == y then
+                                                    Just ( towardsData.x, towardsData.y, calculateColor renderData.color towardsData.completionPercentage )
+                                                else
+                                                    Nothing
+
+                                            _ ->
+                                                Nothing
                                 )
                     )
             )
@@ -753,6 +748,18 @@ getPixel x y actors =
             (\( x, y, color ) ->
                 Just <| asPixel x y color
             )
+
+
+calculateColor : Color -> Float -> Color
+calculateColor color percentage =
+    let
+        rgba =
+            Color.toRgb color
+
+        newRgba =
+            { rgba | alpha = (percentage / 100) }
+    in
+        Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
 asPixel : Int -> Int -> Color -> List Canvas.DrawOp
@@ -792,13 +799,13 @@ getPhysicsComponent components =
             )
 
 
-getCurrentPositionRenderComponent : Dict String Component -> Maybe CurrentPositionRenderComponentData
-getCurrentPositionRenderComponent components =
+getTransformRenderComponent : Dict String Component -> Maybe TransformRenderComponentData
+getTransformRenderComponent components =
     Dict.get "render" components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    CurrentPositionRenderComponent data ->
+                    TransformRenderComponent data ->
                         Just data
 
                     _ ->
@@ -838,7 +845,7 @@ createPlayer id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.darkGreen } )
+            , ( "render", TransformRenderComponent { color = Color.darkGreen } )
             , ( "player-input", PlayerInputComponent )
             , ( "diamond-collector", DiamondCollectorComponent )
             , ( "can-squash", CanSquashComponent )
@@ -872,7 +879,7 @@ createRock id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.gray } )
+            , ( "render", TransformRenderComponent { color = Color.gray } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -903,7 +910,7 @@ createDirt id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.brown } )
+            , ( "render", TransformRenderComponent { color = Color.brown } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
@@ -934,7 +941,7 @@ createWall id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.black } )
+            , ( "render", TransformRenderComponent { color = Color.black } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -975,7 +982,7 @@ createDiamond id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", CurrentPositionRenderComponent { color = Color.blue } )
+            , ( "render", TransformRenderComponent { color = Color.blue } )
             , ( "diamond", DiamondComponent )
             , ( "physics"
               , PhysicsComponent
