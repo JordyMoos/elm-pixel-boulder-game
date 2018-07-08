@@ -139,6 +139,10 @@ type alias PhysicsComponentData =
     }
 
 
+type alias AIComponentData =
+    {}
+
+
 type Component
     = TransformComponent TransformComponentData
     | TransformRenderComponent TransformRenderComponentData
@@ -150,6 +154,7 @@ type Component
     | CanSquashComponent
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
+    | AIComponent AIComponentData
 
 
 type alias Level =
@@ -173,22 +178,29 @@ init =
                 , collected = 0
                 }
             }
-                |> addPlayer 4 4
-                |> addDirt 6 4
-                |> addDirt 7 4
-                |> addDirt 8 4
-                |> addDirt 9 4
-                |> addRock 7 1
-                |> addRock 7 9
-                |> addRock 7 10
-                |> addRock 7 2
-                |> addDiamond 8 2
-                |> addWall 4 11
-                |> addWall 5 11
-                |> addWall 6 11
-                |> addWall 7 11
-                |> addWall 8 11
-                |> addWall 9 11
+                |> addPlayer 1 1
+                |> addEnemy 4 4
+                |> addDirt 5 4
+                |> addDirt 2 7
+                |> addDirt 3 7
+                |> addDirt 4 7
+                |> addDirt 5 7
+                |> addDirt 6 7
+                |> addDirt 6 7
+                |> addDirt 7 7
+                |> addDirt 8 7
+                |> addDirt 3 7
+                |> addDirt 2 8
+                |> addDirt 8 8
+                |> addDirt 2 9
+                |> addDirt 3 9
+                |> addDirt 4 9
+                |> addDirt 5 9
+                |> addDirt 6 9
+                |> addDirt 6 9
+                |> addDirt 7 9
+                |> addDirt 8 9
+                |> addEnemy 5 8
     in
         { level = level
         , width = 12
@@ -934,6 +946,41 @@ createRock id x y =
     }
 
 
+addEnemy : Int -> Int -> Level -> Level
+addEnemy x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createEnemy level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+
+
+createEnemy : Int -> Int -> Int -> Actor
+createEnemy id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            , ( "render", TransformRenderComponent { color = Color.darkOrange } )
+            , ( "rigid", RigidComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 20
+                    , shape = Circle
+                    , affectedByGravity = False
+                    }
+              )
+            , ( "ai"
+              , AIComponent
+                    {}
+              )
+            ]
+    }
+
+
 addDirt : Int -> Int -> Level -> Level
 addDirt x y level =
     let
@@ -952,7 +999,7 @@ createDirt id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.brown } )
+            , ( "render", TransformRenderComponent { color = Color.lightBrown } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
