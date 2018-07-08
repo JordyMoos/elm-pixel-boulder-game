@@ -12,9 +12,13 @@ import Canvas
 import Canvas.Point
 
 
-movingTime : Time.Time
-movingTime =
-    400 * Time.millisecond
+type alias Tick =
+    Int
+
+
+movingTicks : Tick
+movingTicks =
+    5
 
 
 pixelSize : Int
@@ -29,6 +33,7 @@ type alias Model =
     , keys : Keys
     , debug : Bool
     , gameSpeed : Maybe Time.Time
+    , currentTick : Tick
     }
 
 
@@ -104,8 +109,8 @@ type alias Position =
 type alias MovingTowardsData =
     { x : Int
     , y : Int
-    , startTime : Time.Time
-    , endTime : Time.Time
+    , startTick : Tick
+    , endTick : Tick
     , completionPercentage : Float
     }
 
@@ -195,7 +200,8 @@ init =
             , down = NotPressed
             }
         , debug = True
-        , gameSpeed = Just <| 80 * Time.millisecond
+        , gameSpeed = Nothing
+        , currentTick = 0
         }
             ! []
 
@@ -215,8 +221,11 @@ update msg model =
         GameSpeed gameSpeed ->
             { model | gameSpeed = gameSpeed } ! []
 
-        GameTick time ->
+        GameTick _ ->
             let
+                currentTick =
+                    model.currentTick + 1
+
                 level =
                     model.level
 
@@ -241,13 +250,13 @@ update msg model =
                                                     case component of
                                                         PlayerInputComponent ->
                                                             maybeInputForce
-                                                                |> Maybe.andThen (\direction -> applyForce time level actor direction)
+                                                                |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
                                                                 |> Maybe.withDefault level
 
                                                         TransformComponent transformData ->
                                                             case transformData.movingState of
                                                                 MovingTowards movingData ->
-                                                                    handleMovingTowards time transformData movingData actor
+                                                                    handleMovingTowards currentTick transformData movingData actor
                                                                         |> updateActor level actor.id
 
                                                                 _ ->
@@ -260,7 +269,7 @@ update msg model =
                                                             trySquashingThings level actor
 
                                                         PhysicsComponent physics ->
-                                                            tryApplyPhysics time level actor physics
+                                                            tryApplyPhysics currentTick level actor physics
 
                                                         _ ->
                                                             level
@@ -293,6 +302,7 @@ update msg model =
                 { model
                     | keys = handledPressedKeys
                     , level = newLevel
+                    , currentTick = currentTick
                 }
                     ! []
 
@@ -300,8 +310,8 @@ update msg model =
             model ! []
 
 
-applyForce : Time.Time -> Level -> Actor -> Direction -> Maybe Level
-applyForce time level actor direction =
+applyForce : Tick -> Level -> Actor -> Direction -> Maybe Level
+applyForce currentTick level actor direction =
     getTransformComponent actor.components
         |> Maybe.andThen
             -- Can only apply force if not already moving
@@ -336,12 +346,12 @@ applyForce time level actor direction =
             )
         |> Maybe.andThen
             (\( transformData, offset, newPosition ) ->
-                Just (handleMovement time level actor transformData offset newPosition)
+                Just (handleMovement currentTick level actor transformData offset newPosition)
             )
 
 
-handleMovement : Time.Time -> Level -> Actor -> TransformComponentData -> Position -> Position -> Level
-handleMovement time level actor transformData offset newPosition =
+handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Position -> Level
+handleMovement currentTick level actor transformData offset newPosition =
     let
         newComponents =
             Dict.insert
@@ -352,8 +362,8 @@ handleMovement time level actor transformData offset newPosition =
                             MovingTowards
                                 { x = newPosition.x
                                 , y = newPosition.y
-                                , startTime = time
-                                , endTime = time + movingTime
+                                , startTick = currentTick
+                                , endTick = currentTick + movingTicks
                                 , completionPercentage = 0.0
                                 }
                     }
@@ -440,8 +450,8 @@ calculateInputForce keys =
         Nothing
 
 
-tryApplyPhysics : Time.Time -> Level -> Actor -> PhysicsComponentData -> Level
-tryApplyPhysics time level actor physics =
+tryApplyPhysics : Tick -> Level -> Actor -> PhysicsComponentData -> Level
+tryApplyPhysics currentTick level actor physics =
     if physics.affectedByGravity then
         getTransformComponent actor.components
             |> Maybe.andThen
@@ -509,7 +519,7 @@ tryApplyPhysics time level actor physics =
                 )
             |> Maybe.andThen
                 (\( transformData, offset, newPosition ) ->
-                    Just (handleMovement time level actor transformData offset newPosition)
+                    Just (handleMovement currentTick level actor transformData offset newPosition)
                 )
             |> Maybe.withDefault level
     else
@@ -628,9 +638,9 @@ updateActor level actorId actor =
         { level | actors = newActors }
 
 
-handleMovingTowards : Time.Time -> TransformComponentData -> MovingTowardsData -> Actor -> Actor
-handleMovingTowards currentTime transformData towardsData actor =
-    if currentTime > towardsData.endTime then
+handleMovingTowards : Tick -> TransformComponentData -> MovingTowardsData -> Actor -> Actor
+handleMovingTowards currentTick transformData towardsData actor =
+    if currentTick >= towardsData.endTick then
         let
             newComponents =
                 Dict.insert
@@ -654,7 +664,7 @@ handleMovingTowards currentTime transformData towardsData actor =
                             | movingState =
                                 MovingTowards
                                     { towardsData
-                                        | completionPercentage = calculateCompletionPercentage towardsData.startTime towardsData.endTime currentTime
+                                        | completionPercentage = calculateCompletionPercentage towardsData.startTick towardsData.endTick currentTick
                                     }
                         }
                     )
@@ -663,9 +673,9 @@ handleMovingTowards currentTime transformData towardsData actor =
             { actor | components = newComponents }
 
 
-calculateCompletionPercentage : Time.Time -> Time.Time -> Time.Time -> Float
-calculateCompletionPercentage startTime endTime currentTime =
-    100 / (endTime - startTime) * (currentTime - startTime)
+calculateCompletionPercentage : Tick -> Tick -> Tick -> Float
+calculateCompletionPercentage startTick endTick currentTick =
+    100 / (toFloat (endTick - startTick)) * (toFloat (currentTick - startTick))
 
 
 isMoving : KeyStatus -> Bool
