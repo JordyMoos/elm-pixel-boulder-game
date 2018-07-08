@@ -4,6 +4,7 @@ import Html exposing (Html, text, br, div, button)
 import Html.Events exposing (onClick)
 import Keyboard
 import Time
+import List.Extra
 import Dict exposing (Dict)
 import Dict.Extra
 import Maybe.Extra
@@ -140,7 +141,7 @@ type alias PhysicsComponentData =
 
 
 type alias AIComponentData =
-    {}
+    { previousDirection : Direction }
 
 
 type Component
@@ -179,8 +180,10 @@ init =
                 }
             }
                 |> addPlayer 1 1
-                |> addEnemy 4 4
+                |> addEnemy 5 3
+                |> addDirt 4 4
                 |> addDirt 5 4
+                |> addDirt 6 4
                 |> addDirt 2 7
                 |> addDirt 3 7
                 |> addDirt 4 7
@@ -189,9 +192,12 @@ init =
                 |> addDirt 6 7
                 |> addDirt 7 7
                 |> addDirt 8 7
+                |> addDirt 9 7
+                |> addDirt 10 7
                 |> addDirt 3 7
                 |> addDirt 2 8
                 |> addDirt 8 8
+                |> addDirt 10 8
                 |> addDirt 2 9
                 |> addDirt 3 9
                 |> addDirt 4 9
@@ -200,7 +206,10 @@ init =
                 |> addDirt 6 9
                 |> addDirt 7 9
                 |> addDirt 8 9
+                |> addDirt 9 9
+                |> addDirt 10 9
                 |> addEnemy 5 8
+                |> addEnemy 9 8
     in
         { level = level
         , width = 12
@@ -283,6 +292,9 @@ update msg model =
                                                         PhysicsComponent physics ->
                                                             tryApplyPhysics currentTick level actor physics
 
+                                                        AIComponent ai ->
+                                                            tryApplyAI currentTick level actor ai
+
                                                         _ ->
                                                             level
                                             in
@@ -340,7 +352,7 @@ applyForce currentTick level actor direction =
             (\transformData ->
                 let
                     offset =
-                        getOffsetFromForce direction
+                        getOffsetFromDirection direction
 
                     newPosition =
                         addPositions { x = transformData.x, y = transformData.y } offset
@@ -360,6 +372,10 @@ applyForce currentTick level actor direction =
             (\( transformData, offset, newPosition ) ->
                 Just (handleMovement currentTick level actor transformData offset newPosition)
             )
+
+
+
+-- @todo offset can be removed
 
 
 handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Position -> Level
@@ -425,8 +441,40 @@ getActorWhoClaimed actors position =
             )
 
 
-getOffsetFromForce : Direction -> Position
-getOffsetFromForce direction =
+getDirectionFromID : Int -> Direction
+getDirectionFromID id =
+    case id % 4 of
+        0 ->
+            Left
+
+        1 ->
+            Up
+
+        2 ->
+            Right
+
+        _ ->
+            Down
+
+
+getIDFromDirection : Direction -> Int
+getIDFromDirection direction =
+    case direction of
+        Left ->
+            0
+
+        Up ->
+            1
+
+        Right ->
+            2
+
+        Down ->
+            3
+
+
+getOffsetFromDirection : Direction -> Position
+getOffsetFromDirection direction =
     case direction of
         Left ->
             { x = -1, y = 0 }
@@ -462,6 +510,67 @@ calculateInputForce keys =
         Nothing
 
 
+tryApplyAI : Tick -> Level -> Actor -> AIComponentData -> Level
+tryApplyAI currentTick level actor ai =
+    getTransformComponent actor.components
+        |> Maybe.andThen
+            (\transformData ->
+                case transformData.movingState of
+                    NotMoving ->
+                        Just transformData
+
+                    _ ->
+                        -- Can not update ai when already moving
+                        Nothing
+            )
+        |> Maybe.andThen
+            (\transformData ->
+                let
+                    previousDirectionId =
+                        getIDFromDirection ai.previousDirection
+                in
+                    -- Find next direction
+                    List.Extra.find
+                        (\( transformData, direction ) ->
+                            -- Check if that position is free
+                            let
+                                position =
+                                    addPositions { x = transformData.x, y = transformData.y } (getOffsetFromDirection direction)
+                            in
+                                isEmpty level position
+                        )
+                        [ ( transformData, getDirectionFromID <| previousDirectionId - 3 )
+                        , ( transformData, getDirectionFromID <| previousDirectionId - 4 )
+                        , ( transformData, getDirectionFromID <| previousDirectionId - 5 )
+                        , ( transformData, getDirectionFromID <| previousDirectionId - 6 )
+                        ]
+            )
+        |> Maybe.andThen
+            (\( transformData, direction ) ->
+                let
+                    offset =
+                        getOffsetFromDirection direction
+
+                    newPosition =
+                        addPositions { x = transformData.x, y = transformData.y } (getOffsetFromDirection direction)
+
+                    newComponents =
+                        Dict.insert
+                            "ai"
+                            (AIComponent
+                                { previousDirection = direction
+                                }
+                            )
+                            actor.components
+
+                    newActor =
+                        { actor | components = newComponents }
+                in
+                    Just (handleMovement currentTick level newActor transformData offset newPosition)
+            )
+        |> Maybe.withDefault level
+
+
 tryApplyPhysics : Tick -> Level -> Actor -> PhysicsComponentData -> Level
 tryApplyPhysics currentTick level actor physics =
     if physics.affectedByGravity then
@@ -481,7 +590,7 @@ tryApplyPhysics currentTick level actor physics =
                     -- Get the actor below us
                     let
                         offset =
-                            getOffsetFromForce Down
+                            getOffsetFromDirection Down
 
                         belowPosition =
                             addPositions { x = transformData.x, y = transformData.y } offset
@@ -502,7 +611,7 @@ tryApplyPhysics currentTick level actor physics =
                                                         if canRollLeft level transformData then
                                                             let
                                                                 offset =
-                                                                    getOffsetFromForce Left
+                                                                    getOffsetFromDirection Left
 
                                                                 leftPosition =
                                                                     addPositions { x = transformData.x, y = transformData.y } offset
@@ -511,7 +620,7 @@ tryApplyPhysics currentTick level actor physics =
                                                         else if canRollRight level transformData then
                                                             let
                                                                 offset =
-                                                                    getOffsetFromForce Right
+                                                                    getOffsetFromDirection Right
 
                                                                 rightPosition =
                                                                     addPositions { x = transformData.x, y = transformData.y } offset
@@ -555,10 +664,10 @@ canRoll direction level transformData =
             { x = transformData.x, y = transformData.y }
 
         sidePosition =
-            addPositions position <| getOffsetFromForce direction
+            addPositions position <| getOffsetFromDirection direction
 
         sideBottomPosition =
-            addPositions sidePosition <| getOffsetFromForce Down
+            addPositions sidePosition <| getOffsetFromDirection Down
     in
         isEmpty level sidePosition && isEmpty level sideBottomPosition
 
@@ -975,7 +1084,7 @@ createEnemy id x y =
               )
             , ( "ai"
               , AIComponent
-                    {}
+                    { previousDirection = Right }
               )
             ]
     }
