@@ -180,10 +180,12 @@ init =
                 }
             }
                 |> addPlayer 1 1
+                |> addDiamond 0 10
                 |> addEnemy 5 3
                 |> addDirt 4 4
                 |> addDirt 5 4
                 |> addDirt 6 4
+                |> addDiamond 6 3
                 |> addDirt 2 7
                 |> addDirt 3 7
                 |> addDirt 4 7
@@ -210,6 +212,18 @@ init =
                 |> addDirt 10 9
                 |> addEnemy 5 8
                 |> addEnemy 9 8
+                |> addWall 0 11
+                |> addWall 1 11
+                |> addWall 2 11
+                |> addWall 3 11
+                |> addWall 4 11
+                |> addWall 5 11
+                |> addWall 6 11
+                |> addWall 7 11
+                |> addWall 8 11
+                |> addWall 9 11
+                |> addWall 10 11
+                |> addWall 11 11
     in
         { level = level
         , width = 12
