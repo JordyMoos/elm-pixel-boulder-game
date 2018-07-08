@@ -1,6 +1,7 @@
 module Main exposing (main)
 
-import Html exposing (Html, text, br, div)
+import Html exposing (Html, text, br, div, button)
+import Html.Events exposing (onClick)
 import Keyboard
 import Time
 import Dict exposing (Dict)
@@ -26,6 +27,8 @@ type alias Model =
     , width : Int
     , height : Int
     , keys : Keys
+    , debug : Bool
+    , gameSpeed : Maybe Time.Time
     }
 
 
@@ -45,6 +48,7 @@ type Msg
     | KeyDown Keyboard.KeyCode
     | KeyUp Keyboard.KeyCode
     | GameTick Time.Time
+    | GameSpeed (Maybe Time.Time)
 
 
 type alias Keys =
@@ -190,6 +194,8 @@ init =
             , up = NotPressed
             , down = NotPressed
             }
+        , debug = True
+        , gameSpeed = Just <| 80 * Time.millisecond
         }
             ! []
 
@@ -205,6 +211,9 @@ update msg model =
 
         KeyUp keyCode ->
             (updateKeyState model WasPressed keyCode) ! []
+
+        GameSpeed gameSpeed ->
+            { model | gameSpeed = gameSpeed } ! []
 
         GameTick time ->
             let
@@ -671,22 +680,45 @@ isMoving status =
 
 view : Model -> Html Msg
 view model =
-    Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
-        |> Canvas.batch
-            (List.range 0 (model.height - 1)
-                |> List.map
-                    (\y ->
-                        List.range 0 (model.width - 1)
-                            |> List.map
-                                (\x ->
-                                    getPixel x y model.level.actors
-                                        |> Maybe.withDefault []
-                                )
-                            |> List.concat
-                    )
-                |> List.concat
-            )
-        |> Canvas.toHtml []
+    div
+        []
+        [ Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
+            |> Canvas.batch
+                (List.range 0 (model.height - 1)
+                    |> List.map
+                        (\y ->
+                            List.range 0 (model.width - 1)
+                                |> List.map
+                                    (\x ->
+                                        getPixel x y model.level.actors
+                                            |> Maybe.withDefault []
+                                    )
+                                |> List.concat
+                        )
+                    |> List.concat
+                )
+            |> Canvas.toHtml []
+        , debugView model
+        ]
+
+
+debugView : Model -> Html Msg
+debugView model =
+    if model.debug then
+        div
+            []
+            [ text "GameTick speed:"
+            , div
+                []
+                [ button [ onClick <| GameSpeed Nothing ] [ text "Off" ]
+                , button [ onClick <| GameSpeed (Just <| 10 * Time.second) ] [ text "0.1 fps" ]
+                , button [ onClick <| GameSpeed (Just <| 5 * Time.second) ] [ text "0.5 fps" ]
+                , button [ onClick <| GameSpeed (Just <| 1 * Time.second) ] [ text "1 fps" ]
+                , button [ onClick <| GameSpeed (Just <| 80 * Time.millisecond) ] [ text "12 fps" ]
+                ]
+            ]
+    else
+        text ""
 
 
 getPixel : Int -> Int -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
@@ -1002,12 +1034,22 @@ empty =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Keyboard.presses KeyPressed
-        , Keyboard.downs KeyDown
-        , Keyboard.ups KeyUp
-        , Time.every (80 * Time.millisecond) GameTick
-        ]
+    let
+        sub =
+            [ Keyboard.presses KeyPressed
+            , Keyboard.downs KeyDown
+            , Keyboard.ups KeyUp
+            ]
+
+        newSub =
+            case model.gameSpeed of
+                Just delay ->
+                    Time.every delay GameTick :: sub
+
+                Nothing ->
+                    sub
+    in
+        Sub.batch newSub
 
 
 updateKeyState : Model -> KeyStatus -> Keyboard.KeyCode -> Model
