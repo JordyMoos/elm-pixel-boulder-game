@@ -921,7 +921,7 @@ createRock id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.gray } )
+            , ( "render", TransformRenderComponent { color = Color.darkGray } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
