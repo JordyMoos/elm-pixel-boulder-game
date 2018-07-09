@@ -200,7 +200,8 @@ init =
             }
                 |> addPlayer 3 3 3
                 |> addDiamond 0 10
-                |> addEnemy 5 6
+                |> addEnemy 4 6
+                |> addEnemy 6 6
                 |> addDirt 4 4
                 |> addDirt 5 4
                 |> addDirt 6 4
@@ -215,6 +216,11 @@ init =
                 |> addDirt 8 7
                 |> addDirt 9 7
                 |> addDirt 10 7
+                |> addDirt 11 7
+                |> addDirt 12 7
+                |> addDirt 13 7
+                |> addDirt 14 7
+                |> addDirt 15 7
                 |> addDirt 3 7
                 |> addDirt 2 8
                 |> addDirt 8 8
@@ -229,6 +235,12 @@ init =
                 |> addDirt 8 9
                 |> addDirt 9 9
                 |> addDirt 10 9
+                |> addDirt 11 9
+                |> addDirt 12 9
+                |> addDirt 13 9
+                |> addDirt 14 9
+                |> addDirt 15 9
+                |> addDirt 15 8
                 |> addEnemy 5 8
                 |> addEnemy 9 8
                 |> addWall 0 11
