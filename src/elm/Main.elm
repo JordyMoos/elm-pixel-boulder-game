@@ -141,6 +141,11 @@ type alias AIComponentData =
     { previousDirection : Direction }
 
 
+type alias CameraComponentData =
+    { borderSize : Int
+    }
+
+
 type Component
     = TransformComponent TransformComponentData
     | TransformRenderComponent TransformRenderComponentData
@@ -153,6 +158,7 @@ type Component
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
     | AIComponent AIComponentData
+    | CameraComponent CameraComponentData
 
 
 type alias Level =
@@ -162,12 +168,23 @@ type alias Level =
         { total : Int
         , collected : Int
         }
+    , view :
+        { position : Position
+        , width : Int
+        , height : Int
+        }
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
+        width =
+            12
+
+        height =
+            12
+
         level =
             { actors = Dict.fromList []
             , nextActorId = 1
@@ -175,8 +192,13 @@ init =
                 { total = 0
                 , collected = 0
                 }
+            , view =
+                { position = { x = 0, y = 0 }
+                , width = width
+                , height = height
+                }
             }
-                |> addPlayer 1 1
+                |> addPlayer 3 3 3
                 |> addDiamond 0 10
                 |> addEnemy 5 6
                 |> addDirt 4 4
@@ -223,8 +245,8 @@ init =
                 |> addWall 11 11
     in
         { level = level
-        , width = 12
-        , height = 12
+        , width = width
+        , height = height
         , keys =
             { left = NotPressed
             , right = NotPressed
@@ -305,6 +327,9 @@ update msg model =
 
                                                         AIComponent ai ->
                                                             tryApplyAI currentTick level actor ai
+
+                                                        CameraComponent camera ->
+                                                            tryMoveCamera level actor camera
 
                                                         _ ->
                                                             level
@@ -495,10 +520,20 @@ getOffsetFromDirection direction =
             { x = 0, y = 1 }
 
 
+subtractPositions : Position -> Position -> Position
+subtractPositions =
+    calculatePosition (-)
+
+
 addPositions : Position -> Position -> Position
-addPositions pos1 pos2 =
-    { x = pos1.x + pos2.x
-    , y = pos1.y + pos2.y
+addPositions =
+    calculatePosition (+)
+
+
+calculatePosition : (Int -> Int -> Int) -> Position -> Position -> Position
+calculatePosition method pos1 pos2 =
+    { x = method pos1.x pos2.x
+    , y = method pos1.y pos2.y
     }
 
 
@@ -573,6 +608,51 @@ tryApplyAI currentTick level actor ai =
                         { actor | components = newComponents }
                 in
                     Just <| handleMovement currentTick level newActor transformData newPosition
+            )
+        |> Maybe.withDefault level
+
+
+tryMoveCamera : Level -> Actor -> CameraComponentData -> Level
+tryMoveCamera level actor camera =
+    getTransformComponent actor.components
+        |> Maybe.andThen
+            (\transformData ->
+                let
+                    view =
+                        level.view
+
+                    viewPosition =
+                        view.position
+
+                    position =
+                        transformData.position
+
+                    x =
+                        if position.x - camera.borderSize < viewPosition.x then
+                            position.x - camera.borderSize
+                        else if position.x - view.width + (camera.borderSize * 2) > viewPosition.x then
+                            position.x + (camera.borderSize * 2) - view.width
+                        else
+                            viewPosition.x
+
+                    y =
+                        if position.y - camera.borderSize < viewPosition.y then
+                            position.y - camera.borderSize
+                        else if position.y - view.height + (camera.borderSize * 2) > viewPosition.y then
+                            position.y + (camera.borderSize * 2) - view.height
+                        else
+                            viewPosition.y
+
+                    newViewPosition =
+                        { viewPosition
+                            | x = x
+                            , y = y
+                        }
+
+                    newView =
+                        { view | position = newViewPosition }
+                in
+                    Just { level | view = newView }
             )
         |> Maybe.withDefault level
 
@@ -813,26 +893,30 @@ isMoving status =
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
-            |> Canvas.batch
-                (List.range 0 (model.height - 1)
-                    |> List.map
-                        (\y ->
-                            List.range 0 (model.width - 1)
-                                |> List.map
-                                    (\x ->
-                                        getPixel { x = x, y = y } model.level.actors
-                                            |> Maybe.withDefault []
-                                    )
-                                |> List.concat
-                        )
-                    |> List.concat
-                )
-            |> Canvas.toHtml []
-        , debugView model
-        ]
+    let
+        view =
+            model.level.view
+    in
+        div
+            []
+            [ Canvas.initialize (Canvas.Size (model.width * pixelSize) (model.height * pixelSize))
+                |> Canvas.batch
+                    (List.range view.position.y (view.position.y + view.height - 1)
+                        |> List.map
+                            (\y ->
+                                List.range view.position.x (view.position.x + view.height - 1)
+                                    |> List.map
+                                        (\x ->
+                                            getPixel view.position { x = x, y = y } model.level.actors
+                                                |> Maybe.withDefault []
+                                        )
+                                    |> List.concat
+                            )
+                        |> List.concat
+                    )
+                |> Canvas.toHtml []
+            , debugView model
+            ]
 
 
 debugView : Model -> Html Msg
@@ -856,8 +940,8 @@ debugView model =
         text ""
 
 
-getPixel : Position -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
-getPixel position actors =
+getPixel : Position -> Position -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
+getPixel viewPosition position actors =
     Dict.foldr
         (\actorId actor acc ->
             (getTransformRenderComponent actor.components
@@ -913,7 +997,7 @@ getPixel position actors =
         |> List.head
         |> Maybe.andThen
             (\color ->
-                Just <| asPixel position color
+                Just <| asPixel viewPosition position color
             )
 
 
@@ -929,11 +1013,11 @@ calculateColor color percentage =
         Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
-asPixel : Position -> Color -> List Canvas.DrawOp
-asPixel position color =
+asPixel : Position -> Position -> Color -> List Canvas.DrawOp
+asPixel viewPosition position color =
     [ Canvas.FillStyle color
     , Canvas.FillRect
-        (Canvas.Point.fromInts ( position.x * pixelSize, position.y * pixelSize ))
+        (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
 
@@ -994,20 +1078,20 @@ getAdditionalPositionRenderComponent components =
             )
 
 
-addPlayer : Int -> Int -> Level -> Level
-addPlayer x y level =
+addPlayer : Int -> Int -> Int -> Level -> Level
+addPlayer x y borderSize level =
     let
         actors =
             Dict.insert
                 level.nextActorId
-                (createPlayer level.nextActorId x y)
+                (createPlayer level.nextActorId x y borderSize)
                 level.actors
     in
         { level | actors = actors, nextActorId = level.nextActorId + 1 }
 
 
-createPlayer : Int -> Int -> Int -> Actor
-createPlayer id x y =
+createPlayer : Int -> Int -> Int -> Int -> Actor
+createPlayer id x y borderSize =
     { id = id
     , components =
         Dict.fromList
@@ -1024,6 +1108,7 @@ createPlayer id x y =
                     , affectedByGravity = False
                     }
               )
+            , ( "camera", CameraComponent { borderSize = borderSize } )
             ]
     }
 
