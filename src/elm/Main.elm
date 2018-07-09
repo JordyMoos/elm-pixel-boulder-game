@@ -178,7 +178,7 @@ init =
             }
                 |> addPlayer 1 1
                 |> addDiamond 0 10
-                |> addEnemy 5 3
+                |> addEnemy 5 6
                 |> addDirt 4 4
                 |> addDirt 5 4
                 |> addDirt 6 4
