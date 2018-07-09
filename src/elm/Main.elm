@@ -24,7 +24,7 @@ movingTicks =
 
 pixelSize : Int
 pixelSize =
-    20
+    30
 
 
 type alias Model =
@@ -78,8 +78,7 @@ type alias Actor =
 
 
 type alias TransformComponentData =
-    { x : Int
-    , y : Int
+    { position : Position
     , movingState : MovingState
     }
 
@@ -95,8 +94,7 @@ type alias AdditionalPositionsRenderComponentData =
 
 
 type alias RenderablePosition =
-    { xOffset : Int
-    , yOffset : Int
+    { offset : Position
     , color : Color
     }
 
@@ -108,8 +106,7 @@ type alias Position =
 
 
 type alias MovingTowardsData =
-    { x : Int
-    , y : Int
+    { position : Position
     , startTick : Tick
     , endTick : Tick
     , completionPercentage : Float
@@ -369,22 +366,22 @@ applyForce currentTick level actor direction =
                         getOffsetFromDirection direction
 
                     newPosition =
-                        addPositions { x = transformData.x, y = transformData.y } offset
+                        addPositions transformData.position offset
                 in
                     case getActorWhoClaimed level.actors newPosition of
                         Nothing ->
-                            Just ( transformData, offset, newPosition )
+                            Just ( transformData, newPosition )
 
                         Just actor ->
                             if hasRigidComponent actor.components then
                                 Nothing
                                 -- @todo add a branch in case can push the component in that spot
                             else
-                                Just ( transformData, offset, newPosition )
+                                Just ( transformData, newPosition )
             )
         |> Maybe.andThen
-            (\( transformData, offset, newPosition ) ->
-                Just (handleMovement currentTick level actor transformData offset newPosition)
+            (\( transformData, newPosition ) ->
+                Just <| handleMovement currentTick level actor transformData newPosition
             )
 
 
@@ -392,8 +389,8 @@ applyForce currentTick level actor direction =
 -- @todo offset can be removed
 
 
-handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Position -> Level
-handleMovement currentTick level actor transformData offset newPosition =
+handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Level
+handleMovement currentTick level actor transformData newPosition =
     let
         newComponents =
             Dict.insert
@@ -402,8 +399,7 @@ handleMovement currentTick level actor transformData offset newPosition =
                     { transformData
                         | movingState =
                             MovingTowards
-                                { x = newPosition.x
-                                , y = newPosition.y
+                                { position = newPosition
                                 , startTick = currentTick
                                 , endTick = currentTick + movingTicks
                                 , completionPercentage = 0.0
@@ -433,12 +429,12 @@ getActorWhoClaimed actors position =
             getTransformComponent actor.components
                 |> Maybe.andThen
                     (\transformData ->
-                        if transformData.x == position.x && transformData.y == position.y then
+                        if transformData.position == position then
                             Just actor
                         else
                             case transformData.movingState of
                                 MovingTowards towardsData ->
-                                    if towardsData.x == position.x && towardsData.y == position.y then
+                                    if towardsData.position == position then
                                         Just actor
                                     else
                                         Nothing
@@ -549,7 +545,7 @@ tryApplyAI currentTick level actor ai =
                             -- Check if that position is free
                             let
                                 position =
-                                    addPositions { x = transformData.x, y = transformData.y } (getOffsetFromDirection direction)
+                                    addPositions transformData.position (getOffsetFromDirection direction)
                             in
                                 isEmpty level position
                         )
@@ -566,7 +562,7 @@ tryApplyAI currentTick level actor ai =
                         getOffsetFromDirection direction
 
                     newPosition =
-                        addPositions { x = transformData.x, y = transformData.y } (getOffsetFromDirection direction)
+                        addPositions transformData.position offset
 
                     newComponents =
                         Dict.insert
@@ -580,7 +576,7 @@ tryApplyAI currentTick level actor ai =
                     newActor =
                         { actor | components = newComponents }
                 in
-                    Just (handleMovement currentTick level newActor transformData offset newPosition)
+                    Just <| handleMovement currentTick level newActor transformData newPosition
             )
         |> Maybe.withDefault level
 
@@ -607,12 +603,12 @@ tryApplyPhysics currentTick level actor physics =
                             getOffsetFromDirection Down
 
                         belowPosition =
-                            addPositions { x = transformData.x, y = transformData.y } offset
+                            addPositions transformData.position offset
                     in
                         case getActorWhoClaimed level.actors belowPosition of
                             Nothing ->
                                 -- Do movement
-                                Just ( transformData, offset, belowPosition )
+                                Just ( transformData, belowPosition )
 
                             Just belowActor ->
                                 -- Checking if actor can roll over
@@ -628,18 +624,18 @@ tryApplyPhysics currentTick level actor physics =
                                                                     getOffsetFromDirection Left
 
                                                                 leftPosition =
-                                                                    addPositions { x = transformData.x, y = transformData.y } offset
+                                                                    addPositions transformData.position offset
                                                             in
-                                                                Just ( transformData, offset, leftPosition )
+                                                                Just ( transformData, leftPosition )
                                                         else if canRollRight level transformData then
                                                             let
                                                                 offset =
                                                                     getOffsetFromDirection Right
 
                                                                 rightPosition =
-                                                                    addPositions { x = transformData.x, y = transformData.y } offset
+                                                                    addPositions transformData.position offset
                                                             in
-                                                                Just ( transformData, offset, rightPosition )
+                                                                Just ( transformData, rightPosition )
                                                         else
                                                             Nothing
 
@@ -653,8 +649,8 @@ tryApplyPhysics currentTick level actor physics =
                                         Nothing
                 )
             |> Maybe.andThen
-                (\( transformData, offset, newPosition ) ->
-                    Just (handleMovement currentTick level actor transformData offset newPosition)
+                (\( transformData, newPosition ) ->
+                    Just <| handleMovement currentTick level actor transformData newPosition
                 )
             |> Maybe.withDefault level
     else
@@ -674,11 +670,8 @@ canRollRight =
 canRoll : Direction -> Level -> TransformComponentData -> Bool
 canRoll direction level transformData =
     let
-        position =
-            { x = transformData.x, y = transformData.y }
-
         sidePosition =
-            addPositions position <| getOffsetFromDirection direction
+            addPositions transformData.position <| getOffsetFromDirection direction
 
         sideBottomPosition =
             addPositions sidePosition <| getOffsetFromDirection Down
@@ -701,7 +694,7 @@ tryToCollectDiamond level focusedActor =
                     if Dict.member "diamond" actor.components then
                         case getTransformComponent actor.components of
                             Just diamondTransformData ->
-                                if diamondTransformData == focusedTransformData then
+                                if diamondTransformData.position == focusedTransformData.position then
                                     let
                                         newActors =
                                             Dict.remove actorId level.actors
@@ -740,7 +733,7 @@ trySquashingThings level focusedActor =
                     if Dict.member "squashable" actor.components then
                         case getTransformComponent actor.components of
                             Just squashableTransformData ->
-                                if squashableTransformData == focusedTransformData then
+                                if squashableTransformData.position == focusedTransformData.position then
                                     let
                                         newActors =
                                             Dict.remove actorId level.actors
@@ -781,8 +774,7 @@ handleMovingTowards currentTick transformData towardsData actor =
                 Dict.insert
                     "transform"
                     (TransformComponent
-                        { x = towardsData.x
-                        , y = towardsData.y
+                        { position = towardsData.position
                         , movingState = NotMoving
                         }
                     )
@@ -835,7 +827,7 @@ view model =
                             List.range 0 (model.width - 1)
                                 |> List.map
                                     (\x ->
-                                        getPixel x y model.level.actors
+                                        getPixel { x = x, y = y } model.level.actors
                                             |> Maybe.withDefault []
                                     )
                                 |> List.concat
@@ -860,14 +852,16 @@ debugView model =
                 , button [ onClick <| GameSpeed (Just <| 5 * Time.second) ] [ text "0.5 fps" ]
                 , button [ onClick <| GameSpeed (Just <| 1 * Time.second) ] [ text "1 fps" ]
                 , button [ onClick <| GameSpeed (Just <| 80 * Time.millisecond) ] [ text "12 fps" ]
+                , button [ onClick <| GameSpeed (Just <| 40 * Time.millisecond) ] [ text "24 fps" ]
+                , button [ onClick <| GameSpeed (Just <| 16 * Time.millisecond) ] [ text "60 fps" ]
                 ]
             ]
     else
         text ""
 
 
-getPixel : Int -> Int -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
-getPixel x y actors =
+getPixel : Position -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
+getPixel position actors =
     Dict.foldr
         (\actorId actor acc ->
             (getTransformRenderComponent actor.components
@@ -876,18 +870,18 @@ getPixel x y actors =
                         getTransformComponent actor.components
                             |> Maybe.andThen
                                 (\transformData ->
-                                    if transformData.x == x && transformData.y == y then
+                                    if transformData.position == position then
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
-                                                Just ( transformData.x, transformData.y, calculateColor renderData.color (100.0 - towardsData.completionPercentage) )
+                                                Just ( transformData.position, calculateColor renderData.color (100.0 - towardsData.completionPercentage) )
 
                                             _ ->
-                                                Just ( transformData.x, transformData.y, renderData.color )
+                                                Just ( transformData.position, renderData.color )
                                     else
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
-                                                if towardsData.x == x && towardsData.y == y then
-                                                    Just ( towardsData.x, towardsData.y, calculateColor renderData.color towardsData.completionPercentage )
+                                                if towardsData.position == position then
+                                                    Just ( towardsData.position, calculateColor renderData.color towardsData.completionPercentage )
                                                 else
                                                     Nothing
 
@@ -900,12 +894,12 @@ getPixel x y actors =
                         |> Maybe.andThen
                             (\renderData ->
                                 List.map
-                                    (\{ xOffset, yOffset, color } ->
+                                    (\{ offset, color } ->
                                         getTransformComponent actor.components
                                             |> Maybe.andThen
                                                 (\transformData ->
-                                                    if transformData.x + xOffset == x && transformData.y + yOffset == y then
-                                                        Just ( x, y, color )
+                                                    if addPositions transformData.position offset == position then
+                                                        Just ( position, color )
                                                     else
                                                         Nothing
                                                 )
@@ -922,8 +916,9 @@ getPixel x y actors =
         |> Maybe.Extra.values
         |> List.head
         |> Maybe.andThen
-            (\( x, y, color ) ->
-                Just <| asPixel x y color
+            (\( position, color ) ->
+                Just <| asPixel position color
+             -- @todo position does not need to be in the accumulator, can just be from the functions argument
             )
 
 
@@ -939,11 +934,11 @@ calculateColor color percentage =
         Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
-asPixel : Int -> Int -> Color -> List Canvas.DrawOp
-asPixel x y color =
+asPixel : Position -> Color -> List Canvas.DrawOp
+asPixel position color =
     [ Canvas.FillStyle color
     , Canvas.FillRect
-        (Canvas.Point.fromInts ( x * pixelSize, y * pixelSize ))
+        (Canvas.Point.fromInts ( position.x * pixelSize, position.y * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
 
@@ -1021,7 +1016,7 @@ createPlayer id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.darkGreen } )
             , ( "player-input", PlayerInputComponent )
             , ( "diamond-collector", DiamondCollectorComponent )
@@ -1055,7 +1050,7 @@ createRock id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.darkGray } )
             , ( "rigid", RigidComponent )
             , ( "physics"
@@ -1086,7 +1081,7 @@ createEnemy id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.darkOrange } )
             , ( "rigid", RigidComponent )
             , ( "physics"
@@ -1121,7 +1116,7 @@ createDirt id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.lightBrown } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
@@ -1152,7 +1147,7 @@ createWall id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.black } )
             , ( "rigid", RigidComponent )
             , ( "physics"
@@ -1193,7 +1188,7 @@ createDiamond id x y =
     { id = id
     , components =
         Dict.fromList
-            [ ( "transform", TransformComponent { x = x, y = y, movingState = NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", TransformRenderComponent { color = Color.blue } )
             , ( "diamond", DiamondComponent )
             , ( "physics"
