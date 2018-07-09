@@ -385,10 +385,6 @@ applyForce currentTick level actor direction =
             )
 
 
-
--- @todo offset can be removed
-
-
 handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Level
 handleMovement currentTick level actor transformData newPosition =
     let
@@ -873,15 +869,15 @@ getPixel position actors =
                                     if transformData.position == position then
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
-                                                Just ( transformData.position, calculateColor renderData.color (100.0 - towardsData.completionPercentage) )
+                                                Just <| calculateColor renderData.color (100.0 - towardsData.completionPercentage)
 
                                             _ ->
-                                                Just ( transformData.position, renderData.color )
+                                                Just renderData.color
                                     else
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
                                                 if towardsData.position == position then
-                                                    Just ( towardsData.position, calculateColor renderData.color towardsData.completionPercentage )
+                                                    Just <| calculateColor renderData.color towardsData.completionPercentage
                                                 else
                                                     Nothing
 
@@ -899,7 +895,7 @@ getPixel position actors =
                                             |> Maybe.andThen
                                                 (\transformData ->
                                                     if addPositions transformData.position offset == position then
-                                                        Just ( position, color )
+                                                        Just color
                                                     else
                                                         Nothing
                                                 )
@@ -916,9 +912,8 @@ getPixel position actors =
         |> Maybe.Extra.values
         |> List.head
         |> Maybe.andThen
-            (\( position, color ) ->
+            (\color ->
                 Just <| asPixel position color
-             -- @todo position does not need to be in the accumulator, can just be from the functions argument
             )
 
 
