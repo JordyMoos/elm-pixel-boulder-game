@@ -200,8 +200,8 @@ init =
             }
                 |> addPlayer 3 3 3
                 |> addDiamond 0 10
-                |> addEnemy 4 6
-                |> addEnemy 6 6
+                |> addRock 4 6
+                |> addRock 6 6
                 |> addDirt 4 4
                 |> addDirt 5 4
                 |> addDirt 6 4
@@ -241,8 +241,8 @@ init =
                 |> addDirt 14 9
                 |> addDirt 15 9
                 |> addDirt 15 8
-                |> addEnemy 5 8
-                |> addEnemy 9 8
+                --                |> addEnemy 5 8
+                --                |> addEnemy 9 8
                 |> addWall 0 11
                 |> addWall 1 11
                 |> addWall 2 11
@@ -407,18 +407,52 @@ applyForce currentTick level actor direction =
                 in
                     case getActorWhoClaimed level.actors newPosition of
                         Nothing ->
-                            Just ( transformData, newPosition )
+                            Just ( transformData, newPosition, level )
 
-                        Just actor ->
+                        Just otherActor ->
                             if hasRigidComponent actor.components then
-                                Nothing
-                                -- @todo add a branch in case can push the component in that spot
+                                tryToPush currentTick level actor transformData otherActor direction
                             else
-                                Just ( transformData, newPosition )
+                                Just ( transformData, newPosition, level )
             )
         |> Maybe.andThen
-            (\( transformData, newPosition ) ->
+            (\( transformData, newPosition, level ) ->
                 Just <| handleMovement currentTick level actor transformData newPosition
+            )
+
+
+tryToPush : Tick -> Level -> Actor -> TransformComponentData -> Actor -> Direction -> Maybe ( TransformComponentData, Position, Level )
+tryToPush currentTick level actor transformData otherActor direction =
+    -- Can not push something that is already moving
+    getTransformComponent otherActor.components
+        |> Maybe.andThen
+            (\otherTransformData ->
+                case otherTransformData.movingState of
+                    NotMoving ->
+                        Just otherTransformData
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.andThen
+            (\otherTransformData ->
+                let
+                    pushedToPosition =
+                        addPositions otherTransformData.position (getOffsetFromDirection direction)
+                in
+                    if isEmpty level pushedToPosition then
+                        let
+                            updatedLevel =
+                                handleMovement
+                                    currentTick
+                                    level
+                                    otherActor
+                                    otherTransformData
+                                    pushedToPosition
+                        in
+                            Just ( transformData, otherTransformData.position, updatedLevel )
+                    else
+                        Nothing
             )
 
 
