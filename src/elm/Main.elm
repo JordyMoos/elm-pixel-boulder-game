@@ -410,7 +410,7 @@ applyForce currentTick level actor direction =
                             Just ( transformData, newPosition, level )
 
                         Just otherActor ->
-                            if hasRigidComponent actor.components then
+                            if hasRigidComponent otherActor.components then
                                 tryToPush currentTick level actor transformData otherActor direction
                             else
                                 Just ( transformData, newPosition, level )
