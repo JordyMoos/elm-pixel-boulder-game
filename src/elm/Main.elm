@@ -423,8 +423,22 @@ applyForce currentTick level actor direction =
 
 tryToPush : Tick -> Level -> Actor -> TransformComponentData -> Actor -> Direction -> Maybe ( TransformComponentData, Position, Level )
 tryToPush currentTick level actor transformData otherActor direction =
-    -- Can not push something that is already moving
-    getTransformComponent otherActor.components
+    -- Must be a Circle to be able to be pushed
+    getPhysicsComponent otherActor.components
+        |> Maybe.andThen
+            (\otherPhysicsData ->
+                case otherPhysicsData.shape of
+                    Circle ->
+                        Just ()
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.andThen
+            (\() ->
+                -- Can not push something that is already moving
+                getTransformComponent otherActor.components
+            )
         |> Maybe.andThen
             (\otherTransformData ->
                 case otherTransformData.movingState of
