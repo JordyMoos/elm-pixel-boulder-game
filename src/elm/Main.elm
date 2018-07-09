@@ -1006,11 +1006,39 @@ getPixel viewPosition position actors =
         []
         actors
         |> Maybe.Extra.values
-        |> List.head
+        |> List.foldr
+            (\color acc ->
+                case acc of
+                    Nothing ->
+                        Just color
+
+                    Just accColor ->
+                        Just <| combineColors color accColor
+            )
+            Nothing
         |> Maybe.andThen
             (\color ->
                 Just <| asPixel viewPosition position color
             )
+
+
+combineColors : Color -> Color -> Color
+combineColors color1 color2 =
+    let
+        rgba1 =
+            Color.toRgb color1
+
+        rgba2 =
+            Color.toRgb color2
+
+        combinedRgba =
+            { red = round <| (toFloat (rgba1.red + rgba2.red)) / 2
+            , green = round <| (toFloat (rgba1.green + rgba2.green)) / 2
+            , blue = round <| (toFloat (rgba1.blue + rgba2.blue)) / 2
+            , alpha = (rgba1.alpha + rgba2.alpha) / 2
+            }
+    in
+        Color.rgba combinedRgba.red combinedRgba.green combinedRgba.blue combinedRgba.alpha
 
 
 calculateColor : Color -> Float -> Color
