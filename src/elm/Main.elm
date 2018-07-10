@@ -146,6 +146,11 @@ type alias CameraComponentData =
     }
 
 
+type alias DownSmashComponentData =
+    { wasMovingDown : Bool
+    }
+
+
 type Component
     = TransformComponent TransformComponentData
     | TransformRenderComponent TransformRenderComponentData
@@ -160,6 +165,7 @@ type Component
     | AIComponent AIComponentData
     | CameraComponent CameraComponentData
     | ExplodableComponent
+    | DownSmashComponent DownSmashComponentData
 
 
 type alias Level =
@@ -340,51 +346,55 @@ update msg model =
                 newLevel =
                     List.foldr
                         (\( actorId, actor ) level ->
-                            let
-                                ( _, updatedLevel ) =
-                                    List.foldr
-                                        (\( key, component ) ( actor, level ) ->
-                                            let
-                                                updatedLevel =
-                                                    case component of
-                                                        PlayerInputComponent ->
-                                                            maybeInputForce
-                                                                |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
-                                                                |> Maybe.withDefault level
+                            List.foldr
+                                (\( key, component ) level ->
+                                    Dict.get actor.id level.actors
+                                        |> Maybe.andThen
+                                            (\actor ->
+                                                let
+                                                    updatedLevel =
+                                                        case component of
+                                                            PlayerInputComponent ->
+                                                                maybeInputForce
+                                                                    |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
+                                                                    |> Maybe.withDefault level
 
-                                                        TransformComponent transformData ->
-                                                            case transformData.movingState of
-                                                                MovingTowards movingData ->
-                                                                    handleMovingTowards currentTick transformData movingData actor
-                                                                        |> updateActor level actor.id
+                                                            TransformComponent transformData ->
+                                                                case transformData.movingState of
+                                                                    MovingTowards movingData ->
+                                                                        handleMovingTowards currentTick transformData movingData actor
+                                                                            |> updateActor level actor.id
 
-                                                                _ ->
-                                                                    level
+                                                                    _ ->
+                                                                        level
 
-                                                        DiamondCollectorComponent ->
-                                                            tryToCollectDiamond level actor
+                                                            DiamondCollectorComponent ->
+                                                                tryToCollectDiamond level actor
 
-                                                        CanSquashComponent ->
-                                                            trySquashingThings level actor
+                                                            CanSquashComponent ->
+                                                                trySquashingThings level actor
 
-                                                        PhysicsComponent physics ->
-                                                            tryApplyPhysics currentTick level actor physics
+                                                            PhysicsComponent physics ->
+                                                                tryApplyPhysics currentTick level actor physics
 
-                                                        AIComponent ai ->
-                                                            tryApplyAI currentTick level actor ai
+                                                            AIComponent ai ->
+                                                                tryApplyAI currentTick level actor ai
 
-                                                        CameraComponent camera ->
-                                                            tryMoveCamera level actor camera
+                                                            CameraComponent camera ->
+                                                                tryMoveCamera level actor camera
 
-                                                        _ ->
-                                                            level
-                                            in
-                                                ( actor, updatedLevel )
-                                        )
-                                        ( actor, level )
-                                        (Dict.toList actor.components)
-                            in
-                                updatedLevel
+                                                            DownSmashComponent downSmash ->
+                                                                tryDownSmash level actor downSmash
+
+                                                            _ ->
+                                                                level
+                                                in
+                                                    Just updatedLevel
+                                            )
+                                        |> Maybe.withDefault level
+                                )
+                                level
+                                (Dict.toList actor.components)
                         )
                         level
                         (Dict.toList actors)
@@ -536,6 +546,11 @@ hasRigidComponent =
     Dict.member "rigid"
 
 
+hasExplodableComponent : Dict String Component -> Bool
+hasExplodableComponent =
+    Dict.member "explodable"
+
+
 getActorWhoClaimed : Dict Int Actor -> Position -> Maybe Actor
 getActorWhoClaimed actors position =
     Dict.Extra.find
@@ -642,6 +657,78 @@ calculateInputForce keys =
         Just Down
     else
         Nothing
+
+
+tryDownSmash : Level -> Actor -> DownSmashComponentData -> Level
+tryDownSmash level actor downSmashData =
+    getTransformComponent actor.components
+        |> Maybe.andThen
+            (\transformData ->
+                Just ( transformData, getIsMovingDown transformData )
+            )
+        |> Maybe.andThen
+            (\( transformData, isMovingDown ) ->
+                case ( isMovingDown, downSmashData.wasMovingDown ) of
+                    ( False, True ) ->
+                        -- Just finished moving down - Check for trigger
+                        getActorWhoClaimed
+                            level.actors
+                            (addPositions transformData.position <| getOffsetFromDirection Down)
+                            |> Maybe.andThen
+                                (\downActor ->
+                                    if hasExplodableComponent downActor.components then
+                                        Just <| createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
+                                    else
+                                        Just level
+                                )
+
+                    _ ->
+                        -- In all other cases we just update the previous direction
+                        let
+                            updatedComponents =
+                                Dict.insert
+                                    "downsmash"
+                                    (DownSmashComponent { wasMovingDown = isMovingDown })
+                                    actor.components
+
+                            updatedActors =
+                                Dict.insert
+                                    actor.id
+                                    { actor | components = updatedComponents }
+                                    level.actors
+                        in
+                            Just { level | actors = updatedActors }
+            )
+        |> Maybe.withDefault level
+
+
+createBigExplosion : Level -> Position -> Level
+createBigExplosion level position =
+    List.foldr
+        (\position level ->
+            level |> addExplosion position.x position.y
+        )
+        level
+        [ position |> addPositions (getOffsetFromDirection Left) |> addPositions (getOffsetFromDirection Up)
+        , position |> addPositions (getOffsetFromDirection Up)
+        , position |> addPositions (getOffsetFromDirection Right) |> addPositions (getOffsetFromDirection Up)
+        , position |> addPositions (getOffsetFromDirection Left)
+        , position
+        , position |> addPositions (getOffsetFromDirection Right)
+        , position |> addPositions (getOffsetFromDirection Left) |> addPositions (getOffsetFromDirection Down)
+        , position |> addPositions (getOffsetFromDirection Down)
+        , position |> addPositions (getOffsetFromDirection Right) |> addPositions (getOffsetFromDirection Down)
+        ]
+
+
+getIsMovingDown : TransformComponentData -> Bool
+getIsMovingDown transformData =
+    case transformData.movingState of
+        NotMoving ->
+            False
+
+        MovingTowards towardsData ->
+            subtractPositions towardsData.position transformData.position == getOffsetFromDirection Down
 
 
 tryApplyAI : Tick -> Level -> Actor -> AIComponentData -> Level
@@ -1261,6 +1348,7 @@ createRock id x y =
                     , affectedByGravity = True
                     }
               )
+            , ( "downsmash", DownSmashComponent { wasMovingDown = False } )
             ]
     }
 
@@ -1359,6 +1447,29 @@ createDirt id x y =
                     , affectedByGravity = False
                     }
               )
+            ]
+    }
+
+
+addExplosion : Int -> Int -> Level -> Level
+addExplosion x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createExplosion level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+
+
+createExplosion : Int -> Int -> Int -> Actor
+createExplosion id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
+            , ( "render", TransformRenderComponent { color = Color.darkOrange } )
             ]
     }
 
