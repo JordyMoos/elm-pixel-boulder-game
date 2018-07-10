@@ -159,6 +159,7 @@ type Component
     | RigidComponent
     | AIComponent AIComponentData
     | CameraComponent CameraComponentData
+    | ExplodableComponent
 
 
 type alias Level =
@@ -255,6 +256,38 @@ init =
                 |> addWall 9 11
                 |> addWall 10 11
                 |> addWall 11 11
+                -- Trapped explosive
+                |> addWall -4 2
+                |> addWall -5 2
+                |> addWall -5 3
+                |> addWall -5 4
+                |> addWall -5 5
+                |> addWall -5 6
+                |> addWall -5 7
+                |> addWall -5 8
+                |> addWall -5 9
+                |> addWall -5 10
+                |> addWall -5 11
+                |> addWall -5 12
+                |> addWall -5 13
+                |> addWall -3 2
+                |> addRock -3 3
+                |> addWall -3 4
+                |> addWall -3 5
+                |> addWall -3 6
+                |> addWall -3 7
+                |> addWall -3 8
+                |> addWall -3 9
+                |> addWall -4 9
+                |> addWall -3 10
+                |> addWall -3 11
+                |> addExplosive -4 8
+                |> addDiamond -4 10
+                |> addDiamond -4 11
+                |> addDiamond -4 12
+                |> addWall -3 12
+                |> addWall -3 13
+                |> addWall -4 13
     in
         { level = level
         , width = width
@@ -1224,6 +1257,38 @@ createRock id x y =
             , ( "physics"
               , PhysicsComponent
                     { mass = 20
+                    , shape = Circle
+                    , affectedByGravity = True
+                    }
+              )
+            ]
+    }
+
+
+addExplosive : Int -> Int -> Level -> Level
+addExplosive x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createExplosive level.nextActorId x y)
+                level.actors
+    in
+        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+
+
+createExplosive : Int -> Int -> Int -> Actor
+createExplosive id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
+            , ( "render", TransformRenderComponent { color = Color.red } )
+            , ( "rigid", RigidComponent )
+            , ( "explodable", ExplodableComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 10
                     , shape = Circle
                     , affectedByGravity = True
                     }
