@@ -7,7 +7,6 @@ import Time
 import Char
 import List.Extra
 import Dict exposing (Dict)
-import Dict.Extra
 import Maybe.Extra
 import Color exposing (Color)
 import Canvas
@@ -434,7 +433,7 @@ applyForce currentTick level actor direction =
                     newPosition =
                         addPositions transformData.position offset
                 in
-                    case getActorWhoClaimed level.actors newPosition of
+                    case getActorWhoClaimed newPosition level of
                         Nothing ->
                             Just ( transformData, newPosition, level )
 
@@ -537,33 +536,50 @@ hasExplodableComponent =
     Dict.member "explodable"
 
 
-getActorWhoClaimed : Dict ActorId Actor -> Position -> Maybe Actor
-getActorWhoClaimed actors position =
-    Dict.Extra.find
-        (\actorId actor ->
-            getTransformComponent actor.components
-                |> Maybe.andThen
-                    (\transformData ->
-                        if transformData.position == position then
-                            Just actor
-                        else
-                            case transformData.movingState of
-                                MovingTowards towardsData ->
-                                    if towardsData.position == position then
-                                        Just actor
-                                    else
-                                        Nothing
+getActorWhoClaimed : Position -> Level -> Maybe Actor
+getActorWhoClaimed position level =
+    getActorsThatAffect position level
+        |> List.Extra.find
+            (\actor ->
+                getTransformComponent actor.components
+                    |> Maybe.andThen
+                        (\transformData ->
+                            if transformData.position == position then
+                                Just True
+                            else
+                                case transformData.movingState of
+                                    MovingTowards towardsData ->
+                                        if towardsData.position == position then
+                                            Just True
+                                        else
+                                            Nothing
 
-                                _ ->
-                                    Nothing
-                    )
-                |> Maybe.Extra.isJust
-        )
-        actors
-        |> Maybe.andThen
-            (\( actorId, actor ) ->
-                Just actor
+                                    _ ->
+                                        Nothing
+                        )
+                    |> Maybe.Extra.isJust
             )
+
+
+getActorsThatAffect : Position -> Level -> List Actor
+getActorsThatAffect position level =
+    List.map
+        (\position ->
+            getActorIdsAtPosition position level
+        )
+        -- We only need to check actor on the position and direct neighbors
+        [ position
+        , addPositions position <| getOffsetFromDirection Left
+        , addPositions position <| getOffsetFromDirection Up
+        , addPositions position <| getOffsetFromDirection Right
+        , addPositions position <| getOffsetFromDirection Down
+        ]
+        |> List.concat
+        |> List.map
+            (\actorId ->
+                getActorById actorId level
+            )
+        |> Maybe.Extra.values
 
 
 getActorIdsAtPosition : Position -> Level -> List ActorId
@@ -764,8 +780,8 @@ tryDownSmash level actor downSmashData =
                                 ( False, True ) ->
                                     -- Just finished moving down - Check for trigger
                                     getActorWhoClaimed
-                                        level.actors
                                         (addPositions transformData.position <| getOffsetFromDirection Down)
+                                        level
                                         |> Maybe.andThen
                                             (\downActor ->
                                                 if hasExplodableComponent downActor.components then
@@ -958,7 +974,7 @@ tryApplyPhysics currentTick level actor physics =
                         belowPosition =
                             addPositions transformData.position offset
                     in
-                        case getActorWhoClaimed level.actors belowPosition of
+                        case getActorWhoClaimed belowPosition level of
                             Nothing ->
                                 -- Do movement
                                 Just ( transformData, belowPosition )
@@ -1034,7 +1050,7 @@ canRoll direction level transformData =
 
 isEmpty : Level -> Position -> Bool
 isEmpty level position =
-    getActorWhoClaimed level.actors position
+    getActorWhoClaimed position level
         |> Maybe.Extra.isNothing
 
 
@@ -1267,23 +1283,7 @@ debugView model =
 
 getPixel : Tick -> Position -> Position -> Level -> Maybe (List Canvas.DrawOp)
 getPixel tick viewPosition position level =
-    List.map
-        (\position ->
-            getActorIdsAtPosition position level
-        )
-        -- We only need to check actor on the position and direct neighbors
-        [ position
-        , addPositions position <| getOffsetFromDirection Left
-        , addPositions position <| getOffsetFromDirection Up
-        , addPositions position <| getOffsetFromDirection Right
-        , addPositions position <| getOffsetFromDirection Down
-        ]
-        |> List.concat
-        |> List.map
-            (\actorId ->
-                getActorById actorId level
-            )
-        |> Maybe.Extra.values
+    getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
                 (getTransformRenderComponent actor.components
