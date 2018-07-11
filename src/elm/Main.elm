@@ -380,10 +380,10 @@ update msg model =
                                             level
                                 )
                                 level
-                                (List.range (view.position.x - updateBorder) (view.width + (updateBorder * 2)))
+                                (List.range (view.position.x - updateBorder) (view.position.x + view.width + updateBorder))
                         )
                         model.level
-                        (List.range (view.position.y - updateBorder) (view.height + (updateBorder * 2)))
+                        (List.range (view.position.y - updateBorder) (view.position.y + view.height + updateBorder))
 
                 handlePressedKey keyStatus =
                     case keyStatus of
@@ -742,9 +742,6 @@ tryDownSmash level actor downSmashData =
                         "downsmash"
                         (DownSmashComponent { wasMovingDown = newWasMovingDown })
                         actor.components
-
-                _ =
-                    Debug.log (toString actor.id) (toString (DownSmashComponent { wasMovingDown = newWasMovingDown }))
 
                 updatedActors =
                     Dict.insert
@@ -1515,11 +1512,20 @@ addPlayer x y borderSize level =
                 level.nextActorId
                 (createPlayer level.nextActorId x y borderSize)
                 level.actors
+
+        view =
+            level.view
+
+        -- Cheats @todo if the camera component is too far away at the start. Then the view wont be moved
+        -- Because the component will not get an update
+        updatedView =
+            { view | position = { x = x - borderSize, y = y - borderSize } }
     in
         { level
             | actors = actors
             , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
             , nextActorId = level.nextActorId + 1
+            , view = updatedView
         }
 
 
