@@ -49,7 +49,8 @@ type alias Model =
 
 
 type alias Flags =
-    { scene : List String
+    { debug : Bool
+    , scene : List String
     }
 
 
@@ -274,8 +275,8 @@ init flags =
             , up = NotPressed
             , down = NotPressed
             }
-        , debug = True
-        , gameSpeed = Nothing
+        , debug = flags.debug
+        , gameSpeed = Nothing -- Just <| 40 * Time.millisecond
         , currentTick = 0
         }
             ! []
@@ -1264,7 +1265,9 @@ debugView model =
     if model.debug then
         div
             []
-            [ text "GameTick speed:"
+            [ text "Hint: Use the Arrow Keys"
+            , br [] []
+            , text "GameTick speed:"
             , br [] []
             , div
                 []
