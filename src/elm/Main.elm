@@ -338,8 +338,7 @@ update msg model =
                                                                                             TransformComponent transformData ->
                                                                                                 case transformData.movingState of
                                                                                                     MovingTowards movingData ->
-                                                                                                        handleMovingTowards currentTick transformData movingData actor
-                                                                                                            |> updateActor level actor.id
+                                                                                                        handleMovingTowards currentTick transformData movingData actor level
 
                                                                                                     _ ->
                                                                                                         level
@@ -1127,8 +1126,8 @@ updateActor level actorId actor =
         { level | actors = newActors }
 
 
-handleMovingTowards : Tick -> TransformComponentData -> MovingTowardsData -> Actor -> Actor
-handleMovingTowards currentTick transformData towardsData actor =
+handleMovingTowards : Tick -> TransformComponentData -> MovingTowardsData -> Actor -> Level -> Level
+handleMovingTowards currentTick transformData towardsData actor level =
     if currentTick >= towardsData.endTick then
         let
             newComponents =
@@ -1141,7 +1140,12 @@ handleMovingTowards currentTick transformData towardsData actor =
                     )
                     actor.components
         in
-            { actor | components = newComponents }
+            updateActor
+                level
+                actor.id
+                { actor | components = newComponents }
+                |> removeActorIdFromPosition transformData.position actor.id
+                |> addActorIdToPosition towardsData.position actor.id
     else
         let
             newComponents =
@@ -1158,7 +1162,45 @@ handleMovingTowards currentTick transformData towardsData actor =
                     )
                     actor.components
         in
-            { actor | components = newComponents }
+            updateActor
+                level
+                actor.id
+                { actor | components = newComponents }
+
+
+removeActorIdFromPosition : Position -> ActorId -> Level -> Level
+removeActorIdFromPosition { x, y } actorIdToRemove level =
+    let
+        newPositionIndex =
+            Dict.update
+                ( x, y )
+                (\maybeActorIds ->
+                    Maybe.withDefault [] maybeActorIds
+                        |> List.filter
+                            (\actorId ->
+                                not <| actorId == actorIdToRemove
+                            )
+                        |> Just
+                )
+                level.positionIndex
+    in
+        { level | positionIndex = newPositionIndex }
+
+
+addActorIdToPosition : Position -> ActorId -> Level -> Level
+addActorIdToPosition { x, y } actorIdToAdd level =
+    let
+        newPositionIndex =
+            Dict.update
+                ( x, y )
+                (\maybeActorIds ->
+                    Maybe.withDefault [] maybeActorIds
+                        |> (::) actorIdToAdd
+                        |> Just
+                )
+                level.positionIndex
+    in
+        { level | positionIndex = newPositionIndex }
 
 
 calculateCompletionPercentage : Tick -> Tick -> Tick -> Float
