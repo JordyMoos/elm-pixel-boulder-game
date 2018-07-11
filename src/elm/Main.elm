@@ -4,6 +4,7 @@ import Html exposing (Html, text, br, div, button)
 import Html.Events exposing (onClick)
 import Keyboard
 import Time
+import Char
 import List.Extra
 import Dict exposing (Dict)
 import Dict.Extra
@@ -11,8 +12,6 @@ import Maybe.Extra
 import Color exposing (Color)
 import Canvas
 import Canvas.Point
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as DecodePipeline
 
 
 type alias Tick =
@@ -27,6 +26,11 @@ movingTicks =
 pixelSize : Int
 pixelSize =
     30
+
+
+defaultCameraBorderSize : Int
+defaultCameraBorderSize =
+    3
 
 
 type alias Model =
@@ -190,13 +194,6 @@ type alias Level =
     }
 
 
-
---flagsDecoder : Decoder Flags
---flagsDecoder =
---    DecodePipeline.decode Flags
---        |> DecodePipeline.required "scene" (Decode.list Decode.string)
-
-
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -207,156 +204,62 @@ init flags =
             12
 
         level =
-            { actors = Dict.fromList []
-            , positionIndex = Dict.fromList []
-            , nextActorId = 1
-            , diamonds =
-                { total = 0
-                , collected = 0
-                }
-            , view =
-                { position = { x = 0, y = 0 }
-                , width = width
-                , height = height
-                }
-            }
-                |> addPlayer 3 3 3
-                |> addDiamond 0 10
-                |> addRock 4 6
-                |> addRock 6 6
-                |> addDirt 4 4
-                |> addDirt 5 4
-                |> addDirt 6 4
-                |> addDiamond 6 3
-                |> addDirt 2 7
-                |> addDirt 3 7
-                |> addDirt 4 7
-                |> addDirt 5 7
-                |> addDirt 6 7
-                |> addDirt 7 7
-                |> addDirt 8 7
-                |> addDirt 9 7
-                |> addDirt 10 7
-                |> addDirt 11 7
-                |> addDirt 12 7
-                |> addDirt 13 7
-                |> addDirt 14 7
-                |> addDirt 15 7
-                |> addDirt 2 8
-                |> addDirt 8 8
-                |> addDirt 10 8
-                |> addDirt 2 9
-                |> addDirt 3 9
-                |> addDirt 4 9
-                |> addDirt 5 9
-                |> addDirt 6 9
-                |> addDirt 7 9
-                |> addDirt 8 9
-                |> addDirt 9 9
-                |> addDirt 10 9
-                |> addDirt 11 9
-                |> addDirt 12 9
-                |> addDirt 13 9
-                |> addDirt 14 9
-                |> addDirt 15 9
-                |> addDirt 15 8
-                |> addWall 0 11
-                |> addWall 1 11
-                |> addWall 2 11
-                |> addWall 3 11
-                |> addWall 4 11
-                |> addWall 5 11
-                |> addWall 6 11
-                |> addWall 7 11
-                |> addWall 8 11
-                |> addWall 9 11
-                |> addWall 10 11
-                |> addWall 11 11
-                -- Trapped explosive
-                |> addWall -4 2
-                |> addWall -5 2
-                |> addRock -5 3
-                |> addWall -5 4
-                |> addWall -5 5
-                |> addWall -5 6
-                |> addWall -5 7
-                |> addWall -5 8
-                |> addWall -5 9
-                |> addWall -5 10
-                |> addWall -5 11
-                |> addWall -5 12
-                |> addWall -5 13
-                |> addWall -3 2
-                |> addRock -3 3
-                |> addWall -3 4
-                |> addWall -3 5
-                |> addWall -3 6
-                |> addWall -3 7
-                |> addWall -3 8
-                |> addWall -3 9
-                |> addWall -4 9
-                |> addWall -3 10
-                |> addWall -3 11
-                |> addExplosive -4 8
-                |> addDiamond -4 10
-                |> addDiamond -4 11
-                |> addDiamond -4 12
-                |> addWall -3 12
-                |> addWall -3 13
-                |> addWall -4 13
-                |> addWall -6 13
-                -- Trapped enemy
-                |> addWall -8 2
-                |> addWall -9 2
-                |> addRock -9 3
-                |> addWall -9 4
-                |> addWall -9 5
-                |> addWall -9 6
-                |> addWall -9 7
-                |> addWall -9 8
-                |> addWall -9 9
-                |> addWall -9 10
-                |> addWall -9 11
-                |> addWall -9 12
-                |> addWall -9 13
-                |> addWall -7 2
-                |> addRock -7 3
-                |> addWall -7 4
-                |> addWall -7 5
-                |> addWall -7 6
-                |> addWall -7 7
-                |> addWall -7 8
-                |> addWall -7 9
-                |> addWall -7 10
-                |> addWall -7 11
-                |> addEnemy -8 8
-                |> addWall -7 12
-                |> addWall -7 13
-                |> addWall -8 13
-                |> addWall -10 2
-                |> addWall -11 2
-                |> addRock -11 3
-                |> addWall -11 4
-                |> addWall -11 5
-                |> addWall -11 6
-                |> addWall -11 7
-                |> addWall -11 8
-                |> addWall -11 9
-                |> addWall -11 10
-                |> addWall -11 11
-                |> addWall -11 12
-                |> addWall -11 13
-                |> addWall -10 13
-                |> addDiamond -10 3
-                |> addDiamond -10 4
-                |> addDiamond -10 5
-                |> addDiamond -10 6
-                |> addDiamond -10 7
-                |> addDiamond -10 8
-                |> addDiamond -10 9
-                |> addDiamond -10 10
-                |> addDiamond -10 11
-                |> addDiamond -10 12
+            List.indexedMap
+                (,)
+                flags.scene
+                |> List.foldr
+                    (\( y, line ) level ->
+                        List.indexedMap
+                            (,)
+                            (String.toList line)
+                            |> List.foldr
+                                (\( x, char ) level ->
+                                    case Char.toUpper char of
+                                        '#' ->
+                                            addStrongWall x y level
+
+                                        '|' ->
+                                            addWall x y level
+
+                                        '.' ->
+                                            addDirt x y level
+
+                                        'P' ->
+                                            addPlayer x y defaultCameraBorderSize level
+
+                                        'O' ->
+                                            addRock x y level
+
+                                        '0' ->
+                                            addRock x y level
+
+                                        '*' ->
+                                            addDiamond x y level
+
+                                        'E' ->
+                                            addEnemy x y level
+
+                                        '=' ->
+                                            addExplosive x y level
+
+                                        _ ->
+                                            level
+                                )
+                                level
+                    )
+                    { actors = Dict.fromList []
+                    , positionIndex = Dict.fromList []
+                    , nextActorId = 1
+                    , diamonds =
+                        { total = 0
+                        , collected = 0
+                        }
+                    , view =
+                        { position = { x = 0, y = 0 }
+                        , width = width
+                        , height = height
+                        }
+                    }
     in
         { level = level
         , width = width
