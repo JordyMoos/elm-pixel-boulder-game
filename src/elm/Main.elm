@@ -11,6 +11,8 @@ import Maybe.Extra
 import Color exposing (Color)
 import Canvas
 import Canvas.Point
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as DecodePipeline
 
 
 type alias Tick =
@@ -38,9 +40,14 @@ type alias Model =
     }
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { scene : List String
+    }
+
+
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , update = update
         , view = view
@@ -71,8 +78,12 @@ type KeyStatus
     | IsPressed
 
 
+type alias ActorId =
+    Int
+
+
 type alias Actor =
-    { id : Int
+    { id : ActorId
     , components : Dict String Component
     }
 
@@ -84,18 +95,8 @@ type alias TransformComponentData =
 
 
 type alias TransformRenderComponentData =
-    { color : Color
-    }
-
-
-type alias AdditionalPositionsRenderComponentData =
-    { positions : List RenderablePosition
-    }
-
-
-type alias RenderablePosition =
-    { offset : Position
-    , color : Color
+    { colors : List Color
+    , ticksPerColor : Int
     }
 
 
@@ -151,10 +152,14 @@ type alias DownSmashComponentData =
     }
 
 
+type alias DamageComponentData =
+    { remainingTicks : Tick
+    }
+
+
 type Component
     = TransformComponent TransformComponentData
     | TransformRenderComponent TransformRenderComponentData
-    | AdditionalPositionRenderComponent AdditionalPositionsRenderComponentData
     | PlayerInputComponent
     | DiamondCollectorComponent
     | DiamondComponent
@@ -166,10 +171,12 @@ type Component
     | CameraComponent CameraComponentData
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
+    | DamageComponent DamageComponentData
 
 
 type alias Level =
-    { actors : Dict Int Actor
+    { actors : Dict ActorId Actor
+    , positionIndex : Dict ( Int, Int ) (List ActorId)
     , nextActorId : Int
     , diamonds :
         { total : Int
@@ -183,8 +190,15 @@ type alias Level =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+
+--flagsDecoder : Decoder Flags
+--flagsDecoder =
+--    DecodePipeline.decode Flags
+--        |> DecodePipeline.required "scene" (Decode.list Decode.string)
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         width =
             12
@@ -194,6 +208,7 @@ init =
 
         level =
             { actors = Dict.fromList []
+            , positionIndex = Dict.fromList []
             , nextActorId = 1
             , diamonds =
                 { total = 0
@@ -218,7 +233,6 @@ init =
                 |> addDirt 4 7
                 |> addDirt 5 7
                 |> addDirt 6 7
-                |> addDirt 6 7
                 |> addDirt 7 7
                 |> addDirt 8 7
                 |> addDirt 9 7
@@ -228,7 +242,6 @@ init =
                 |> addDirt 13 7
                 |> addDirt 14 7
                 |> addDirt 15 7
-                |> addDirt 3 7
                 |> addDirt 2 8
                 |> addDirt 8 8
                 |> addDirt 10 8
@@ -236,7 +249,6 @@ init =
                 |> addDirt 3 9
                 |> addDirt 4 9
                 |> addDirt 5 9
-                |> addDirt 6 9
                 |> addDirt 6 9
                 |> addDirt 7 9
                 |> addDirt 8 9
@@ -248,8 +260,6 @@ init =
                 |> addDirt 14 9
                 |> addDirt 15 9
                 |> addDirt 15 8
-                --                |> addEnemy 5 8
-                --                |> addEnemy 9 8
                 |> addWall 0 11
                 |> addWall 1 11
                 |> addWall 2 11
@@ -265,7 +275,7 @@ init =
                 -- Trapped explosive
                 |> addWall -4 2
                 |> addWall -5 2
-                |> addWall -5 3
+                |> addRock -5 3
                 |> addWall -5 4
                 |> addWall -5 5
                 |> addWall -5 6
@@ -294,6 +304,59 @@ init =
                 |> addWall -3 12
                 |> addWall -3 13
                 |> addWall -4 13
+                |> addWall -6 13
+                -- Trapped enemy
+                |> addWall -8 2
+                |> addWall -9 2
+                |> addRock -9 3
+                |> addWall -9 4
+                |> addWall -9 5
+                |> addWall -9 6
+                |> addWall -9 7
+                |> addWall -9 8
+                |> addWall -9 9
+                |> addWall -9 10
+                |> addWall -9 11
+                |> addWall -9 12
+                |> addWall -9 13
+                |> addWall -7 2
+                |> addRock -7 3
+                |> addWall -7 4
+                |> addWall -7 5
+                |> addWall -7 6
+                |> addWall -7 7
+                |> addWall -7 8
+                |> addWall -7 9
+                |> addWall -7 10
+                |> addWall -7 11
+                |> addEnemy -8 8
+                |> addWall -7 12
+                |> addWall -7 13
+                |> addWall -8 13
+                |> addWall -10 2
+                |> addWall -11 2
+                |> addRock -11 3
+                |> addWall -11 4
+                |> addWall -11 5
+                |> addWall -11 6
+                |> addWall -11 7
+                |> addWall -11 8
+                |> addWall -11 9
+                |> addWall -11 10
+                |> addWall -11 11
+                |> addWall -11 12
+                |> addWall -11 13
+                |> addWall -10 13
+                |> addDiamond -10 3
+                |> addDiamond -10 4
+                |> addDiamond -10 5
+                |> addDiamond -10 6
+                |> addDiamond -10 7
+                |> addDiamond -10 8
+                |> addDiamond -10 9
+                |> addDiamond -10 10
+                |> addDiamond -10 11
+                |> addDiamond -10 12
     in
         { level = level
         , width = width
@@ -385,6 +448,9 @@ update msg model =
 
                                                             DownSmashComponent downSmash ->
                                                                 tryDownSmash level actor downSmash
+
+                                                            DamageComponent damageData ->
+                                                                handleDamageComponent actor damageData level
 
                                                             _ ->
                                                                 level
@@ -551,7 +617,7 @@ hasExplodableComponent =
     Dict.member "explodable"
 
 
-getActorWhoClaimed : Dict Int Actor -> Position -> Maybe Actor
+getActorWhoClaimed : Dict ActorId Actor -> Position -> Maybe Actor
 getActorWhoClaimed actors position =
     Dict.Extra.find
         (\actorId actor ->
@@ -578,6 +644,28 @@ getActorWhoClaimed actors position =
             (\( actorId, actor ) ->
                 Just actor
             )
+
+
+getAllActorsAt : Dict ActorId Actor -> Position -> Dict ActorId Actor
+getAllActorsAt actors position =
+    Dict.filter
+        (\actorId actor ->
+            getTransformComponent actor.components
+                |> Maybe.andThen
+                    (\transformData ->
+                        if transformData.position == position then
+                            Just True
+                        else
+                            case transformData.movingState of
+                                MovingTowards towardsData ->
+                                    Just <| towardsData.position == position
+
+                                _ ->
+                                    Just False
+                    )
+                |> Maybe.withDefault False
+        )
+        actors
 
 
 getDirectionFromID : Int -> Direction
@@ -659,6 +747,51 @@ calculateInputForce keys =
         Nothing
 
 
+handleDamageComponent : Actor -> DamageComponentData -> Level -> Level
+handleDamageComponent actor damageData level =
+    level
+        |> tryDoDamage actor
+        |> removeExplosionIfEnded actor damageData
+
+
+removeExplosionIfEnded : Actor -> DamageComponentData -> Level -> Level
+removeExplosionIfEnded actor damageData level =
+    if damageData.remainingTicks > 0 then
+        let
+            updatedComponents =
+                Dict.insert
+                    "damage"
+                    (DamageComponent { damageData | remainingTicks = damageData.remainingTicks - 1 })
+                    actor.components
+        in
+            updateActor
+                level
+                actor.id
+                { actor | components = updatedComponents }
+    else
+        removeActor actor.id level
+
+
+tryDoDamage : Actor -> Level -> Level
+tryDoDamage damageDealingActor level =
+    getTransformComponent damageDealingActor.components
+        |> Maybe.andThen
+            (\transformData ->
+                Dict.foldr
+                    (\actorId actor level ->
+                        if damageDealingActor.id == actorId then
+                            level
+                        else
+                            -- @todo not everything should be able to be destroyed
+                            removeActor actorId level
+                    )
+                    level
+                    (getAllActorsAt level.actors transformData.position)
+                    |> Just
+            )
+        |> Maybe.withDefault level
+
+
 tryDownSmash : Level -> Actor -> DownSmashComponentData -> Level
 tryDownSmash level actor downSmashData =
     let
@@ -669,6 +802,9 @@ tryDownSmash level actor downSmashData =
                         "downsmash"
                         (DownSmashComponent { wasMovingDown = newWasMovingDown })
                         actor.components
+
+                _ =
+                    Debug.log (toString actor.id) (toString (DownSmashComponent { wasMovingDown = newWasMovingDown }))
 
                 updatedActors =
                     Dict.insert
@@ -685,27 +821,45 @@ tryDownSmash level actor downSmashData =
                 )
             |> Maybe.andThen
                 (\( transformData, isMovingDown ) ->
-                    case ( isMovingDown, downSmashData.wasMovingDown ) of
-                        ( False, True ) ->
-                            -- Just finished moving down - Check for trigger
-                            getActorWhoClaimed
-                                level.actors
-                                (addPositions transformData.position <| getOffsetFromDirection Down)
-                                |> Maybe.andThen
-                                    (\downActor ->
-                                        if hasExplodableComponent downActor.components then
-                                            createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
-                                                |> updateWasMovingDown actor isMovingDown
-                                                |> Just
-                                        else
-                                            Just level
-                                    )
+                    let
+                        maybeUpdatedLevel =
+                            case ( isMovingDown, downSmashData.wasMovingDown ) of
+                                ( False, True ) ->
+                                    -- Just finished moving down - Check for trigger
+                                    getActorWhoClaimed
+                                        level.actors
+                                        (addPositions transformData.position <| getOffsetFromDirection Down)
+                                        |> Maybe.andThen
+                                            (\downActor ->
+                                                if hasExplodableComponent downActor.components then
+                                                    createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
+                                                        |> removeActor downActor.id
+                                                        |> Just
+                                                else
+                                                    Just level
+                                            )
 
-                        _ ->
-                            -- In all other cases we just update the previous direction
-                            Just (updateWasMovingDown actor isMovingDown level)
+                                _ ->
+                                    Just level
+                    in
+                        maybeUpdatedLevel
+                            |> Maybe.andThen
+                                (\updatedLevel ->
+                                    Just <| updateWasMovingDown actor isMovingDown updatedLevel
+                                )
                 )
             |> Maybe.withDefault level
+
+
+removeActor : Int -> Level -> Level
+removeActor actorId level =
+    let
+        remainingActors =
+            Dict.remove
+                actorId
+                level.actors
+    in
+        { level | actors = remainingActors }
 
 
 createBigExplosion : Level -> Position -> Level
@@ -1016,6 +1170,10 @@ trySquashingThings level focusedActor =
             level
 
 
+
+-- @todo can remove actorId, it is already in actor
+
+
 updateActor : Level -> Int -> Actor -> Level
 updateActor level actorId actor =
     let
@@ -1093,7 +1251,7 @@ view model =
                                 List.range view.position.x (view.position.x + view.height - 1)
                                     |> List.map
                                         (\x ->
-                                            getPixel view.position { x = x, y = y } model.level.actors
+                                            getPixel model.currentTick view.position { x = x, y = y } model.level.actors
                                                 |> Maybe.withDefault []
                                         )
                                     |> List.concat
@@ -1111,6 +1269,7 @@ debugView model =
         div
             []
             [ text "GameTick speed:"
+            , br [] []
             , div
                 []
                 [ button [ onClick <| GameSpeed Nothing ] [ text "Off" ]
@@ -1126,8 +1285,8 @@ debugView model =
         text ""
 
 
-getPixel : Position -> Position -> Dict Int Actor -> Maybe (List Canvas.DrawOp)
-getPixel viewPosition position actors =
+getPixel : Tick -> Position -> Position -> Dict ActorId Actor -> Maybe (List Canvas.DrawOp)
+getPixel tick viewPosition position actors =
     Dict.foldr
         (\actorId actor acc ->
             (getTransformRenderComponent actor.components
@@ -1139,15 +1298,15 @@ getPixel viewPosition position actors =
                                     if transformData.position == position then
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
-                                                Just <| calculateColor renderData.color (100.0 - towardsData.completionPercentage)
+                                                Just <| calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage)
 
                                             _ ->
-                                                Just renderData.color
+                                                Just (getColor tick renderData)
                                     else
                                         case transformData.movingState of
                                             MovingTowards towardsData ->
                                                 if towardsData.position == position then
-                                                    Just <| calculateColor renderData.color towardsData.completionPercentage
+                                                    Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
                                                 else
                                                     Nothing
 
@@ -1156,25 +1315,6 @@ getPixel viewPosition position actors =
                                 )
                     )
             )
-                :: (getAdditionalPositionRenderComponent actor.components
-                        |> Maybe.andThen
-                            (\renderData ->
-                                List.map
-                                    (\{ offset, color } ->
-                                        getTransformComponent actor.components
-                                            |> Maybe.andThen
-                                                (\transformData ->
-                                                    if addPositions transformData.position offset == position then
-                                                        Just color
-                                                    else
-                                                        Nothing
-                                                )
-                                    )
-                                    renderData.positions
-                                    |> Maybe.Extra.values
-                                    |> List.head
-                            )
-                   )
                 :: acc
         )
         []
@@ -1187,13 +1327,30 @@ getPixel viewPosition position actors =
                         Just color
 
                     Just accColor ->
-                        Just <| combineColors color accColor
+                        let
+                            _ =
+                                Debug.log "got multiple colors for" (toString position)
+                        in
+                            Just <| combineColors color accColor
             )
             Nothing
         |> Maybe.andThen
             (\color ->
                 Just <| asPixel viewPosition position color
             )
+
+
+getColor : Tick -> TransformRenderComponentData -> Color
+getColor tick renderData =
+    round ((toFloat tick) / (toFloat (max renderData.ticksPerColor 1)))
+        % (max 1 <| List.length renderData.colors)
+        |> (flip List.Extra.getAt) renderData.colors
+        |> Maybe.withDefault noColor
+
+
+noColor : Color
+noColor =
+    Color.white
 
 
 combineColors : Color -> Color -> Color
@@ -1205,11 +1362,17 @@ combineColors color1 color2 =
         rgba2 =
             Color.toRgb color2
 
+        intAlpha1 =
+            round (rgba1.alpha * 100.0)
+
+        intAlpha2 =
+            round (rgba2.alpha * 100.0)
+
         combinedRgba =
-            { red = round <| (toFloat (rgba1.red + rgba2.red)) / 2
-            , green = round <| (toFloat (rgba1.green + rgba2.green)) / 2
-            , blue = round <| (toFloat (rgba1.blue + rgba2.blue)) / 2
-            , alpha = (rgba1.alpha + rgba2.alpha) / 2
+            { red = round <| (toFloat ((rgba1.red * intAlpha1) + (rgba2.red * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
+            , green = round <| (toFloat ((rgba1.green * intAlpha1) + (rgba2.green * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
+            , blue = round <| (toFloat ((rgba1.blue * intAlpha1) + (rgba2.blue * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
+            , alpha = (max rgba1.alpha rgba2.alpha)
             }
     in
         Color.rgba combinedRgba.red combinedRgba.green combinedRgba.blue combinedRgba.alpha
@@ -1278,18 +1441,19 @@ getTransformRenderComponent components =
             )
 
 
-getAdditionalPositionRenderComponent : Dict String Component -> Maybe AdditionalPositionsRenderComponentData
-getAdditionalPositionRenderComponent components =
-    Dict.get "additional-render" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    AdditionalPositionRenderComponent data ->
-                        Just data
+addActorIdToPositionIndex : ( Int, Int ) -> ActorId -> Dict ( Int, Int ) (List ActorId) -> Dict ( Int, Int ) (List ActorId)
+addActorIdToPositionIndex key actorId dict =
+    Dict.update
+        key
+        (\maybeValue ->
+            case maybeValue of
+                Nothing ->
+                    Just [ actorId ]
 
-                    _ ->
-                        Nothing
-            )
+                Just value ->
+                    Just <| actorId :: value
+        )
+        dict
 
 
 addPlayer : Int -> Int -> Int -> Level -> Level
@@ -1301,7 +1465,11 @@ addPlayer x y borderSize level =
                 (createPlayer level.nextActorId x y borderSize)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createPlayer : Int -> Int -> Int -> Int -> Actor
@@ -1310,7 +1478,7 @@ createPlayer id x y borderSize =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.darkGreen } )
+            , ( "render", TransformRenderComponent { colors = [ Color.darkGreen ], ticksPerColor = 1 } )
             , ( "player-input", PlayerInputComponent )
             , ( "diamond-collector", DiamondCollectorComponent )
             , ( "can-squash", CanSquashComponent )
@@ -1323,6 +1491,7 @@ createPlayer id x y borderSize =
                     }
               )
             , ( "camera", CameraComponent { borderSize = borderSize } )
+            , ( "explodable", ExplodableComponent )
             ]
     }
 
@@ -1336,7 +1505,11 @@ addRock x y level =
                 (createRock level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createRock : Int -> Int -> Int -> Actor
@@ -1345,7 +1518,7 @@ createRock id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.darkGray } )
+            , ( "render", TransformRenderComponent { colors = [ Color.darkGray ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -1368,7 +1541,11 @@ addExplosive x y level =
                 (createExplosive level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createExplosive : Int -> Int -> Int -> Actor
@@ -1377,7 +1554,7 @@ createExplosive id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.red } )
+            , ( "render", TransformRenderComponent { colors = [ Color.red ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "explodable", ExplodableComponent )
             , ( "physics"
@@ -1400,7 +1577,11 @@ addEnemy x y level =
                 (createEnemy level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createEnemy : Int -> Int -> Int -> Actor
@@ -1409,7 +1590,7 @@ createEnemy id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.darkOrange } )
+            , ( "render", TransformRenderComponent { colors = [ Color.darkOrange ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -1422,6 +1603,7 @@ createEnemy id x y =
               , AIComponent
                     { previousDirection = Right }
               )
+            , ( "explodable", ExplodableComponent )
             ]
     }
 
@@ -1435,7 +1617,11 @@ addDirt x y level =
                 (createDirt level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createDirt : Int -> Int -> Int -> Actor
@@ -1444,7 +1630,7 @@ createDirt id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.lightBrown } )
+            , ( "render", TransformRenderComponent { colors = [ Color.lightBrown ], ticksPerColor = 1 } )
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
@@ -1466,7 +1652,11 @@ addExplosion x y level =
                 (createExplosion level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createExplosion : Int -> Int -> Int -> Actor
@@ -1475,7 +1665,8 @@ createExplosion id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.darkOrange } )
+            , ( "render", TransformRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
+            , ( "damage", DamageComponent { remainingTicks = 8 } )
             ]
     }
 
@@ -1489,7 +1680,11 @@ addWall x y level =
                 (createWall level.nextActorId x y)
                 level.actors
     in
-        { level | actors = actors, nextActorId = level.nextActorId + 1 }
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
 
 
 createWall : Int -> Int -> Int -> Actor
@@ -1498,7 +1693,42 @@ createWall id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.black } )
+            , ( "render", TransformRenderComponent { colors = [ Color.rgb 98 100 87 ], ticksPerColor = 1 } )
+            , ( "rigid", RigidComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { mass = 100
+                    , shape = Square
+                    , affectedByGravity = False
+                    }
+              )
+            ]
+    }
+
+
+addStrongWall : Int -> Int -> Level -> Level
+addStrongWall x y level =
+    let
+        actors =
+            Dict.insert
+                level.nextActorId
+                (createStrongWall level.nextActorId x y)
+                level.actors
+    in
+        { level
+            | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
+            , nextActorId = level.nextActorId + 1
+        }
+
+
+createStrongWall : Int -> Int -> Int -> Actor
+createStrongWall id x y =
+    { id = id
+    , components =
+        Dict.fromList
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
+            , ( "render", TransformRenderComponent { colors = [ Color.black ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
@@ -1528,6 +1758,7 @@ addDiamond x y level =
     in
         { level
             | actors = actors
+            , positionIndex = addActorIdToPositionIndex ( x, y ) level.nextActorId level.positionIndex
             , nextActorId = level.nextActorId + 1
             , diamonds = newDiamonds
         }
@@ -1539,7 +1770,7 @@ createDiamond id x y =
     , components =
         Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { color = Color.blue } )
+            , ( "render", TransformRenderComponent { colors = [ Color.blue, Color.lightBlue ], ticksPerColor = 12 } )
             , ( "diamond", DiamondComponent )
             , ( "physics"
               , PhysicsComponent

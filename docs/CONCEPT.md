@@ -2,12 +2,14 @@
 
 ```
 [ ] = Empty
-[#] = Wall
+[#] = Strong Wall
+[|] = Wall
 [.] = Dirt
 [P] = Player
-[X] = Dead Player
 [O] = Rock
 [*] = Diamond
+[E] = Enemy
+[=] = Dynamite
 ```
 
 ## Behaviour
