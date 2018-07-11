@@ -661,45 +661,51 @@ calculateInputForce keys =
 
 tryDownSmash : Level -> Actor -> DownSmashComponentData -> Level
 tryDownSmash level actor downSmashData =
-    getTransformComponent actor.components
-        |> Maybe.andThen
-            (\transformData ->
-                Just ( transformData, getIsMovingDown transformData )
-            )
-        |> Maybe.andThen
-            (\( transformData, isMovingDown ) ->
-                case ( isMovingDown, downSmashData.wasMovingDown ) of
-                    ( False, True ) ->
-                        -- Just finished moving down - Check for trigger
-                        getActorWhoClaimed
-                            level.actors
-                            (addPositions transformData.position <| getOffsetFromDirection Down)
-                            |> Maybe.andThen
-                                (\downActor ->
-                                    if hasExplodableComponent downActor.components then
-                                        Just <| createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
-                                    else
-                                        Just level
-                                )
+    let
+        updateWasMovingDown actor newWasMovingDown level =
+            let
+                updatedComponents =
+                    Dict.insert
+                        "downsmash"
+                        (DownSmashComponent { wasMovingDown = newWasMovingDown })
+                        actor.components
 
-                    _ ->
-                        -- In all other cases we just update the previous direction
-                        let
-                            updatedComponents =
-                                Dict.insert
-                                    "downsmash"
-                                    (DownSmashComponent { wasMovingDown = isMovingDown })
-                                    actor.components
+                updatedActors =
+                    Dict.insert
+                        actor.id
+                        { actor | components = updatedComponents }
+                        level.actors
+            in
+                { level | actors = updatedActors }
+    in
+        getTransformComponent actor.components
+            |> Maybe.andThen
+                (\transformData ->
+                    Just ( transformData, getIsMovingDown transformData )
+                )
+            |> Maybe.andThen
+                (\( transformData, isMovingDown ) ->
+                    case ( isMovingDown, downSmashData.wasMovingDown ) of
+                        ( False, True ) ->
+                            -- Just finished moving down - Check for trigger
+                            getActorWhoClaimed
+                                level.actors
+                                (addPositions transformData.position <| getOffsetFromDirection Down)
+                                |> Maybe.andThen
+                                    (\downActor ->
+                                        if hasExplodableComponent downActor.components then
+                                            createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
+                                                |> updateWasMovingDown actor isMovingDown
+                                                |> Just
+                                        else
+                                            Just level
+                                    )
 
-                            updatedActors =
-                                Dict.insert
-                                    actor.id
-                                    { actor | components = updatedComponents }
-                                    level.actors
-                        in
-                            Just { level | actors = updatedActors }
-            )
-        |> Maybe.withDefault level
+                        _ ->
+                            -- In all other cases we just update the previous direction
+                            Just (updateWasMovingDown actor isMovingDown level)
+                )
+            |> Maybe.withDefault level
 
 
 createBigExplosion : Level -> Position -> Level
