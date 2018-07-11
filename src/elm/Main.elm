@@ -33,6 +33,11 @@ defaultCameraBorderSize =
     3
 
 
+updateBorder : Int
+updateBorder =
+    5
+
+
 type alias Model =
     { level : Level
     , width : Int
@@ -297,76 +302,89 @@ update msg model =
                 currentTick =
                     model.currentTick + 1
 
-                level =
-                    model.level
-
-                actors =
-                    level.actors
-
                 keys =
                     model.keys
 
                 maybeInputForce =
                     calculateInputForce keys
 
+                view =
+                    model.level.view
+
                 newLevel =
                     List.foldr
-                        (\( actorId, actor ) level ->
+                        (\y level ->
                             List.foldr
-                                (\( key, component ) level ->
-                                    Dict.get actor.id level.actors
-                                        |> Maybe.andThen
-                                            (\actor ->
-                                                let
-                                                    updatedLevel =
-                                                        case component of
-                                                            PlayerInputComponent ->
-                                                                maybeInputForce
-                                                                    |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
-                                                                    |> Maybe.withDefault level
+                                (\x level ->
+                                    getActorIdsAt x y level
+                                        |> List.foldr
+                                            (\actorId level ->
+                                                getActorById actorId level
+                                                    |> Maybe.andThen
+                                                        (\actor ->
+                                                            Dict.foldr
+                                                                (\_ component level ->
+                                                                    getActorById actorId level
+                                                                        |> Maybe.andThen
+                                                                            (\actor ->
+                                                                                let
+                                                                                    updatedLevel =
+                                                                                        case component of
+                                                                                            PlayerInputComponent ->
+                                                                                                maybeInputForce
+                                                                                                    |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
+                                                                                                    |> Maybe.withDefault level
 
-                                                            TransformComponent transformData ->
-                                                                case transformData.movingState of
-                                                                    MovingTowards movingData ->
-                                                                        handleMovingTowards currentTick transformData movingData actor
-                                                                            |> updateActor level actor.id
+                                                                                            TransformComponent transformData ->
+                                                                                                case transformData.movingState of
+                                                                                                    MovingTowards movingData ->
+                                                                                                        handleMovingTowards currentTick transformData movingData actor
+                                                                                                            |> updateActor level actor.id
 
-                                                                    _ ->
-                                                                        level
+                                                                                                    _ ->
+                                                                                                        level
 
-                                                            DiamondCollectorComponent ->
-                                                                tryToCollectDiamond level actor
+                                                                                            DiamondCollectorComponent ->
+                                                                                                tryToCollectDiamond level actor
 
-                                                            CanSquashComponent ->
-                                                                trySquashingThings level actor
+                                                                                            CanSquashComponent ->
+                                                                                                trySquashingThings level actor
 
-                                                            PhysicsComponent physics ->
-                                                                tryApplyPhysics currentTick level actor physics
+                                                                                            PhysicsComponent physics ->
+                                                                                                tryApplyPhysics currentTick level actor physics
 
-                                                            AIComponent ai ->
-                                                                tryApplyAI currentTick level actor ai
+                                                                                            AIComponent ai ->
+                                                                                                tryApplyAI currentTick level actor ai
 
-                                                            CameraComponent camera ->
-                                                                tryMoveCamera level actor camera
+                                                                                            CameraComponent camera ->
+                                                                                                tryMoveCamera level actor camera
 
-                                                            DownSmashComponent downSmash ->
-                                                                tryDownSmash level actor downSmash
+                                                                                            DownSmashComponent downSmash ->
+                                                                                                tryDownSmash level actor downSmash
 
-                                                            DamageComponent damageData ->
-                                                                handleDamageComponent actor damageData level
+                                                                                            DamageComponent damageData ->
+                                                                                                handleDamageComponent actor damageData level
 
-                                                            _ ->
+                                                                                            _ ->
+                                                                                                level
+                                                                                in
+                                                                                    Just updatedLevel
+                                                                            )
+                                                                        |> Maybe.withDefault level
+                                                                )
                                                                 level
-                                                in
-                                                    Just updatedLevel
+                                                                actor.components
+                                                                |> Just
+                                                        )
+                                                    |> Maybe.withDefault level
                                             )
-                                        |> Maybe.withDefault level
+                                            level
                                 )
                                 level
-                                (Dict.toList actor.components)
+                                (List.range (view.position.x - updateBorder) (view.width + (updateBorder * 2)))
                         )
-                        level
-                        (Dict.toList actors)
+                        model.level
+                        (List.range (view.position.y - updateBorder) (view.height + (updateBorder * 2)))
 
                 handlePressedKey keyStatus =
                     case keyStatus of
@@ -547,6 +565,21 @@ getActorWhoClaimed actors position =
             (\( actorId, actor ) ->
                 Just actor
             )
+
+
+getActorIdsAt : Int -> Int -> Level -> List ActorId
+getActorIdsAt x y level =
+    Dict.get
+        ( x, y )
+        level.positionIndex
+        |> Maybe.withDefault []
+
+
+getActorById : ActorId -> Level -> Maybe Actor
+getActorById actorId level =
+    Dict.get
+        actorId
+        level.actors
 
 
 getAllActorsAt : Dict ActorId Actor -> Position -> Dict ActorId Actor
