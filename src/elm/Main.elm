@@ -316,7 +316,7 @@ update msg model =
                         (\y level ->
                             List.foldr
                                 (\x level ->
-                                    getActorIdsAt x y level
+                                    getActorIdsAtXY x y level
                                         |> List.foldr
                                             (\actorId level ->
                                                 getActorById actorId level
@@ -567,8 +567,13 @@ getActorWhoClaimed actors position =
             )
 
 
-getActorIdsAt : Int -> Int -> Level -> List ActorId
-getActorIdsAt x y level =
+getActorIdsAtPosition : Position -> Level -> List ActorId
+getActorIdsAtPosition position =
+    getActorIdsAtXY position.x position.y
+
+
+getActorIdsAtXY : Int -> Int -> Level -> List ActorId
+getActorIdsAtXY x y level =
     Dict.get
         ( x, y )
         level.positionIndex
@@ -1187,7 +1192,7 @@ view model =
                                 List.range view.position.x (view.position.x + view.height - 1)
                                     |> List.map
                                         (\x ->
-                                            getPixel model.currentTick view.position { x = x, y = y } model.level.actors
+                                            getPixel model.currentTick view.position { x = x, y = y } model.level
                                                 |> Maybe.withDefault []
                                         )
                                     |> List.concat
@@ -1221,40 +1226,56 @@ debugView model =
         text ""
 
 
-getPixel : Tick -> Position -> Position -> Dict ActorId Actor -> Maybe (List Canvas.DrawOp)
-getPixel tick viewPosition position actors =
-    Dict.foldr
-        (\actorId actor acc ->
-            (getTransformRenderComponent actor.components
-                |> Maybe.andThen
-                    (\renderData ->
-                        getTransformComponent actor.components
-                            |> Maybe.andThen
-                                (\transformData ->
-                                    if transformData.position == position then
-                                        case transformData.movingState of
-                                            MovingTowards towardsData ->
-                                                Just <| calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage)
-
-                                            _ ->
-                                                Just (getColor tick renderData)
-                                    else
-                                        case transformData.movingState of
-                                            MovingTowards towardsData ->
-                                                if towardsData.position == position then
-                                                    Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
-                                                else
-                                                    Nothing
-
-                                            _ ->
-                                                Nothing
-                                )
-                    )
-            )
-                :: acc
+getPixel : Tick -> Position -> Position -> Level -> Maybe (List Canvas.DrawOp)
+getPixel tick viewPosition position level =
+    List.map
+        (\position ->
+            getActorIdsAtPosition position level
         )
-        []
-        actors
+        -- We only need to check actor on the position and direct neighbors
+        [ position
+        , addPositions position <| getOffsetFromDirection Left
+        , addPositions position <| getOffsetFromDirection Up
+        , addPositions position <| getOffsetFromDirection Right
+        , addPositions position <| getOffsetFromDirection Down
+        ]
+        |> List.concat
+        |> List.map
+            (\actorId ->
+                getActorById actorId level
+            )
+        |> Maybe.Extra.values
+        |> List.foldr
+            (\actor acc ->
+                (getTransformRenderComponent actor.components
+                    |> Maybe.andThen
+                        (\renderData ->
+                            getTransformComponent actor.components
+                                |> Maybe.andThen
+                                    (\transformData ->
+                                        if transformData.position == position then
+                                            case transformData.movingState of
+                                                MovingTowards towardsData ->
+                                                    Just <| calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage)
+
+                                                _ ->
+                                                    Just (getColor tick renderData)
+                                        else
+                                            case transformData.movingState of
+                                                MovingTowards towardsData ->
+                                                    if towardsData.position == position then
+                                                        Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
+                                                    else
+                                                        Nothing
+
+                                                _ ->
+                                                    Nothing
+                                    )
+                        )
+                )
+                    :: acc
+            )
+            []
         |> Maybe.Extra.values
         |> List.foldr
             (\color acc ->
@@ -1263,17 +1284,69 @@ getPixel tick viewPosition position actors =
                         Just color
 
                     Just accColor ->
-                        let
-                            _ =
-                                Debug.log "got multiple colors for" (toString position)
-                        in
-                            Just <| combineColors color accColor
+                        Just <| combineColors color accColor
             )
             Nothing
         |> Maybe.andThen
             (\color ->
                 Just <| asPixel viewPosition position color
             )
+
+
+
+{-
+   Dict.foldr
+       (\actorId actor acc ->
+           (getTransformRenderComponent actor.components
+               |> Maybe.andThen
+                   (\renderData ->
+                       getTransformComponent actor.components
+                           |> Maybe.andThen
+                               (\transformData ->
+                                   if transformData.position == position then
+                                       case transformData.movingState of
+                                           MovingTowards towardsData ->
+                                               Just <| calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage)
+
+                                           _ ->
+                                               Just (getColor tick renderData)
+                                   else
+                                       case transformData.movingState of
+                                           MovingTowards towardsData ->
+                                               if towardsData.position == position then
+                                                   Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
+                                               else
+                                                   Nothing
+
+                                           _ ->
+                                               Nothing
+                               )
+                   )
+           )
+               :: acc
+       )
+       []
+       actors
+       |> Maybe.Extra.values
+       |> List.foldr
+           (\color acc ->
+               case acc of
+                   Nothing ->
+                       Just color
+
+                   Just accColor ->
+                       let
+                           _ =
+                               Debug.log "got multiple colors for" (toString position)
+                       in
+                           Just <| combineColors color accColor
+           )
+           Nothing
+       |> Maybe.andThen
+           (\color ->
+               Just <| asPixel viewPosition position color
+           )
+-}
 
 
 getColor : Tick -> TransformRenderComponentData -> Color
