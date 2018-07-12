@@ -1037,38 +1037,38 @@ tryToCollectDiamond : Level -> Actor -> Level
 tryToCollectDiamond level focusedActor =
     case getTransformComponent focusedActor.components of
         Just focusedTransformData ->
-            Dict.foldr
-                (\actorId actor level ->
-                    if Dict.member "diamond" actor.components then
-                        case getTransformComponent actor.components of
-                            Just diamondTransformData ->
-                                if diamondTransformData.position == focusedTransformData.position then
-                                    let
-                                        newActors =
-                                            Dict.remove actorId level.actors
+            getActorWhoClaimed focusedTransformData.position level
+                |> Maybe.andThen
+                    (\actor ->
+                        if Dict.member "diamond" actor.components then
+                            case getTransformComponent actor.components of
+                                Just diamondTransformData ->
+                                    if diamondTransformData.position == focusedTransformData.position then
+                                        let
+                                            newActors =
+                                                Dict.remove actor.id level.actors
 
-                                        diamonds =
-                                            level.diamonds
+                                            diamonds =
+                                                level.diamonds
 
-                                        newDiamonds =
-                                            { diamonds | collected = diamonds.collected + 1 }
-                                    in
-                                        { level
-                                            | actors = newActors
-                                            , diamonds = newDiamonds
-                                        }
-                                else
-                                    level
+                                            newDiamonds =
+                                                { diamonds | collected = diamonds.collected + 1 }
+                                        in
+                                            Just
+                                                { level
+                                                    | actors = newActors
+                                                    , diamonds = newDiamonds
+                                                }
+                                    else
+                                        Nothing
 
-                            _ ->
-                                level
-                    else
-                        level
-                )
-                level
-                level.actors
+                                _ ->
+                                    Nothing
+                        else
+                            Nothing
+                    )
+                |> Maybe.withDefault level
 
-        -- @todo use positionIndex here..
         Nothing ->
             level
 
