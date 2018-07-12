@@ -11,15 +11,9 @@ import Maybe.Extra
 import Color exposing (Color)
 import Canvas
 import Canvas.Point
-
-
-type alias Tick =
-    Int
-
-
-movingTicks : Tick
-movingTicks =
-    5
+import Data.Common exposing (Tick, Position)
+import InputController
+import UpdateLoop
 
 
 pixelSize : Int
@@ -32,19 +26,14 @@ defaultCameraBorderSize =
     3
 
 
-updateBorder : Int
-updateBorder =
-    5
-
-
 type alias Model =
     { level : Level
     , width : Int
     , height : Int
-    , keys : Keys
     , debug : Bool
     , gameSpeed : Maybe Time.Time
     , currentTick : Tick
+    , inputController : InputController.Model
     }
 
 
@@ -65,138 +54,9 @@ main =
 
 
 type Msg
-    = NoOp
-    | KeyPressed Keyboard.KeyCode
-    | KeyDown Keyboard.KeyCode
-    | KeyUp Keyboard.KeyCode
+    = InputControllerMsg InputController.Msg
     | GameTick Time.Time
     | GameSpeed (Maybe Time.Time)
-
-
-type alias Keys =
-    { left : KeyStatus
-    , right : KeyStatus
-    , up : KeyStatus
-    , down : KeyStatus
-    }
-
-
-type KeyStatus
-    = NotPressed
-    | WasPressed
-    | IsPressed
-
-
-type alias ActorId =
-    Int
-
-
-type alias Actor =
-    { id : ActorId
-    , components : Dict String Component
-    }
-
-
-type alias TransformComponentData =
-    { position : Position
-    , movingState : MovingState
-    }
-
-
-type alias TransformRenderComponentData =
-    { colors : List Color
-    , ticksPerColor : Int
-    }
-
-
-type alias Position =
-    { x : Int
-    , y : Int
-    }
-
-
-type alias MovingTowardsData =
-    { position : Position
-    , startTick : Tick
-    , endTick : Tick
-    , completionPercentage : Float
-    }
-
-
-type MovingState
-    = NotMoving
-    | MovingTowards MovingTowardsData
-
-
-type Shape
-    = Circle
-    | Square
-
-
-type Direction
-    = Left
-    | Up
-    | Right
-    | Down
-
-
-type alias PhysicsComponentData =
-    { mass : Int
-    , shape : Shape
-    , affectedByGravity : Bool
-    }
-
-
-type alias AIComponentData =
-    { previousDirection : Direction }
-
-
-type alias CameraComponentData =
-    { borderSize : Int
-    }
-
-
-type alias DownSmashComponentData =
-    { wasMovingDown : Bool
-    }
-
-
-type alias DamageComponentData =
-    { remainingTicks : Tick
-    }
-
-
-type Component
-    = TransformComponent TransformComponentData
-    | TransformRenderComponent TransformRenderComponentData
-    | PlayerInputComponent
-    | DiamondCollectorComponent
-    | DiamondComponent
-    | SquashableComponent
-    | CanSquashComponent
-    | PhysicsComponent PhysicsComponentData
-    | RigidComponent
-    | AIComponent AIComponentData
-    | CameraComponent CameraComponentData
-    | ExplodableComponent
-    | DownSmashComponent DownSmashComponentData
-    | DamageComponent DamageComponentData
-
-
-type alias Level =
-    { actors : Dict ActorId Actor
-    , positionIndex : Dict ( Int, Int ) (List ActorId)
-    , nextActorId : Int
-    , diamonds :
-        { total : Int
-        , collected : Int
-        }
-    , view :
-        { position : Position
-        , width : Int
-        , height : Int
-        }
-    }
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -269,12 +129,7 @@ init flags =
         { level = level
         , width = width
         , height = height
-        , keys =
-            { left = NotPressed
-            , right = NotPressed
-            , up = NotPressed
-            , down = NotPressed
-            }
+        , inputController = InputController.init
         , debug = flags.debug
         , gameSpeed = Nothing -- Just <| 40 * Time.millisecond
         , currentTick = 0
@@ -285,337 +140,34 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        KeyPressed keyCode ->
-            (updateKeyState model IsPressed keyCode) ! []
-
-        KeyDown keyCode ->
-            (updateKeyState model IsPressed keyCode) ! []
-
-        KeyUp keyCode ->
-            (updateKeyState model WasPressed keyCode) ! []
+        InputControllerMsg subMsg ->
+            { model
+                | inputController =
+                    InputController.update subMsg model.inputController
+            }
+                ! []
 
         GameSpeed gameSpeed ->
             { model | gameSpeed = gameSpeed } ! []
 
         GameTick _ ->
             let
-                currentTick =
-                    model.currentTick + 1
-
-                keys =
-                    model.keys
-
-                maybeInputForce =
-                    calculateInputForce keys
-
-                view =
-                    model.level.view
-
-                newLevel =
-                    List.foldr
-                        (\y level ->
-                            List.foldr
-                                (\x level ->
-                                    getActorIdsAtXY x y level
-                                        |> List.foldr
-                                            (\actorId level ->
-                                                getActorById actorId level
-                                                    |> Maybe.andThen
-                                                        (\actor ->
-                                                            Dict.foldr
-                                                                (\_ component level ->
-                                                                    getActorById actorId level
-                                                                        |> Maybe.andThen
-                                                                            (\actor ->
-                                                                                let
-                                                                                    updatedLevel =
-                                                                                        case component of
-                                                                                            PlayerInputComponent ->
-                                                                                                maybeInputForce
-                                                                                                    |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
-                                                                                                    |> Maybe.withDefault level
-
-                                                                                            TransformComponent transformData ->
-                                                                                                case transformData.movingState of
-                                                                                                    MovingTowards movingData ->
-                                                                                                        handleMovingTowards currentTick transformData movingData actor level
-
-                                                                                                    _ ->
-                                                                                                        level
-
-                                                                                            DiamondCollectorComponent ->
-                                                                                                tryToCollectDiamond level actor
-
-                                                                                            CanSquashComponent ->
-                                                                                                trySquashingThings level actor
-
-                                                                                            PhysicsComponent physics ->
-                                                                                                tryApplyPhysics currentTick level actor physics
-
-                                                                                            AIComponent ai ->
-                                                                                                tryApplyAI currentTick level actor ai
-
-                                                                                            CameraComponent camera ->
-                                                                                                tryMoveCamera level actor camera
-
-                                                                                            DownSmashComponent downSmash ->
-                                                                                                tryDownSmash level actor downSmash
-
-                                                                                            DamageComponent damageData ->
-                                                                                                handleDamageComponent actor damageData level
-
-                                                                                            _ ->
-                                                                                                level
-                                                                                in
-                                                                                    Just updatedLevel
-                                                                            )
-                                                                        |> Maybe.withDefault level
-                                                                )
-                                                                level
-                                                                actor.components
-                                                                |> Just
-                                                        )
-                                                    |> Maybe.withDefault level
-                                            )
-                                            level
-                                )
-                                level
-                                (List.range (view.position.x - updateBorder) (view.position.x + view.width + updateBorder))
-                        )
-                        model.level
-                        (List.range (view.position.y - updateBorder) (view.position.y + view.height + updateBorder))
-
-                handlePressedKey keyStatus =
-                    case keyStatus of
-                        WasPressed ->
-                            NotPressed
-
-                        other ->
-                            other
-
-                handledPressedKeys =
-                    { left = handlePressedKey keys.left
-                    , right = handlePressedKey keys.right
-                    , up = handlePressedKey keys.up
-                    , down = handlePressedKey keys.down
-                    }
+                maybeInputDirection =
+                    InputController.getCurrentDirection
             in
                 { model
-                    | keys = handledPressedKeys
-                    , level = newLevel
-                    , currentTick = currentTick
+                    | inputController = InputController.resetWasPressed model.inputController
+                    , level = UpdateLoop.update model. model.level
+                    , currentTick = model.currentTick + 1
                 }
                     ! []
 
-        NoOp ->
-            model ! []
-
-
-applyForce : Tick -> Level -> Actor -> Direction -> Maybe Level
-applyForce currentTick level actor direction =
-    getTransformComponent actor.components
-        |> Maybe.andThen
-            -- Can only apply force if not already moving
-            (\transformData ->
-                case transformData.movingState of
-                    NotMoving ->
-                        Just transformData
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.andThen
-            -- Can only move if that spot is not already taken
-            (\transformData ->
-                let
-                    offset =
-                        getOffsetFromDirection direction
-
-                    newPosition =
-                        addPositions transformData.position offset
-                in
-                    case getActorWhoClaimed newPosition level of
-                        Nothing ->
-                            Just ( transformData, newPosition, level )
-
-                        Just otherActor ->
-                            if hasRigidComponent otherActor.components then
-                                tryToPush currentTick level actor transformData otherActor direction
-                            else
-                                Just ( transformData, newPosition, level )
-            )
-        |> Maybe.andThen
-            (\( transformData, newPosition, level ) ->
-                Just <| handleMovement currentTick level actor transformData newPosition
-            )
-
-
-tryToPush : Tick -> Level -> Actor -> TransformComponentData -> Actor -> Direction -> Maybe ( TransformComponentData, Position, Level )
-tryToPush currentTick level actor transformData otherActor direction =
-    -- Must be a Circle to be able to be pushed
-    getPhysicsComponent otherActor.components
-        |> Maybe.andThen
-            (\otherPhysicsData ->
-                case otherPhysicsData.shape of
-                    Circle ->
-                        Just ()
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.andThen
-            (\() ->
-                -- Can not push something that is already moving
-                getTransformComponent otherActor.components
-            )
-        |> Maybe.andThen
-            (\otherTransformData ->
-                case otherTransformData.movingState of
-                    NotMoving ->
-                        Just otherTransformData
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.andThen
-            (\otherTransformData ->
-                let
-                    pushedToPosition =
-                        addPositions otherTransformData.position (getOffsetFromDirection direction)
-                in
-                    if isEmpty level pushedToPosition then
-                        let
-                            updatedLevel =
-                                handleMovement
-                                    currentTick
-                                    level
-                                    otherActor
-                                    otherTransformData
-                                    pushedToPosition
-                        in
-                            Just ( transformData, otherTransformData.position, updatedLevel )
-                    else
-                        Nothing
-            )
-
-
-handleMovement : Tick -> Level -> Actor -> TransformComponentData -> Position -> Level
-handleMovement currentTick level actor transformData newPosition =
-    let
-        newComponents =
-            Dict.insert
-                "transform"
-                (TransformComponent
-                    { transformData
-                        | movingState =
-                            MovingTowards
-                                { position = newPosition
-                                , startTick = currentTick
-                                , endTick = currentTick + movingTicks
-                                , completionPercentage = 0.0
-                                }
-                    }
-                )
-                actor.components
-
-        newActors =
-            Dict.insert
-                actor.id
-                { actor | components = newComponents }
-                level.actors
-    in
-        { level | actors = newActors }
-
-
-hasRigidComponent : Dict String Component -> Bool
-hasRigidComponent =
-    Dict.member "rigid"
 
 
 hasExplodableComponent : Dict String Component -> Bool
 hasExplodableComponent =
     Dict.member "explodable"
 
-
-
--- Optimize getActorWhoClaimed with getActorsThatAffect
--- They seem to do the same...
-
-
-getActorWhoClaimed : Position -> Level -> Maybe Actor
-getActorWhoClaimed position level =
-    getActorsThatAffect position level
-        |> List.Extra.find
-            (\actor ->
-                getTransformComponent actor.components
-                    |> Maybe.andThen
-                        (\transformData ->
-                            if transformData.position == position then
-                                Just True
-                            else
-                                case transformData.movingState of
-                                    MovingTowards towardsData ->
-                                        if towardsData.position == position then
-                                            Just True
-                                        else
-                                            Nothing
-
-                                    _ ->
-                                        Nothing
-                        )
-                    |> Maybe.Extra.isJust
-            )
-
-
-getActorsThatAffect : Position -> Level -> List Actor
-getActorsThatAffect position level =
-    List.map
-        (\position ->
-            getActorIdsAtPosition position level
-        )
-        -- We only need to check actor on the position and direct neighbors
-        [ position
-        , addPositions position <| getOffsetFromDirection Left
-        , addPositions position <| getOffsetFromDirection Up
-        , addPositions position <| getOffsetFromDirection Right
-        , addPositions position <| getOffsetFromDirection Down
-        ]
-        |> List.concat
-        |> List.map
-            (\actorId ->
-                getActorById actorId level
-            )
-        |> Maybe.Extra.values
-
-
-getActorIdsAtPositionAsActors : Position -> Level -> List Actor
-getActorIdsAtPositionAsActors position level =
-    getActorIdsAtXY position.x position.y level
-        |> List.map
-            (\actorId ->
-                getActorById actorId level
-            )
-        |> Maybe.Extra.values
-
-
-getActorIdsAtPosition : Position -> Level -> List ActorId
-getActorIdsAtPosition position =
-    getActorIdsAtXY position.x position.y
-
-
-getActorIdsAtXY : Int -> Int -> Level -> List ActorId
-getActorIdsAtXY x y level =
-    Dict.get
-        ( x, y )
-        level.positionIndex
-        |> Maybe.withDefault []
-
-
-getActorById : ActorId -> Level -> Maybe Actor
-getActorById actorId level =
-    Dict.get
-        actorId
-        level.actors
 
 
 getDirectionFromID : Int -> Direction
@@ -665,22 +217,6 @@ getOffsetFromDirection direction =
         Down ->
             { x = 0, y = 1 }
 
-
-subtractPositions : Position -> Position -> Position
-subtractPositions =
-    calculatePosition (-)
-
-
-addPositions : Position -> Position -> Position
-addPositions =
-    calculatePosition (+)
-
-
-calculatePosition : (Int -> Int -> Int) -> Position -> Position -> Position
-calculatePosition method pos1 pos2 =
-    { x = method pos1.x pos2.x
-    , y = method pos1.y pos2.y
-    }
 
 
 calculateInputForce : Keys -> Maybe Direction
@@ -1427,32 +963,6 @@ asPixel viewPosition position color =
     ]
 
 
-getTransformComponent : Dict String Component -> Maybe TransformComponentData
-getTransformComponent components =
-    Dict.get "transform" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    TransformComponent data ->
-                        Just data
-
-                    _ ->
-                        Nothing
-            )
-
-
-getPhysicsComponent : Dict String Component -> Maybe PhysicsComponentData
-getPhysicsComponent components =
-    Dict.get "physics" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    PhysicsComponent data ->
-                        Just data
-
-                    _ ->
-                        Nothing
-            )
 
 
 getTransformRenderComponent : Dict String Component -> Maybe TransformRenderComponentData
@@ -1843,42 +1353,3 @@ subscriptions model =
                     sub
     in
         Sub.batch newSub
-
-
-updateKeyState : Model -> KeyStatus -> Keyboard.KeyCode -> Model
-updateKeyState model status keyCode =
-    let
-        keys =
-            model.keys
-    in
-        case keyCode of
-            37 ->
-                let
-                    newKeys =
-                        { keys | left = status }
-                in
-                    { model | keys = newKeys }
-
-            38 ->
-                let
-                    newKeys =
-                        { keys | up = status }
-                in
-                    { model | keys = newKeys }
-
-            39 ->
-                let
-                    newKeys =
-                        { keys | right = status }
-                in
-                    { model | keys = newKeys }
-
-            40 ->
-                let
-                    newKeys =
-                        { keys | down = status }
-                in
-                    { model | keys = newKeys }
-
-            _ ->
-                model
