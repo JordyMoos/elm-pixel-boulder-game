@@ -537,6 +537,11 @@ hasExplodableComponent =
     Dict.member "explodable"
 
 
+
+-- Optimize getActorWhoClaimed with getActorsThatAffect
+-- They seem to do the same...
+
+
 getActorWhoClaimed : Position -> Level -> Maybe Actor
 getActorWhoClaimed position level =
     getActorsThatAffect position level
@@ -576,6 +581,16 @@ getActorsThatAffect position level =
         , addPositions position <| getOffsetFromDirection Down
         ]
         |> List.concat
+        |> List.map
+            (\actorId ->
+                getActorById actorId level
+            )
+        |> Maybe.Extra.values
+
+
+getActorIdsAtPositionAsActors : Position -> Level -> List Actor
+getActorIdsAtPositionAsActors position level =
+    getActorIdsAtXY position.x position.y level
         |> List.map
             (\actorId ->
                 getActorById actorId level
@@ -1037,37 +1052,28 @@ tryToCollectDiamond : Level -> Actor -> Level
 tryToCollectDiamond level focusedActor =
     case getTransformComponent focusedActor.components of
         Just focusedTransformData ->
-            getActorWhoClaimed focusedTransformData.position level
-                |> Maybe.andThen
-                    (\actor ->
+            getActorIdsAtPositionAsActors focusedTransformData.position level
+                |> List.foldr
+                    (\actor level ->
                         if Dict.member "diamond" actor.components then
-                            case getTransformComponent actor.components of
-                                Just diamondTransformData ->
-                                    if diamondTransformData.position == focusedTransformData.position then
-                                        let
-                                            newActors =
-                                                Dict.remove actor.id level.actors
+                            let
+                                newActors =
+                                    Dict.remove actor.id level.actors
 
-                                            diamonds =
-                                                level.diamonds
+                                diamonds =
+                                    level.diamonds
 
-                                            newDiamonds =
-                                                { diamonds | collected = diamonds.collected + 1 }
-                                        in
-                                            Just
-                                                { level
-                                                    | actors = newActors
-                                                    , diamonds = newDiamonds
-                                                }
-                                    else
-                                        Nothing
-
-                                _ ->
-                                    Nothing
+                                newDiamonds =
+                                    { diamonds | collected = diamonds.collected + 1 }
+                            in
+                                { level
+                                    | actors = newActors
+                                    , diamonds = newDiamonds
+                                }
                         else
-                            Nothing
+                            level
                     )
-                |> Maybe.withDefault level
+                    level
 
         Nothing ->
             level
@@ -1077,29 +1083,20 @@ trySquashingThings : Level -> Actor -> Level
 trySquashingThings level focusedActor =
     case getTransformComponent focusedActor.components of
         Just focusedTransformData ->
-            Dict.foldr
-                (\actorId actor level ->
-                    if Dict.member "squashable" actor.components then
-                        case getTransformComponent actor.components of
-                            Just squashableTransformData ->
-                                if squashableTransformData.position == focusedTransformData.position then
-                                    let
-                                        newActors =
-                                            Dict.remove actorId level.actors
-                                    in
-                                        { level | actors = newActors }
-                                else
-                                    level
+            getActorIdsAtPositionAsActors focusedTransformData.position level
+                |> List.foldr
+                    (\actor level ->
+                        if Dict.member "squashable" actor.components then
+                            let
+                                newActors =
+                                    Dict.remove actor.id level.actors
+                            in
+                                { level | actors = newActors }
+                        else
+                            level
+                    )
+                    level
 
-                            _ ->
-                                level
-                    else
-                        level
-                )
-                level
-                level.actors
-
-        -- @todo use positionIndex here
         Nothing ->
             level
 
