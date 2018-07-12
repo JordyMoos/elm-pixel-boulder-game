@@ -603,28 +603,6 @@ getActorById actorId level =
         level.actors
 
 
-getAllActorsAt : Dict ActorId Actor -> Position -> Dict ActorId Actor
-getAllActorsAt actors position =
-    Dict.filter
-        (\actorId actor ->
-            getTransformComponent actor.components
-                |> Maybe.andThen
-                    (\transformData ->
-                        if transformData.position == position then
-                            Just True
-                        else
-                            case transformData.movingState of
-                                MovingTowards towardsData ->
-                                    Just <| towardsData.position == position
-
-                                _ ->
-                                    Just False
-                    )
-                |> Maybe.withDefault False
-        )
-        actors
-
-
 getDirectionFromID : Int -> Direction
 getDirectionFromID id =
     case id % 4 of
@@ -734,16 +712,16 @@ tryDoDamage damageDealingActor level =
     getTransformComponent damageDealingActor.components
         |> Maybe.andThen
             (\transformData ->
-                Dict.foldr
-                    (\actorId actor level ->
-                        if damageDealingActor.id == actorId then
+                List.foldr
+                    (\actor level ->
+                        if damageDealingActor.id == actor.id then
                             level
                         else
                             -- @todo not everything should be able to be destroyed
-                            removeActor actorId level
+                            removeActor actor.id level
                     )
                     level
-                    (getAllActorsAt level.actors transformData.position)
+                    (getActorsThatAffect transformData.position level)
                     |> Just
             )
         |> Maybe.withDefault level
@@ -1090,6 +1068,7 @@ tryToCollectDiamond level focusedActor =
                 level
                 level.actors
 
+        -- @todo use positionIndex here..
         Nothing ->
             level
 
@@ -1120,6 +1099,7 @@ trySquashingThings level focusedActor =
                 level
                 level.actors
 
+        -- @todo use positionIndex here
         Nothing ->
             level
 
