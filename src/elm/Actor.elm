@@ -336,7 +336,8 @@ updateTransformComponent transformData actor level =
                                 | movingState =
                                     MovingTowards
                                         { towardsData
-                                            | completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
+                                            | tickCountLeft = towardsData.tickCountLeft - 1
+                                            , completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
                                         }
                             }
                         )
@@ -444,7 +445,7 @@ startMovingTowards actor transformData newPosition level =
                     MovingTowards
                         { position = newPosition
                         , totalTickCount = movingTicks
-                        , tickCountLeft = 0
+                        , tickCountLeft = movingTicks
                         , completionPercentage = 0.0
                         }
             }
