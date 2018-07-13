@@ -1,9 +1,9 @@
 module UpdateLoop exposing (update)
 
-import Data.Level exposing (Level, View)
-import Actor.Actor as Actor
+import Actor.Actor as Actor exposing (Level)
 import Dict exposing (Dict)
-import InputController exposing (Direction)
+import InputController
+import Data.Common exposing (Position, Direction)
 
 
 updateBorder : Int
@@ -11,41 +11,31 @@ updateBorder =
     5
 
 
-update : Direction -> Level -> Level
-update direction level =
+update : Maybe Direction -> Level -> Level
+update maybeDirection level =
     List.foldr
         (\y level ->
             List.foldr
                 (\x level ->
-                    Actor.getIdsByXY x y level
+                    Actor.getActorIdsByXY x y level
                         |> List.foldr
                             (\actorId level ->
-                                Actor.getById actorId level
+                                Actor.getActorById actorId level
                                     |> Maybe.andThen
                                         (\actor ->
                                             Dict.foldr
                                                 (\_ component level ->
-                                                    Actor.getById actorId level
+                                                    Actor.getActorById actorId level
                                                         |> Maybe.andThen
                                                             (\actor ->
                                                                 let
                                                                     updatedLevel =
                                                                         case component of
-                                                                            PlayerInputComponent ->
-                                                                                maybeInputForce
-                                                                                    |> Maybe.andThen (\direction -> applyForce currentTick level actor direction)
-                                                                                    |> Maybe.withDefault level
+                                                                            Actor.PlayerInputComponent ->
+                                                                                Actor.updatePlayerInputComponent maybeDirection actor level
 
-                                                                            TransformComponent transformData ->
-                                                                                case transformData.movingState of
-                                                                                    MovingTowards movingData ->
-                                                                                        handleMovingTowards currentTick transformData movingData actor level
-
-                                                                                    _ ->
-                                                                                        level
-
-                                                                            DiamondCollectorComponent ->
-                                                                                tryToCollectDiamond level actor
+                                                                            Actor.DiamondCollectorComponent ->
+                                                                                Actor.updateDiamondCollectorComponent actor level
 
                                                                             CanSquashComponent ->
                                                                                 trySquashingThings level actor

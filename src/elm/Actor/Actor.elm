@@ -5,14 +5,21 @@ module Actor.Actor
         , Level
           -- Actor
         , getActorById
-        , getActorByPosition
+        , getActorsByPosition
         , getActorIdsByPosition
         , getActorIdsByXY
+          -- Components
+        , Component(..)
+          -- Updates
+        , updatePlayerInputComponent
+        , updateDiamondCollectorComponent
         )
 
 import Dict exposing (Dict)
 import Data.Common exposing (Position, Direction, Tick)
+import Color exposing (Color)
 import Maybe.Extra
+import List.Extra
 
 
 type alias ActorId =
@@ -29,6 +36,10 @@ type alias Actor =
     }
 
 
+type alias Actors =
+    Dict ActorId Actor
+
+
 type alias View =
     { position : Position
     , width : Int
@@ -36,14 +47,21 @@ type alias View =
     }
 
 
+type alias Diamonds =
+    { total : Int
+    , collected : Int
+    }
+
+
+type alias PositionIndex =
+    Dict ( Int, Int ) (List ActorId)
+
+
 type alias Level =
-    { actors : Dict ActorId Actor
-    , positionIndex : Dict ( Int, Int ) (List ActorId)
+    { actors : Actors
+    , positionIndex : PositionIndex
     , nextActorId : Int
-    , diamonds :
-        { total : Int
-        , collected : Int
-        }
+    , diamonds : Diamonds
     , view : View
     }
 
@@ -68,7 +86,33 @@ type Component
 
 {-
 
-   Actor
+   Actor Mutation
+
+-}
+
+
+updateComponents : Actor -> Components -> Actor
+updateComponents actor components =
+    { actor | components = components }
+
+
+updateActor : Actors -> Actor -> Actors
+updateActor actors actor =
+    Dict.insert
+        actor.id
+        actor
+        actors
+
+
+updateActors : Level -> Actors -> Level
+updateActors level actors =
+    { level | actors = actors }
+
+
+
+{-
+
+   Actor Query
 
 -}
 
@@ -80,8 +124,8 @@ getActorById actorId level =
         level.actors
 
 
-getActorByPosition : Position -> Level -> List Actor
-getActorByPosition position level =
+getActorsByPosition : Position -> Level -> List Actor
+getActorsByPosition position level =
     getActorIdsByPosition position level
         |> List.map
             (\actorId ->
@@ -144,6 +188,46 @@ isEmpty : Position -> Level -> Bool
 isEmpty position level =
     getActorsThatAffect position level
         |> List.isEmpty
+
+
+
+{-
+
+   Actor Remove
+
+-}
+
+
+removeActor : Position -> ActorId -> Level -> Level
+removeActor position actorId level =
+    level
+        |> removeActorFromIndex position actorId
+        |> Dict.remove actorId level.actors
+        |> updateActors level
+
+
+removeActorFromIndex : Position -> ActorId -> Level -> Level
+removeActorFromIndex position actorId level =
+    Dict.update
+        ( position.x, position.y )
+        (\maybeActorIds ->
+            case maybeActorIds of
+                Just actorIds ->
+                    List.Extra.remove
+                        actorId
+                        actorIds
+                        |> Just
+
+                Nothing ->
+                    Nothing
+        )
+        level.positionIndex
+        |> updatePositionIndex level
+
+
+updatePositionIndex : Level -> PositionIndex -> Level
+updatePositionIndex level positionIndex =
+    { level | positionIndex = positionIndex }
 
 
 
@@ -253,7 +337,7 @@ handleDirection direction actor level =
             )
         |> Maybe.andThen
             (\( transformData, newPosition, level ) ->
-                Just <| handleMovement currentTick level actor transformData newPosition
+                Just <| startMovingTowards actor transformData newPosition level
             )
 
 
@@ -272,15 +356,15 @@ tryToPush direction actor transformData otherActor level =
                     Just
                         ( transformData
                         , otherTransformData.position
-                        , handleMovement otherActor otherTransformData pushedToPosition level
+                        , startMovingTowards otherActor otherTransformData pushedToPosition level
                         )
                 else
                     Nothing
             )
 
 
-handleMovement : Actor -> TransformComponentData -> Position -> Level -> Level
-handleMovement actor transformData newPosition level =
+startMovingTowards : Actor -> TransformComponentData -> Position -> Level -> Level
+startMovingTowards actor transformData newPosition level =
     Dict.insert
         "transform"
         (TransformComponent
@@ -296,29 +380,8 @@ handleMovement actor transformData newPosition level =
         )
         actor.components
         |> updateComponents actor
-        |> updateActor
-
-
-
---
---    Dict.insert
---        actor.id
---        { actor
---            | components =
---
---        }
---        level.actors
---        |> updateActors level
-
-
-updateComponents : Actor -> Components -> Actor
-updateComponents actor components =
-    { actor | components = components }
-
-
-updateActors : Level -> Dict String Actor -> Level
-updateActors level actors =
-    { level | actors = actors }
+        |> updateActor level.actors
+        |> updateActors level
 
 
 
@@ -368,6 +431,141 @@ isCircle physicsData =
 
 {-
 
+   DiamondCollectorComponent
+
+-}
+
+
+updateDiamondCollectorComponent : Actor -> Level -> Level
+updateDiamondCollectorComponent collectorActor level =
+    getTransformComponent collectorActor
+        |> Maybe.Extra.toList
+        |> List.map .position
+        |> List.map
+            (\position ->
+                getActorsByPosition position level
+                    |> List.map
+                        (\actor ->
+                            ( position, actor )
+                        )
+            )
+        |> List.foldr
+            (\( position, actor ) level ->
+                if Dict.member "diamond" actor.components then
+                    level
+                        |> removeActor position actor.id
+                        |> collectDiamond
+                else
+                    level
+            )
+            level
+
+
+collectDiamond : Level -> Level
+collectDiamond level =
+    { level | diamonds = incrementDiamondsCollected level.diamonds }
+
+
+incrementDiamondsCollected : Diamonds -> Diamonds
+incrementDiamondsCollected diamonds =
+    { diamonds | collected = diamonds.collected + 1 }
+
+
+
+{-
+
+   RigidComponent
+
+-}
+
+
+hasRigidComponent : Actor -> Bool
+hasRigidComponent actor =
+    Dict.member "rigid" actor.components
+
+
+
+{-
+
+   AiComponent
+
+-}
+
+
+type alias AiComponentData =
+    { previousDirection : Direction
+    }
+
+
+
+{-
+
+   CameraComponent
+
+-}
+
+
+type alias CameraComponentData =
+    { borderSize : Int
+    }
+
+
+
+{-
+
+   DamageComponent
+
+-}
+
+
+type alias DamageComponentData =
+    { remainingTicks : Tick
+    }
+
+
+
+{-
+
+   DownSmashComponent
+
+-}
+
+
+type alias DownSmashComponentData =
+    { wasMovingDown : Bool
+    }
+
+
+
+{-
+
+   RenderComponent
+
+-}
+
+
+type alias RenderComponentData =
+    { colors : List Color
+    , ticksPerColor : Int
+    }
+
+
+
+{-
+
+   ExplodableComponent
+
+-}
+
+
+hasExplodableComponent : Actor -> Bool
+hasExplodableComponent actor =
+    Dict.member "explodable" actor.components
+
+
+
+{-
+
    Position Helpers
 
 -}
@@ -404,16 +602,3 @@ calculatePosition method pos1 pos2 =
     { x = method pos1.x pos2.x
     , y = method pos1.y pos2.y
     }
-
-
-
-{-
-
-   RigidComponent
-
--}
-
-
-hasRigidComponent : Actor -> Bool
-hasRigidComponent actor =
-    Dict.member "rigid" actor.components

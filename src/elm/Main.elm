@@ -157,17 +157,10 @@ update msg model =
             in
                 { model
                     | inputController = InputController.resetWasPressed model.inputController
-                    , level = UpdateLoop.update model. model.level
+                    , level = UpdateLoop.update maybeInputDirection model.level
                     , currentTick = model.currentTick + 1
                 }
                     ! []
-
-
-
-hasExplodableComponent : Dict String Component -> Bool
-hasExplodableComponent =
-    Dict.member "explodable"
-
 
 
 getDirectionFromID : Int -> Direction
@@ -200,37 +193,6 @@ getIDFromDirection direction =
 
         Down ->
             3
-
-
-getOffsetFromDirection : Direction -> Position
-getOffsetFromDirection direction =
-    case direction of
-        Left ->
-            { x = -1, y = 0 }
-
-        Up ->
-            { x = 0, y = -1 }
-
-        Right ->
-            { x = 1, y = 0 }
-
-        Down ->
-            { x = 0, y = 1 }
-
-
-
-calculateInputForce : Keys -> Maybe Direction
-calculateInputForce keys =
-    if isMoving keys.left then
-        Just Left
-    else if isMoving keys.up then
-        Just Up
-    else if isMoving keys.right then
-        Just Right
-    else if isMoving keys.down then
-        Just Down
-    else
-        Nothing
 
 
 handleDamageComponent : Actor -> DamageComponentData -> Level -> Level
@@ -961,8 +923,6 @@ asPixel viewPosition position color =
         (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
-
-
 
 
 getTransformRenderComponent : Dict String Component -> Maybe TransformRenderComponentData
