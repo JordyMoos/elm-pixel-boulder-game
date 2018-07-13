@@ -4,7 +4,7 @@
     "repository": "https://github.com/JordyMoos/elm-pixel-boulder-game.git",
     "license": "MIT",
     "source-directories": [
-        "."
+        "./src/elm"
     ],
     "exposed-modules": [],
     "native-modules": true,
