@@ -19,6 +19,7 @@ module Actor.Actor
         , updateCameraComponent
         , updateTransformComponent
         , updateDownSmashComponent
+        , updateDamageComponent
         )
 
 import Dict exposing (Dict)
