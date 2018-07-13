@@ -18,6 +18,7 @@ module Actor.Actor
         , updateAiComponent
         , updateCameraComponent
         , updateTransformComponent
+        , updateDownSmashComponent
         )
 
 import Dict exposing (Dict)
@@ -350,6 +351,20 @@ getTransformComponent actor =
             )
 
 
+getPositionFromComponents : Components -> Maybe Position
+getPositionFromComponents components =
+    Dict.get "transform" components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    TransformComponent data ->
+                        Just data.position
+
+                    _ ->
+                        Nothing
+            )
+
+
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
 getMovingTowardsData transformData =
     case transformData.movingState of
@@ -374,6 +389,37 @@ isNotMoving =
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
 getNewPosition direction transformData =
     ( transformData, addPosition transformData.position (getOffsetFromDirection direction) )
+
+
+isMovingDown : TransformComponentData -> Bool
+isMovingDown transformData =
+    getMovingTowardsData transformData
+        |> Maybe.Extra.filter
+            (\towardsData ->
+                addPosition transformData.position (getOffsetFromDirection Data.Common.Down) == towardsData.position
+            )
+        |> Maybe.Extra.isJust
+
+
+startMovingTowards : Actor -> TransformComponentData -> Position -> Level -> Level
+startMovingTowards actor transformData newPosition level =
+    Dict.insert
+        "transform"
+        (TransformComponent
+            { transformData
+                | movingState =
+                    MovingTowards
+                        { position = newPosition
+                        , tickTotal = movingTicks
+                        , tickCounter = 0
+                        , completionPercentage = 0.0
+                        }
+            }
+        )
+        actor.components
+        |> updateComponents actor
+        |> updateActor level.actors
+        |> updateActors level
 
 
 
@@ -441,27 +487,6 @@ tryToPush direction actor transformData otherActor level =
                 else
                     Nothing
             )
-
-
-startMovingTowards : Actor -> TransformComponentData -> Position -> Level -> Level
-startMovingTowards actor transformData newPosition level =
-    Dict.insert
-        "transform"
-        (TransformComponent
-            { transformData
-                | movingState =
-                    MovingTowards
-                        { position = newPosition
-                        , tickTotal = movingTicks
-                        , tickCounter = 0
-                        , completionPercentage = 0.0
-                        }
-            }
-        )
-        actor.components
-        |> updateComponents actor
-        |> updateActor level.actors
-        |> updateActors level
 
 
 
@@ -806,6 +831,72 @@ type alias DownSmashComponentData =
     }
 
 
+updateDownSmashComponent : DownSmashComponentData -> Actor -> Level -> Level
+updateDownSmashComponent downSmashData actor level =
+    getTransformComponent actor
+        |> Maybe.andThen
+            (\transformData ->
+                Just ( transformData, isMovingDown transformData )
+            )
+        |> Maybe.andThen
+            (\( transformData, isMovingDown ) ->
+                (case ( isMovingDown, downSmashData.wasMovingDown ) of
+                    ( False, True ) ->
+                        getActorsByPosition
+                            (addPosition transformData <| getOffsetFromDirection Data.Common.Down)
+                            level
+                            |> List.filter hasExplodableComponent
+                            |> List.foldr
+                                (\downActor level ->
+                                    level
+                                        |> createBigExplosion (addPosition transformData <| getOffsetFromDirection Data.Common.Down)
+                                        |> removeActor (addPosition transformData <| getOffsetFromDirection Data.Common.Down) downActor.id
+                                )
+                                level
+
+                    _ ->
+                        level
+                )
+                    -- Update the WasMovingDown
+                    |> (\level ->
+                            updateDownSmash
+                                { downSmashData | wasMovingDown = isMovingDown }
+                                actor
+                                level
+                       )
+            )
+
+
+updateDownSmash : DownSmashComponentData -> Actor -> Level -> Level
+updateDownSmash downSmashData actor level =
+    Dict.insert
+        "downsmash"
+        (DownSmashComponent downSmashData)
+        actor.components
+        |> updateComponents actor
+        |> updateActor level.actors
+        |> updateActors level
+
+
+createBigExplosion : Position -> Level -> Level
+createBigExplosion position level =
+    List.foldr
+        (\position level ->
+            level |> addExplosion position.x position.y
+        )
+        level
+        [ addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Left ]
+        , position
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Down ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ]
+        ]
+
+
 
 {-
 
@@ -831,6 +922,61 @@ type alias RenderComponentData =
 hasExplodableComponent : Actor -> Bool
 hasExplodableComponent actor =
     Dict.member "explodable" actor.components
+
+
+
+{-
+
+   Add Actors
+
+-}
+
+
+addActor : Components -> Level -> Level
+addActor components level =
+    level
+        |> incrementNextActorId
+        |> (\level ->
+                ( level
+                , { id = level.nextActorId
+                  , components = components
+                  }
+                )
+           )
+        -- Add actor to the index
+        |> (\( level, actor ) ->
+                getPositionFromComponents components
+                    |> Maybe.andThen
+                        (\position ->
+                            Just <| ( addActorToIndex position actor.id level, actor )
+                        )
+                    |> Maybe.withDefault
+                        ( level, actor )
+           )
+        -- Add actor to the actors
+        |> (\( level, actor ) ->
+                updateActor level.actors actor
+                    |> updateActors level
+           )
+
+
+incrementNextActorId : Level -> Level
+incrementNextActorId level =
+    { level | nextActorId = level.nextActorId + 1 }
+
+
+addExplosion : Int -> Int -> Level -> Level
+addExplosion x y level =
+    addActor (createExplosion x y) level
+
+
+createExplosion : Int -> Int -> Actor
+createExplosion id x y =
+    Dict.fromList
+        [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
+        , ( "render", RenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
+        , ( "damage", DamageComponent { remainingTicks = 8 } )
+        ]
 
 
 

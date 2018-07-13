@@ -52,8 +52,8 @@ update maybeDirection level =
                                                                             Actor.CameraComponent camera ->
                                                                                 Actor.updateCameraComponent camera actor level
 
-                                                                            DownSmashComponent downSmash ->
-                                                                                tryDownSmash level actor downSmash
+                                                                            Actor.DownSmashComponent downSmash ->
+                                                                                Actor.updateDownSmashComponent downSmash actor level
 
                                                                             DamageComponent damageData ->
                                                                                 handleDamageComponent actor damageData level

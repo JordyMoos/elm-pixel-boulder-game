@@ -208,62 +208,6 @@ tryDoDamage damageDealingActor level =
         |> Maybe.withDefault level
 
 
-tryDownSmash : Level -> Actor -> DownSmashComponentData -> Level
-tryDownSmash level actor downSmashData =
-    let
-        updateWasMovingDown actor newWasMovingDown level =
-            let
-                updatedComponents =
-                    Dict.insert
-                        "downsmash"
-                        (DownSmashComponent { wasMovingDown = newWasMovingDown })
-                        actor.components
-
-                updatedActors =
-                    Dict.insert
-                        actor.id
-                        { actor | components = updatedComponents }
-                        level.actors
-            in
-                { level | actors = updatedActors }
-    in
-        getTransformComponent actor.components
-            |> Maybe.andThen
-                (\transformData ->
-                    Just ( transformData, getIsMovingDown transformData )
-                )
-            |> Maybe.andThen
-                (\( transformData, isMovingDown ) ->
-                    let
-                        maybeUpdatedLevel =
-                            case ( isMovingDown, downSmashData.wasMovingDown ) of
-                                ( False, True ) ->
-                                    -- Just finished moving down - Check for trigger
-                                    getActorWhoClaimed
-                                        (addPositions transformData.position <| getOffsetFromDirection Down)
-                                        level
-                                        |> Maybe.andThen
-                                            (\downActor ->
-                                                if hasExplodableComponent downActor.components then
-                                                    createBigExplosion level (addPositions transformData.position <| getOffsetFromDirection Down)
-                                                        |> removeActor downActor.id
-                                                        |> Just
-                                                else
-                                                    Just level
-                                            )
-
-                                _ ->
-                                    Just level
-                    in
-                        maybeUpdatedLevel
-                            |> Maybe.andThen
-                                (\updatedLevel ->
-                                    Just <| updateWasMovingDown actor isMovingDown updatedLevel
-                                )
-                )
-            |> Maybe.withDefault level
-
-
 removeActor : Int -> Level -> Level
 removeActor actorId level =
     let
@@ -292,16 +236,6 @@ createBigExplosion level position =
         , position |> addPositions (getOffsetFromDirection Down)
         , position |> addPositions (getOffsetFromDirection Right) |> addPositions (getOffsetFromDirection Down)
         ]
-
-
-getIsMovingDown : TransformComponentData -> Bool
-getIsMovingDown transformData =
-    case transformData.movingState of
-        NotMoving ->
-            False
-
-        MovingTowards towardsData ->
-            subtractPositions towardsData.position transformData.position == getOffsetFromDirection Down
 
 
 isEmpty : Level -> Position -> Bool
