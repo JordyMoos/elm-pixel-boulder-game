@@ -1,4 +1,4 @@
-module Actor.Actor
+module Actor
     exposing
         ( ActorId
         , Actor
@@ -20,6 +20,15 @@ module Actor.Actor
         , updateTransformComponent
         , updateDownSmashComponent
         , updateDamageComponent
+          -- Actor creation
+        , addStrongWall
+        , addWall
+        , addDirt
+        , addPlayer
+        , addRock
+        , addDiamond
+        , addEnemy
+        , addExplosive
         )
 
 import Dict exposing (Dict)
@@ -181,7 +190,7 @@ getActorsThatAffect position level =
                                 Just True
                             else
                                 case transformData.movingState of
-                                    MovingTowardsData towardsData ->
+                                    MovingTowards towardsData ->
                                         Just <| towardsData.position == position
 
                                     NotMoving ->
@@ -217,7 +226,7 @@ removeActor actor level =
                     |> Maybe.withDefault level
            )
         |> (\level ->
-                Dict.remove actor.id level.actors level
+                Dict.remove actor.id level.actors
                     |> updateActors level
            )
 
@@ -227,7 +236,7 @@ removeActorWithPosition position actorId level =
     level
         |> removeActorFromIndex position actorId
         |> (\level ->
-                Dict.remove actorId level.actors level
+                Dict.remove actorId level.actors
                     |> updateActors level
            )
 
@@ -312,7 +321,7 @@ updateTransformComponent transformData actor level =
     getMovingTowardsData transformData
         |> Maybe.andThen
             (\towardsData ->
-                if transformData.tickCountLeft > 0 then
+                if towardsData.tickCountLeft > 0 then
                     -- Still moving
                     Dict.insert
                         "transform"
@@ -400,8 +409,8 @@ isMoving transformData =
 
 
 isNotMoving : TransformComponentData -> Bool
-isNotMoving =
-    not <| isMoving
+isNotMoving transformComponent =
+    isMoving transformComponent |> not
 
 
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
@@ -428,8 +437,8 @@ startMovingTowards actor transformData newPosition level =
                 | movingState =
                     MovingTowards
                         { position = newPosition
-                        , tickTotal = movingTicks
-                        , tickCounter = 0
+                        , totalTickCount = movingTicks
+                        , tickCountLeft = 0
                         , completionPercentage = 0.0
                         }
             }
@@ -464,6 +473,8 @@ handleDirection direction actor level =
         |> Maybe.Extra.toList
         |> List.filter isNotMoving
         |> List.map (getNewPosition direction)
+        |> List.head
+        |> Maybe.andThen
             (\( transformData, position ) ->
                 case getActorsThatAffect position level of
                     [] ->
@@ -490,11 +501,16 @@ tryToPush direction actor transformData otherActor level =
     getPhysicsComponent otherActor
         |> Maybe.Extra.toList
         |> List.filter isCircle
-        |> List.map (always <| getTransformComponent otherActor)
+        |> List.head
+        |> Maybe.andThen
+            (\physics ->
+                getTransformComponent otherActor
+            )
         |> Maybe.Extra.toList
         |> List.filter isNotMoving
         |> List.map (getNewPosition direction)
-        |> List.map
+        |> List.head
+        |> Maybe.andThen
             (\( otherTransformData, pushedToPosition ) ->
                 if isEmpty pushedToPosition level then
                     Just
@@ -535,7 +551,7 @@ updatePhysicsComponent physics actor level =
         |> List.filter isCircle
         |> List.map
             (\physics ->
-                getTransformComponent.actor
+                getTransformComponent actor
             )
         |> Maybe.Extra.values
         |> List.filter isNotMoving
@@ -639,7 +655,7 @@ updateDiamondCollectorComponent collectorActor level =
     getTransformComponent collectorActor
         |> Maybe.Extra.toList
         |> List.map .position
-        |> List.map
+        |> List.concatMap
             (\position ->
                 getActorsByPosition position level
                     |> List.map
@@ -692,7 +708,7 @@ updateCanSquashComponent squashingActor level =
     getTransformComponent squashingActor
         |> Maybe.Extra.toList
         |> List.map .position
-        |> List.map
+        |> List.concatMap
             (\position ->
                 getActorsByPosition position level
                     |> List.map
@@ -752,7 +768,7 @@ updateAiComponent ai actor level =
         |> List.Extra.find
             (\( transformData, direction ) ->
                 isEmpty
-                    (addPositions transformData.position (getOffsetFromDirection direction))
+                    (addPosition transformData.position (getOffsetFromDirection direction))
                     level
             )
         |> Maybe.andThen
@@ -771,6 +787,7 @@ updateAiComponent ai actor level =
                                 (addPosition transformData.position <| getOffsetFromDirection direction)
                                 level
                        )
+                    |> Just
             )
         |> Maybe.withDefault level
 
@@ -825,7 +842,7 @@ updateCameraComponent camera actor level =
                             , y = y
                         }
                 in
-                    Just { level | view = updateViewPosition newViewPosition }
+                    Just { level | view = updateViewPosition newViewPosition view }
             )
         |> Maybe.withDefault level
 
@@ -911,21 +928,21 @@ updateDownSmashComponent downSmashData actor level =
     getTransformComponent actor
         |> Maybe.andThen
             (\transformData ->
-                Just ( transformData, isMovingDown transformData )
+                Just ( transformData.position, isMovingDown transformData )
             )
         |> Maybe.andThen
-            (\( transformData, isMovingDown ) ->
-                (case ( isMovingDown, downSmashData.wasMovingDown ) of
+            (\( position, movingDown ) ->
+                (case ( movingDown, downSmashData.wasMovingDown ) of
                     ( False, True ) ->
                         getActorsByPosition
-                            (addPosition transformData <| getOffsetFromDirection Data.Common.Down)
+                            (addPosition position <| getOffsetFromDirection Data.Common.Down)
                             level
                             |> List.filter hasExplodableComponent
                             |> List.foldr
                                 (\downActor level ->
                                     level
-                                        |> createBigExplosion (addPosition transformData <| getOffsetFromDirection Data.Common.Down)
-                                        |> removeActorWithPosition (addPosition transformData <| getOffsetFromDirection Data.Common.Down) downActor.id
+                                        |> createBigExplosion (addPosition position <| getOffsetFromDirection Data.Common.Down)
+                                        |> removeActorWithPosition (addPosition position <| getOffsetFromDirection Data.Common.Down) downActor.id
                                 )
                                 level
 
@@ -935,11 +952,13 @@ updateDownSmashComponent downSmashData actor level =
                     -- Update the WasMovingDown
                     |> (\level ->
                             updateDownSmash
-                                { downSmashData | wasMovingDown = isMovingDown }
+                                { downSmashData | wasMovingDown = movingDown }
                                 actor
                                 level
                        )
+                    |> Just
             )
+        |> Maybe.withDefault level
 
 
 updateDownSmash : DownSmashComponentData -> Actor -> Level -> Level
@@ -1053,7 +1072,7 @@ addPlayer x y borderSize level =
                 , ( "rigid", RigidComponent )
                 , ( "physics"
                   , PhysicsComponent
-                        { weight = 10
+                        { strength = 10
                         , shape = Square
                         , affectedByGravity = False
                         }
@@ -1078,7 +1097,7 @@ addRock x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { weight = 20
+                    { strength = 20
                     , shape = Circle
                     , affectedByGravity = True
                     }
@@ -1094,12 +1113,12 @@ addExplosive x y level =
     addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", TransformRenderComponent { colors = [ Color.red ], ticksPerColor = 1 } )
+            , ( "render", RenderComponent { colors = [ Color.red ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "explodable", ExplodableComponent )
             , ( "physics"
               , PhysicsComponent
-                    { mass = 10
+                    { strength = 10
                     , shape = Circle
                     , affectedByGravity = True
                     }
@@ -1130,7 +1149,7 @@ addEnemy x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { mass = 20
+                    { strength = 20
                     , shape = Circle
                     , affectedByGravity = False
                     }
@@ -1154,7 +1173,7 @@ addDirt x y level =
             , ( "squashable", SquashableComponent )
             , ( "physics"
               , PhysicsComponent
-                    { mass = 1
+                    { strength = 1
                     , shape = Square
                     , affectedByGravity = False
                     }
@@ -1173,7 +1192,7 @@ addWall x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { mass = 100
+                    { strength = 100
                     , shape = Square
                     , affectedByGravity = False
                     }
@@ -1192,7 +1211,7 @@ addStrongWall x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { mass = 100
+                    { strength = 100
                     , shape = Square
                     , affectedByGravity = False
                     }
@@ -1212,7 +1231,7 @@ addDiamond x y level =
                 , ( "diamond", DiamondComponent )
                 , ( "physics"
                   , PhysicsComponent
-                        { mass = 100
+                        { strength = 100
                         , shape = Circle
                         , affectedByGravity = True
                         }

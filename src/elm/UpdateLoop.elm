@@ -1,6 +1,6 @@
 module UpdateLoop exposing (update)
 
-import Actor.Actor as Actor exposing (Level)
+import Actor exposing (Level)
 import Dict exposing (Dict)
 import InputController
 import Data.Common exposing (Position, Direction)

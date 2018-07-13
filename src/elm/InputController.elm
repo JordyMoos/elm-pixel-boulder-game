@@ -72,11 +72,12 @@ keyCodeToDirection =
 init : Model
 init =
     { keys =
-        { left = NotPressed
-        , up = NotPressed
-        , right = NotPressed
-        , down = NotPressed
-        }
+        Dict.fromList
+            [ ( leftArrow, NotPressed )
+            , ( upArrow, NotPressed )
+            , ( rightArrow, NotPressed )
+            , ( downArrow, NotPressed )
+            ]
     , counter = 0
     }
 
@@ -96,17 +97,21 @@ update msg model =
 
 getCurrentDirection : Model -> Maybe Direction
 getCurrentDirection model =
-    Dict.map
-        (\( code, direction ) ->
-            getCounter code model.keys
-                |> Maybe.andThen
-                    (\counter ->
-                        Just ( counter, direction )
-                    )
-        )
-        keyCodeToDirection
+    keyCodeToDirection
+        |> Dict.toList
+        |> List.map
+            (\( code, direction ) ->
+                getCounter code model.keys
+                    |> Maybe.andThen
+                        (\counter ->
+                            Just ( counter, direction )
+                        )
+            )
         |> Maybe.Extra.values
-        |> List.sort
+        |> List.sortBy
+            (\( code, direction ) ->
+                code
+            )
         |> List.head
         |> Maybe.andThen
             (\( _, direction ) ->
@@ -166,7 +171,7 @@ incrementCounter model =
     { model | counter = model.counter + 1 }
 
 
-getCounter : Keyboard.KeyCode -> Keys -> Just Int
+getCounter : Keyboard.KeyCode -> Keys -> Maybe Int
 getCounter keyCode keys =
     Dict.get keyCode keys
         |> Maybe.andThen
