@@ -14,6 +14,7 @@ module Actor.Actor
         , updatePlayerInputComponent
         , updateDiamondCollectorComponent
         , updateCanSquashComponent
+        , updatePhysicsComponent
         )
 
 import Dict exposing (Dict)
@@ -155,10 +156,10 @@ getActorsThatAffect position level =
             getActorIdsByPosition position level
         )
         [ position
-        , addPositions position <| getOffsetFromDirection Data.Common.Left
-        , addPositions position <| getOffsetFromDirection Data.Common.Up
-        , addPositions position <| getOffsetFromDirection Data.Common.Right
-        , addPositions position <| getOffsetFromDirection Data.Common.Down
+        , addPosition position <| getOffsetFromDirection Data.Common.Left
+        , addPosition position <| getOffsetFromDirection Data.Common.Up
+        , addPosition position <| getOffsetFromDirection Data.Common.Right
+        , addPosition position <| getOffsetFromDirection Data.Common.Down
         ]
         |> List.concat
         |> List.map
@@ -277,14 +278,20 @@ getTransformComponent actor =
             )
 
 
-isMoving : TransformComponentData -> Bool
-isMoving transformData =
+getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
+getMovingTowardsData transformData =
     case transformData.movingState of
-        MovingTowards _ ->
-            True
+        MovingTowards transformData ->
+            Just transformData
 
         NotMoving ->
-            False
+            Nothing
+
+
+isMoving : TransformComponentData -> Bool
+isMoving transformData =
+    getMovingTowardsData transformData
+        |> Maybe.Extra.isJust
 
 
 isNotMoving : TransformComponentData -> Bool
@@ -294,7 +301,7 @@ isNotMoving =
 
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
 getNewPosition direction transformData =
-    ( transformData, addPositions transformData.position (getOffsetFromDirection direction) )
+    ( transformData, addPosition transformData.position (getOffsetFromDirection direction) )
 
 
 
@@ -403,6 +410,81 @@ type alias PhysicsComponentData =
 type Shape
     = Circle
     | Square
+
+
+updatePhysicsComponent : PhysicsComponentData -> Actor -> Level -> Level
+updatePhysicsComponent physics actor level =
+    -- Checking if this actors requirements are met
+    [ physics ]
+        |> List.filter .affectedByGravity
+        |> List.filter isCircle
+        |> List.map
+            (\physics ->
+                getTransformComponent.actor
+            )
+        |> Maybe.Extra.values
+        |> List.filter isNotMoving
+        -- Check for possible actions
+        |> List.concatMap
+            (\transformData ->
+                [ ( transformData
+                  , Data.Common.Down
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
+                  )
+                , ( transformData
+                  , Data.Common.Left
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
+                    , isEmpty <|
+                        addPositions
+                            [ transformData.position
+                            , (getOffsetFromDirection Data.Common.Left)
+                            , (getOffsetFromDirection Data.Common.Down)
+                            ]
+                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    ]
+                  )
+                , ( transformData
+                  , Data.Common.Right
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
+                    , isEmpty <|
+                        addPositions
+                            [ transformData.position
+                            , (getOffsetFromDirection Data.Common.Right)
+                            , (getOffsetFromDirection Data.Common.Down)
+                            ]
+                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    ]
+                  )
+                ]
+            )
+        |> List.Extra.find
+            (\( transformData, _, predicates ) ->
+                List.all
+                    (\predicate ->
+                        predicate level
+                    )
+                    predicates
+            )
+        |> Maybe.andThen
+            (\( transformData, direction, _ ) ->
+                Just <|
+                    startMovingTowards actor
+                        transformData
+                        (addPosition transformData.position <| getOffsetFromDirection direction)
+                        level
+            )
+        |> Maybe.withDefault
+            level
+
+
+isCircleAt : Position -> Level -> Bool
+isCircleAt position level =
+    getActorsByPosition position level
+        |> List.map getPhysicsComponent
+        |> Maybe.Extra.values
+        |> List.filter isCircle
+        |> List.isEmpty
+        |> not
 
 
 getPhysicsComponent : Actor -> Maybe PhysicsComponentData
@@ -529,6 +611,11 @@ type alias AiComponentData =
     }
 
 
+updateAiComponent : AiComponentData -> Actor -> Level -> Level
+updateAiComponent ai actor level =
+    level
+
+
 
 {-
 
@@ -619,18 +706,17 @@ getOffsetFromDirection direction =
             { x = 0, y = 1 }
 
 
-subtractPositions : Position -> Position -> Position
-subtractPositions =
-    calculatePosition (-)
-
-
-addPositions : Position -> Position -> Position
+addPositions : List Position -> Position
 addPositions =
-    calculatePosition (+)
+    List.foldr
+        (\position acc ->
+            addPosition position acc
+        )
+        { x = 0, y = 0 }
 
 
-calculatePosition : (Int -> Int -> Int) -> Position -> Position -> Position
-calculatePosition method pos1 pos2 =
-    { x = method pos1.x pos2.x
-    , y = method pos1.y pos2.y
+addPosition : Position -> Position -> Position
+addPosition pos1 pos2 =
+    { x = pos1.x + pos2.x
+    , y = pos1.y + pos2.y
     }

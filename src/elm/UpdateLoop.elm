@@ -40,8 +40,8 @@ update maybeDirection level =
                                                                             Actor.CanSquashComponent ->
                                                                                 Actor.updateCanSquashComponent actor level
 
-                                                                            PhysicsComponent physics ->
-                                                                                tryApplyPhysics currentTick level actor physics
+                                                                            Actor.PhysicsComponent physics ->
+                                                                                Actor.updatePhysicsComponent physics actor level
 
                                                                             AIComponent ai ->
                                                                                 tryApplyAI currentTick level actor ai
