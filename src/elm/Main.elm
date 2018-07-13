@@ -125,7 +125,7 @@ init flags =
         , height = height
         , inputController = InputController.init
         , debug = flags.debug
-        , gameSpeed = Nothing -- Just <| 40 * Time.millisecond
+        , gameSpeed = Just <| 40 * Time.millisecond
         , currentTick = 0
         }
             ! []
@@ -145,12 +145,16 @@ update msg model =
             { model | gameSpeed = gameSpeed } ! []
 
         GameTick _ ->
-            { model
-                | inputController = InputController.resetWasPressed model.inputController
-                , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                , currentTick = model.currentTick + 1
-            }
-                ! []
+            let
+                _ =
+                    Debug.log "GameTick" ""
+            in
+                { model
+                    | inputController = InputController.resetWasPressed model.inputController
+                    , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+                    , currentTick = model.currentTick + 1
+                }
+                    ! []
 
 
 view : Model -> Html Msg
@@ -179,7 +183,6 @@ debugView model =
                 , button [ onClick <| GameSpeed (Just <| 1 * Time.second) ] [ text "1 fps" ]
                 , button [ onClick <| GameSpeed (Just <| 80 * Time.millisecond) ] [ text "12 fps" ]
                 , button [ onClick <| GameSpeed (Just <| 40 * Time.millisecond) ] [ text "24 fps" ]
-                , button [ onClick <| GameSpeed (Just <| 16 * Time.millisecond) ] [ text "60 fps" ]
                 ]
             ]
     else
