@@ -219,60 +219,10 @@ removeActor actorId level =
         { level | actors = remainingActors }
 
 
-createBigExplosion : Level -> Position -> Level
-createBigExplosion level position =
-    List.foldr
-        (\position level ->
-            level |> addExplosion position.x position.y
-        )
-        level
-        [ position |> addPositions (getOffsetFromDirection Left) |> addPositions (getOffsetFromDirection Up)
-        , position |> addPositions (getOffsetFromDirection Up)
-        , position |> addPositions (getOffsetFromDirection Right) |> addPositions (getOffsetFromDirection Up)
-        , position |> addPositions (getOffsetFromDirection Left)
-        , position
-        , position |> addPositions (getOffsetFromDirection Right)
-        , position |> addPositions (getOffsetFromDirection Left) |> addPositions (getOffsetFromDirection Down)
-        , position |> addPositions (getOffsetFromDirection Down)
-        , position |> addPositions (getOffsetFromDirection Right) |> addPositions (getOffsetFromDirection Down)
-        ]
-
-
 isEmpty : Level -> Position -> Bool
 isEmpty level position =
     getActorWhoClaimed position level
         |> Maybe.Extra.isNothing
-
-
-tryToCollectDiamond : Level -> Actor -> Level
-tryToCollectDiamond level focusedActor =
-    case getTransformComponent focusedActor.components of
-        Just focusedTransformData ->
-            getActorIdsAtPositionAsActors focusedTransformData.position level
-                |> List.foldr
-                    (\actor level ->
-                        if Dict.member "diamond" actor.components then
-                            let
-                                newActors =
-                                    Dict.remove actor.id level.actors
-
-                                diamonds =
-                                    level.diamonds
-
-                                newDiamonds =
-                                    { diamonds | collected = diamonds.collected + 1 }
-                            in
-                                { level
-                                    | actors = newActors
-                                    , diamonds = newDiamonds
-                                }
-                        else
-                            level
-                    )
-                    level
-
-        Nothing ->
-            level
 
 
 
@@ -289,48 +239,6 @@ updateActor level actorId actor =
                 level.actors
     in
         { level | actors = newActors }
-
-
-handleMovingTowards : Tick -> TransformComponentData -> MovingTowardsData -> Actor -> Level -> Level
-handleMovingTowards currentTick transformData towardsData actor level =
-    if currentTick >= towardsData.endTick then
-        let
-            newComponents =
-                Dict.insert
-                    "transform"
-                    (TransformComponent
-                        { position = towardsData.position
-                        , movingState = NotMoving
-                        }
-                    )
-                    actor.components
-        in
-            updateActor
-                level
-                actor.id
-                { actor | components = newComponents }
-                |> removeActorIdFromPosition transformData.position actor.id
-                |> addActorIdToPosition towardsData.position actor.id
-    else
-        let
-            newComponents =
-                Dict.insert
-                    "transform"
-                    (TransformComponent
-                        { transformData
-                            | movingState =
-                                MovingTowards
-                                    { towardsData
-                                        | completionPercentage = calculateCompletionPercentage towardsData.startTick towardsData.endTick currentTick
-                                    }
-                        }
-                    )
-                    actor.components
-        in
-            updateActor
-                level
-                actor.id
-                { actor | components = newComponents }
 
 
 removeActorIdFromPosition : Position -> ActorId -> Level -> Level
@@ -366,21 +274,6 @@ addActorIdToPosition { x, y } actorIdToAdd level =
                 level.positionIndex
     in
         { level | positionIndex = newPositionIndex }
-
-
-calculateCompletionPercentage : Tick -> Tick -> Tick -> Float
-calculateCompletionPercentage startTick endTick currentTick =
-    100 / (toFloat (endTick - startTick)) * (toFloat (currentTick - startTick))
-
-
-isMoving : KeyStatus -> Bool
-isMoving status =
-    case status of
-        NotPressed ->
-            False
-
-        _ ->
-            True
 
 
 view : Model -> Html Msg
@@ -543,35 +436,6 @@ asPixel viewPosition position color =
         (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
-
-
-getTransformRenderComponent : Dict String Component -> Maybe TransformRenderComponentData
-getTransformRenderComponent components =
-    Dict.get "render" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    TransformRenderComponent data ->
-                        Just data
-
-                    _ ->
-                        Nothing
-            )
-
-
-addActorIdToPositionIndex : ( Int, Int ) -> ActorId -> Dict ( Int, Int ) (List ActorId) -> Dict ( Int, Int ) (List ActorId)
-addActorIdToPositionIndex key actorId dict =
-    Dict.update
-        key
-        (\maybeValue ->
-            case maybeValue of
-                Nothing ->
-                    Just [ actorId ]
-
-                Just value ->
-                    Just <| actorId :: value
-        )
-        dict
 
 
 addPlayer : Int -> Int -> Int -> Level -> Level

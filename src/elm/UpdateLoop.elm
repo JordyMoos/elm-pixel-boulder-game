@@ -74,7 +74,7 @@ update maybeDirection level =
                             level
                 )
                 level
-                (List.range (view.position.x - updateBorder) (view.position.x + view.width + updateBorder))
+                (List.range (level.view.position.x - updateBorder) (level.view.position.x + level.view.width + updateBorder))
         )
-        model.level
-        (List.range (view.position.y - updateBorder) (view.position.y + view.height + updateBorder))
+        level
+        (List.range (level.view.position.y - updateBorder) (level.view.position.y + level.view.height + updateBorder))
