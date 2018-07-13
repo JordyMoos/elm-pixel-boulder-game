@@ -163,38 +163,6 @@ update msg model =
                     ! []
 
 
-getDirectionFromID : Int -> Direction
-getDirectionFromID id =
-    case id % 4 of
-        0 ->
-            Left
-
-        1 ->
-            Up
-
-        2 ->
-            Right
-
-        _ ->
-            Down
-
-
-getIDFromDirection : Direction -> Int
-getIDFromDirection direction =
-    case direction of
-        Left ->
-            0
-
-        Up ->
-            1
-
-        Right ->
-            2
-
-        Down ->
-            3
-
-
 handleDamageComponent : Actor -> DamageComponentData -> Level -> Level
 handleDamageComponent actor damageData level =
     level
@@ -334,67 +302,6 @@ getIsMovingDown transformData =
 
         MovingTowards towardsData ->
             subtractPositions towardsData.position transformData.position == getOffsetFromDirection Down
-
-
-tryApplyAI : Tick -> Level -> Actor -> AIComponentData -> Level
-tryApplyAI currentTick level actor ai =
-    getTransformComponent actor.components
-        |> Maybe.andThen
-            (\transformData ->
-                case transformData.movingState of
-                    NotMoving ->
-                        Just transformData
-
-                    _ ->
-                        -- Can not update ai when already moving
-                        Nothing
-            )
-        |> Maybe.andThen
-            (\transformData ->
-                let
-                    previousDirectionId =
-                        getIDFromDirection ai.previousDirection
-                in
-                    -- Find next direction
-                    List.Extra.find
-                        (\( transformData, direction ) ->
-                            -- Check if that position is free
-                            let
-                                position =
-                                    addPositions transformData.position (getOffsetFromDirection direction)
-                            in
-                                isEmpty level position
-                        )
-                        [ ( transformData, getDirectionFromID <| previousDirectionId - 3 )
-                        , ( transformData, getDirectionFromID <| previousDirectionId - 4 )
-                        , ( transformData, getDirectionFromID <| previousDirectionId - 5 )
-                        , ( transformData, getDirectionFromID <| previousDirectionId - 6 )
-                        ]
-            )
-        |> Maybe.andThen
-            (\( transformData, direction ) ->
-                let
-                    offset =
-                        getOffsetFromDirection direction
-
-                    newPosition =
-                        addPositions transformData.position offset
-
-                    newComponents =
-                        Dict.insert
-                            "ai"
-                            (AIComponent
-                                { previousDirection = direction
-                                }
-                            )
-                            actor.components
-
-                    newActor =
-                        { actor | components = newComponents }
-                in
-                    Just <| handleMovement currentTick level newActor transformData newPosition
-            )
-        |> Maybe.withDefault level
 
 
 tryMoveCamera : Level -> Actor -> CameraComponentData -> Level

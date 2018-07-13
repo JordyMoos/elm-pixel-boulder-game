@@ -15,6 +15,7 @@ module Actor.Actor
         , updateDiamondCollectorComponent
         , updateCanSquashComponent
         , updatePhysicsComponent
+        , updateAiComponent
         )
 
 import Dict exposing (Dict)
@@ -613,7 +614,41 @@ type alias AiComponentData =
 
 updateAiComponent : AiComponentData -> Actor -> Level -> Level
 updateAiComponent ai actor level =
-    level
+    getTransformComponent actor
+        |> Maybe.Extra.toList
+        |> List.filter isNotMoving
+        |> List.concatMap
+            (\transformData ->
+                [ ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 3 )
+                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 4 )
+                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 5 )
+                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 6 )
+                ]
+            )
+        |> List.Extra.find
+            (\( transformData, direction ) ->
+                isEmpty
+                    (addPositions transformData.position (getOffsetFromDirection direction))
+                    level
+            )
+        |> Maybe.andThen
+            (\( transformData, direction ) ->
+                Dict.insert
+                    "ai"
+                    (AiComponent
+                        { ai | previousDirection = direction }
+                    )
+                    actor.components
+                    |> updateComponents actor
+                    |> (\actor ->
+                            startMovingTowards
+                                actor
+                                transformData
+                                (addPosition transformData.position <| getOffsetFromDirection direction)
+                                level
+                       )
+            )
+        |> Maybe.withDefault level
 
 
 
@@ -720,3 +755,39 @@ addPosition pos1 pos2 =
     { x = pos1.x + pos2.x
     , y = pos1.y + pos2.y
     }
+
+
+
+-- @todo we might be able to combine this with InputController.keyCodeToDirection
+
+
+getDirectionFromID : Int -> Direction
+getDirectionFromID id =
+    case id % 4 of
+        0 ->
+            Data.Common.Left
+
+        1 ->
+            Data.Common.Up
+
+        2 ->
+            Data.Common.Right
+
+        _ ->
+            Data.Common.Down
+
+
+getIDFromDirection : Direction -> Int
+getIDFromDirection direction =
+    case direction of
+        Data.Common.Left ->
+            0
+
+        Data.Common.Up ->
+            1
+
+        Data.Common.Right ->
+            2
+
+        Data.Common.Down ->
+            3

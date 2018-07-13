@@ -43,8 +43,8 @@ update maybeDirection level =
                                                                             Actor.PhysicsComponent physics ->
                                                                                 Actor.updatePhysicsComponent physics actor level
 
-                                                                            AIComponent ai ->
-                                                                                tryApplyAI currentTick level actor ai
+                                                                            Actor.AiComponent ai ->
+                                                                                Actor.updateAiComponent ai actor level
 
                                                                             CameraComponent camera ->
                                                                                 tryMoveCamera level actor camera
