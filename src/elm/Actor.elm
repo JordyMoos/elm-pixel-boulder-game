@@ -8,8 +8,14 @@ module Actor
         , getActorsByPosition
         , getActorIdsByPosition
         , getActorIdsByXY
+        , getActorsThatAffect
           -- Components
         , Component(..)
+        , getRenderComponent
+        , getTransformComponent
+        , MovingTowardsData
+        , MovingState(..)
+        , RenderComponentData
           -- Updates
         , updatePlayerInputComponent
         , updateDiamondCollectorComponent
@@ -273,7 +279,7 @@ addActorToIndex position actorId level =
                         |> Just
 
                 Nothing ->
-                    Nothing
+                    Just [ actorId ]
         )
         level.positionIndex
         |> updatePositionIndex level
@@ -1003,6 +1009,20 @@ type alias RenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
     }
+
+
+getRenderComponent : Actor -> Maybe RenderComponentData
+getRenderComponent actor =
+    Dict.get "render" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    RenderComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 
