@@ -577,28 +577,6 @@ tryToCollectDiamond level focusedActor =
             level
 
 
-trySquashingThings : Level -> Actor -> Level
-trySquashingThings level focusedActor =
-    case getTransformComponent focusedActor.components of
-        Just focusedTransformData ->
-            getActorIdsAtPositionAsActors focusedTransformData.position level
-                |> List.foldr
-                    (\actor level ->
-                        if Dict.member "squashable" actor.components then
-                            let
-                                newActors =
-                                    Dict.remove actor.id level.actors
-                            in
-                                { level | actors = newActors }
-                        else
-                            level
-                    )
-                    level
-
-        Nothing ->
-            level
-
-
 
 -- @todo can remove actorId, it is already in actor
 

@@ -13,6 +13,7 @@ module Actor.Actor
           -- Updates
         , updatePlayerInputComponent
         , updateDiamondCollectorComponent
+        , updateCanSquashComponent
         )
 
 import Dict exposing (Dict)
@@ -469,6 +470,37 @@ collectDiamond level =
 incrementDiamondsCollected : Diamonds -> Diamonds
 incrementDiamondsCollected diamonds =
     { diamonds | collected = diamonds.collected + 1 }
+
+
+
+{-
+
+   CanSquashComponent
+
+-}
+
+
+updateCanSquashComponent : Actor -> Level -> Level
+updateCanSquashComponent squashingActor level =
+    getTransformComponent squashingActor
+        |> Maybe.Extra.toList
+        |> List.map .position
+        |> List.map
+            (\position ->
+                getActorsByPosition position level
+                    |> List.map
+                        (\actor ->
+                            ( position, actor )
+                        )
+            )
+        |> List.foldr
+            (\( position, actor ) level ->
+                if Dict.member "squashable" actor.components then
+                    removeActor position actor.id level
+                else
+                    level
+            )
+            level
 
 
 

@@ -37,8 +37,8 @@ update maybeDirection level =
                                                                             Actor.DiamondCollectorComponent ->
                                                                                 Actor.updateDiamondCollectorComponent actor level
 
-                                                                            CanSquashComponent ->
-                                                                                trySquashingThings level actor
+                                                                            Actor.CanSquashComponent ->
+                                                                                Actor.updateCanSquashComponent actor level
 
                                                                             PhysicsComponent physics ->
                                                                                 tryApplyPhysics currentTick level actor physics
