@@ -204,8 +204,25 @@ isEmpty position level =
 -}
 
 
-removeActor : Position -> ActorId -> Level -> Level
-removeActor position actorId level =
+removeActor : Actor -> Level -> Level
+removeActor actor level =
+    level
+        |> (\level ->
+                getPositionFromComponents actor.components
+                    |> Maybe.andThen
+                        (\position ->
+                            Just <| removeActorFromIndex position actor.id level
+                        )
+                    |> Maybe.withDefault level
+           )
+        |> (\level ->
+                Dict.remove actor.id level.actors level
+                    |> updateActors level
+           )
+
+
+removeActorWithPosition : Position -> ActorId -> Level -> Level
+removeActorWithPosition position actorId level =
     level
         |> removeActorFromIndex position actorId
         |> (\level ->
@@ -633,7 +650,7 @@ updateDiamondCollectorComponent collectorActor level =
             (\( position, actor ) level ->
                 if Dict.member "diamond" actor.components then
                     level
-                        |> removeActor position actor.id
+                        |> removeActorWithPosition position actor.id
                         |> collectDiamond
                 else
                     level
@@ -675,7 +692,7 @@ updateCanSquashComponent squashingActor level =
         |> List.foldr
             (\( position, actor ) level ->
                 if Dict.member "squashable" actor.components then
-                    removeActor position actor.id level
+                    removeActorWithPosition position actor.id level
                 else
                     level
             )
@@ -814,8 +831,48 @@ updateCameraComponent camera actor level =
 
 
 type alias DamageComponentData =
-    { remainingTicks : Tick
+    { remainingTicks : Int
     }
+
+
+updateDamageComponent : DamageComponentData -> Actor -> Level -> Level
+updateDamageComponent damageData actor level =
+    level
+        |> tryDoDamage actor
+        |> removeExplosionIfEnded actor damageData
+
+
+tryDoDamage : Actor -> Level -> Level
+tryDoDamage damageDealingActor level =
+    getTransformComponent damageDealingActor
+        |> Maybe.Extra.toList
+        |> List.concatMap
+            (\transformData ->
+                getActorsThatAffect transformData.position level
+            )
+        |> List.filter
+            (\actor ->
+                actor.id /= damageDealingActor.id
+            )
+        |> List.foldr
+            (\actor level ->
+                removeActor actor level
+            )
+            level
+
+
+removeExplosionIfEnded : Actor -> DamageComponentData -> Level -> Level
+removeExplosionIfEnded actor damageData level =
+    if damageData.remainingTicks > 0 then
+        Dict.insert
+            "damage"
+            (DamageComponent { damageData | remainingTicks = damageData.remainingTicks - 1 })
+            actor.components
+            |> updateComponents actor
+            |> updateActor level.actors
+            |> updateActors level
+    else
+        removeActor actor level
 
 
 
@@ -850,7 +907,7 @@ updateDownSmashComponent downSmashData actor level =
                                 (\downActor level ->
                                     level
                                         |> createBigExplosion (addPosition transformData <| getOffsetFromDirection Data.Common.Down)
-                                        |> removeActor (addPosition transformData <| getOffsetFromDirection Data.Common.Down) downActor.id
+                                        |> removeActorWithPosition (addPosition transformData <| getOffsetFromDirection Data.Common.Down) downActor.id
                                 )
                                 level
 
