@@ -16,6 +16,8 @@ module Actor.Actor
         , updateCanSquashComponent
         , updatePhysicsComponent
         , updateAiComponent
+        , updateCameraComponent
+        , updateTransformComponent
         )
 
 import Dict exposing (Dict)
@@ -205,8 +207,10 @@ removeActor : Position -> ActorId -> Level -> Level
 removeActor position actorId level =
     level
         |> removeActorFromIndex position actorId
-        |> Dict.remove actorId level.actors
-        |> updateActors level
+        |> (\level ->
+                Dict.remove actorId level.actors level
+                    |> updateActors level
+           )
 
 
 removeActorFromIndex : Position -> ActorId -> Level -> Level
@@ -219,6 +223,25 @@ removeActorFromIndex position actorId level =
                     List.Extra.remove
                         actorId
                         actorIds
+                        |> Just
+
+                Nothing ->
+                    Nothing
+        )
+        level.positionIndex
+        |> updatePositionIndex level
+
+
+addActorToIndex : Position -> ActorId -> Level -> Level
+addActorToIndex position actorId level =
+    Dict.update
+        ( position.x, position.y )
+        (\maybeActorIds ->
+            case maybeActorIds of
+                Just actorIds ->
+                    actorId
+                        :: actorIds
+                        |> List.Extra.unique
                         |> Just
 
                 Nothing ->
@@ -265,6 +288,54 @@ movingTicks =
     5
 
 
+updateTransformComponent : TransformComponentData -> Actor -> Level -> Level
+updateTransformComponent transformData actor level =
+    getMovingTowardsData transformData
+        |> Maybe.andThen
+            (\towardsData ->
+                if transformData.tickCountLeft > 0 then
+                    -- Still moving
+                    Dict.insert
+                        "transform"
+                        (TransformComponent
+                            { transformData
+                                | movingState =
+                                    MovingTowards
+                                        { towardsData
+                                            | completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
+                                        }
+                            }
+                        )
+                        actor.components
+                        |> updateComponents actor
+                        |> updateActor level.actors
+                        |> updateActors level
+                        |> Just
+                else
+                    -- Finished moving
+                    Dict.insert
+                        "transform"
+                        (TransformComponent
+                            { position = towardsData.position
+                            , movingState = NotMoving
+                            }
+                        )
+                        actor.components
+                        |> updateComponents actor
+                        |> updateActor level.actors
+                        |> updateActors level
+                        |> removeActorFromIndex transformData.position actor.id
+                        |> addActorToIndex towardsData.position actor.id
+                        |> Just
+            )
+        |> Maybe.withDefault level
+
+
+calculateCompletionPercentage : Int -> Int -> Float
+calculateCompletionPercentage totalTickCount tickCountLeft =
+    100 / (toFloat (totalTickCount)) * (toFloat (totalTickCount - tickCountLeft))
+
+
 getTransformComponent : Actor -> Maybe TransformComponentData
 getTransformComponent actor =
     Dict.get "transform" actor.components
@@ -282,8 +353,8 @@ getTransformComponent actor =
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
 getMovingTowardsData transformData =
     case transformData.movingState of
-        MovingTowards transformData ->
-            Just transformData
+        MovingTowards towardsData ->
+            Just towardsData
 
         NotMoving ->
             Nothing
@@ -662,6 +733,51 @@ updateAiComponent ai actor level =
 type alias CameraComponentData =
     { borderSize : Int
     }
+
+
+updateCameraComponent : CameraComponentData -> Actor -> Level -> Level
+updateCameraComponent camera actor level =
+    getTransformComponent actor
+        |> Maybe.andThen
+            (\transformData ->
+                let
+                    view =
+                        level.view
+
+                    viewPosition =
+                        view.position
+
+                    position =
+                        transformData.position
+
+                    x =
+                        if position.x - camera.borderSize <= viewPosition.x then
+                            position.x - camera.borderSize
+                        else if position.x - view.width + camera.borderSize > viewPosition.x - 1 then
+                            position.x - view.width + camera.borderSize + 1
+                        else
+                            viewPosition.x
+
+                    y =
+                        if position.y - camera.borderSize <= viewPosition.y then
+                            position.y - camera.borderSize
+                        else if position.y - view.height + camera.borderSize >= viewPosition.y - 1 then
+                            position.y - view.height + camera.borderSize + 1
+                        else
+                            viewPosition.y
+
+                    newViewPosition =
+                        { viewPosition
+                            | x = x
+                            , y = y
+                        }
+
+                    newView =
+                        { view | position = newViewPosition }
+                in
+                    Just { level | view = newView }
+            )
+        |> Maybe.withDefault level
 
 
 

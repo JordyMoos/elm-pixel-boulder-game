@@ -34,6 +34,9 @@ update maybeDirection level =
                                                                             Actor.PlayerInputComponent ->
                                                                                 Actor.updatePlayerInputComponent maybeDirection actor level
 
+                                                                            Actor.TransformComponent transformData ->
+                                                                                Actor.updateTransformComponent transformData actor level
+
                                                                             Actor.DiamondCollectorComponent ->
                                                                                 Actor.updateDiamondCollectorComponent actor level
 
@@ -46,8 +49,8 @@ update maybeDirection level =
                                                                             Actor.AiComponent ai ->
                                                                                 Actor.updateAiComponent ai actor level
 
-                                                                            CameraComponent camera ->
-                                                                                tryMoveCamera level actor camera
+                                                                            Actor.CameraComponent camera ->
+                                                                                Actor.updateCameraComponent camera actor level
 
                                                                             DownSmashComponent downSmash ->
                                                                                 tryDownSmash level actor downSmash

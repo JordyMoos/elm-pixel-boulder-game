@@ -304,51 +304,6 @@ getIsMovingDown transformData =
             subtractPositions towardsData.position transformData.position == getOffsetFromDirection Down
 
 
-tryMoveCamera : Level -> Actor -> CameraComponentData -> Level
-tryMoveCamera level actor camera =
-    getTransformComponent actor.components
-        |> Maybe.andThen
-            (\transformData ->
-                let
-                    view =
-                        level.view
-
-                    viewPosition =
-                        view.position
-
-                    position =
-                        transformData.position
-
-                    x =
-                        if position.x - camera.borderSize <= viewPosition.x then
-                            position.x - camera.borderSize
-                        else if position.x - view.width + camera.borderSize > viewPosition.x - 1 then
-                            position.x - view.width + camera.borderSize + 1
-                        else
-                            viewPosition.x
-
-                    y =
-                        if position.y - camera.borderSize <= viewPosition.y then
-                            position.y - camera.borderSize
-                        else if position.y - view.height + camera.borderSize >= viewPosition.y - 1 then
-                            position.y - view.height + camera.borderSize + 1
-                        else
-                            viewPosition.y
-
-                    newViewPosition =
-                        { viewPosition
-                            | x = x
-                            , y = y
-                        }
-
-                    newView =
-                        { view | position = newViewPosition }
-                in
-                    Just { level | view = newView }
-            )
-        |> Maybe.withDefault level
-
-
 isEmpty : Level -> Position -> Bool
 isEmpty level position =
     getActorWhoClaimed position level
