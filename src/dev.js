@@ -139,7 +139,8 @@ let game = {
     '|': 'wall',
     '#': 'strongwall',
     '*': 'diamond',
-  }
+  },
+  scene: defaultLevel.split("\n")
 };
 
 
