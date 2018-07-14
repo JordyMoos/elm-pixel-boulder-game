@@ -944,18 +944,19 @@ willTriggerBy triggerStrength actor =
 
 type alias DamageComponentData =
     { remainingTicks : Int
+    , damageStrength : Int
     }
 
 
 updateDamageComponent : DamageComponentData -> Actor -> Level -> Level
 updateDamageComponent damageData actor level =
     level
-        |> tryDoDamage actor
+        |> tryDoDamage actor damageData
         |> removeExplosionIfEnded actor damageData
 
 
-tryDoDamage : Actor -> Level -> Level
-tryDoDamage damageDealingActor level =
+tryDoDamage : Actor -> DamageComponentData -> Level -> Level
+tryDoDamage damageDealingActor damageData level =
     getTransformComponent damageDealingActor
         |> Maybe.Extra.toList
         |> List.concatMap
@@ -965,6 +966,15 @@ tryDoDamage damageDealingActor level =
         |> List.filter
             (\actor ->
                 actor.id /= damageDealingActor.id
+            )
+        |> List.filter
+            (\actor ->
+                getPhysicsComponent actor
+                    |> Maybe.andThen
+                        (\physics ->
+                            Just <| physics.strength < damageData.damageStrength
+                        )
+                    |> Maybe.withDefault True
             )
         |> List.foldr
             (\actor level ->
@@ -1205,7 +1215,7 @@ addExplosion x y level =
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", RenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
-            , ( "damage", DamageComponent { remainingTicks = 8 } )
+            , ( "damage", DamageComponent { remainingTicks = 8, damageStrength = 80 } )
             ]
         )
         level
@@ -1285,7 +1295,7 @@ addWall x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { strength = 100
+                    { strength = 50
                     , shape = Square
                     }
               )
