@@ -68,72 +68,8 @@ init flags =
 
                 Err error ->
                     Debug.crash error
-
-        level =
-            List.indexedMap
-                (,)
-                []
-                --flags.scene
-                |> List.foldr
-                    (\( y, line ) level ->
-                        List.indexedMap
-                            (,)
-                            (String.toList line)
-                            |> List.foldr
-                                (\( x, char ) level ->
-                                    case Char.toUpper char of
-                                        '#' ->
-                                            Actor.addStrongWall x y level
-
-                                        '|' ->
-                                            Actor.addWall x y level
-
-                                        '.' ->
-                                            Actor.addDirt x y level
-
-                                        'P' ->
-                                            Actor.addPlayer x y 3 level
-
-                                        'O' ->
-                                            Actor.addRock x y level
-
-                                        '0' ->
-                                            Actor.addRock x y level
-
-                                        '*' ->
-                                            Actor.addDiamond x y level
-
-                                        'E' ->
-                                            Actor.addEnemy x y level
-
-                                        'C' ->
-                                            Actor.addPet x y level
-
-                                        '=' ->
-                                            Actor.addDynamite x y level
-
-                                        _ ->
-                                            level
-                                )
-                                level
-                    )
-                    { entities = Dict.fromList []
-                    , signs = Dict.fromList []
-                    , actors = Dict.fromList []
-                    , positionIndex = Dict.fromList []
-                    , nextActorId = 1
-                    , diamonds =
-                        { total = 0
-                        , collected = 0
-                        }
-                    , view =
-                        { position = { x = 0, y = 0 }
-                        , width = width
-                        , height = height
-                        }
-                    }
     in
-        { level = level
+        { level = Actor.init levelConfig width height
         , width = width
         , height = height
         , inputController = InputController.init

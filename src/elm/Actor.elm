@@ -6,6 +6,7 @@ module Actor
           -- Initialization
         , LevelConfig
         , levelConfigDecoder
+        , init
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -49,6 +50,7 @@ import List.Extra
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Color.Convert
+import Char
 
 
 defaultCameraBorderSize : Int
@@ -147,6 +149,14 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
 
 
+
+{-
+
+   Initialization
+
+-}
+
+
 init : LevelConfig -> Int -> Int -> Level
 init config width height =
     emptyLevel width height
@@ -184,10 +194,42 @@ setSigns signs level =
     { level | signs = signs }
 
 
-
 setActors : Scene -> Level -> Level
 setActors scene level =
-    
+    List.indexedMap
+        (,)
+        scene
+        |> List.foldr
+            (\( y, line ) level ->
+                List.indexedMap
+                    (,)
+                    (String.toList line)
+                    |> List.foldr
+                        (\( x, char ) level ->
+                            Dict.get
+                                (String.fromChar <| Char.toUpper char)
+                                level.signs
+                                |> Maybe.andThen
+                                    (\entityName ->
+                                        Dict.get entityName level.entities
+                                    )
+                                |> Maybe.andThen
+                                    (\entity ->
+                                        addActor
+                                            (Dict.insert
+                                                "transform"
+                                                (TransformComponent { position = { x = x, y = y }, movingState = NotMoving })
+                                                entity
+                                            )
+                                            level
+                                            |> Just
+                                    )
+                                |> Maybe.withDefault level
+                        )
+                        level
+            )
+            level
+
 
 
 {-
@@ -1647,7 +1689,7 @@ renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
     JDP.decode RenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
-        |> JDP.optional "ticksPerSecond" Decode.int 1
+        |> JDP.optional "ticksPerColor" Decode.int 1
 
 
 cameraDataDecoder : Decoder CameraComponentData
