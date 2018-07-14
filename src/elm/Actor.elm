@@ -1006,8 +1006,13 @@ removeExplosionIfEnded actor damageData level =
 
 
 type alias DownSmashComponentData =
-    { wasMovingDown : Bool
+    { movingDownState : MovingDownState
     }
+
+
+type MovingDownState
+    = IsMovingDown Int
+    | NotMovingDown
 
 
 updateDownSmashComponent : DownSmashComponentData -> Actor -> Level -> Level
@@ -1019,9 +1024,9 @@ updateDownSmashComponent downSmashData actor level =
             )
         |> Maybe.andThen
             (\( position, movingDown ) ->
-                (case ( movingDown, downSmashData.wasMovingDown ) of
-                    ( False, True ) ->
-                        getActorsByPosition
+                (case ( movingDown, downSmashData.movingDownState ) of
+                    ( False, IsMovingDown _ ) ->
+                        getActorsThatAffect
                             (addPosition position <| getOffsetFromDirection Data.Common.Down)
                             level
                             |> List.filter hasExplodableComponent
@@ -1038,18 +1043,41 @@ updateDownSmashComponent downSmashData actor level =
                 )
                     -- Update the WasMovingDown
                     |> (\level ->
-                            updateDownSmash
-                                { downSmashData | wasMovingDown = movingDown }
-                                actor
-                                level
+                            updateMovingDownState movingDown downSmashData
+                                |> updateDownSmash
+                                    actor
+                                    level
                        )
                     |> Just
             )
         |> Maybe.withDefault level
 
 
-updateDownSmash : DownSmashComponentData -> Actor -> Level -> Level
-updateDownSmash downSmashData actor level =
+updateMovingDownState : Bool -> DownSmashComponentData -> DownSmashComponentData
+updateMovingDownState movingDown downSmashData =
+    case movingDown of
+        True ->
+            { downSmashData | movingDownState = IsMovingDown 3 }
+
+        False ->
+            { downSmashData | movingDownState = lowerMovingDownCount downSmashData.movingDownState }
+
+
+lowerMovingDownCount : MovingDownState -> MovingDownState
+lowerMovingDownCount movingDownState =
+    case movingDownState of
+        IsMovingDown 0 ->
+            NotMovingDown
+
+        IsMovingDown x ->
+            IsMovingDown (x - 1)
+
+        NotMovingDown ->
+            NotMovingDown
+
+
+updateDownSmash : Actor -> Level -> DownSmashComponentData -> Level
+updateDownSmash actor level downSmashData =
     Dict.insert
         "downsmash"
         (DownSmashComponent downSmashData)
@@ -1183,7 +1211,7 @@ addRock x y level =
                     , shape = Circle
                     }
               )
-            , ( "downsmash", DownSmashComponent { wasMovingDown = False } )
+            , ( "downsmash", DownSmashComponent { movingDownState = NotMovingDown } )
             ]
         )
         level
