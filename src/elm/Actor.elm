@@ -1244,7 +1244,7 @@ addPet x y level =
             , ( "rigid", RigidComponent )
             , ( "physics"
               , PhysicsComponent
-                    { strength = 20
+                    { strength = 10
                     , shape = Circle
                     }
               )
