@@ -98,16 +98,12 @@ type alias KeyedComponent =
     ( String, Component )
 
 
-type alias KeyedComponents =
-    List KeyedComponent
-
-
 type alias Entities =
-    Dict String KeyedComponents
+    Dict EntityName Components
 
 
 type alias Signs =
-    Dict String String
+    Dict String EntityName
 
 
 type alias Scene =
@@ -1533,9 +1529,13 @@ entitiesDecoder =
     Decode.dict componentsDecoder
 
 
-componentsDecoder : Decoder KeyedComponents
+componentsDecoder : Decoder Components
 componentsDecoder =
     Decode.list componentDecoder
+        |> Decode.andThen
+            (\keyedComponents ->
+                Decode.succeed <| Dict.fromList keyedComponents
+            )
 
 
 componentDecoder : Decoder KeyedComponent
