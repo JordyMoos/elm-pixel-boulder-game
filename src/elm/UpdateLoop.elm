@@ -43,9 +43,6 @@ update maybeDirection level =
                                                                             Actor.CanSquashComponent ->
                                                                                 Actor.updateCanSquashComponent actor level
 
-                                                                            Actor.PhysicsComponent physics ->
-                                                                                Actor.updatePhysicsComponent physics actor level
-
                                                                             Actor.AiComponent ai ->
                                                                                 Actor.updateAiComponent ai actor level
 
