@@ -34,6 +34,7 @@ module Actor
         , addRock
         , addDiamond
         , addEnemy
+        , addPet
         , addDynamite
         )
 
@@ -1229,6 +1230,29 @@ addEnemy x y level =
               )
             , ( "explodable", ExplodableComponent )
             , ( "trigger-explodable", TriggerExplodableComponent { triggerStrength = 20 } )
+            ]
+        )
+        level
+
+
+addPet : Int -> Int -> Level -> Level
+addPet x y level =
+    addActor
+        (Dict.fromList
+            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
+            , ( "render", RenderComponent { colors = [ Color.purple, Color.lightPurple ], ticksPerColor = 8 } )
+            , ( "rigid", RigidComponent )
+            , ( "physics"
+              , PhysicsComponent
+                    { strength = 20
+                    , shape = Circle
+                    }
+              )
+            , ( "ai"
+              , AiComponent <|
+                    WalkAroundAi { previousDirection = Data.Common.Right }
+              )
+            , ( "explodable", ExplodableComponent )
             ]
         )
         level

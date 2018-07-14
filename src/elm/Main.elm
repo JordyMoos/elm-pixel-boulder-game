@@ -98,6 +98,9 @@ init flags =
                                         'E' ->
                                             Actor.addEnemy x y level
 
+                                        'C' ->
+                                            Actor.addPet x y level
+
                                         '=' ->
                                             Actor.addDynamite x y level
 
