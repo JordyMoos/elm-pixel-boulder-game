@@ -29,105 +29,75 @@ let defaultLevel = (
 // All actors will get a TransformComponent via the scene
 // Therefor you do not need to set the TransformComponent on an entity
 let game = {
-  entities: [
-    {
-      name: 'player',
-      components: [
-        { type: 'render', data: { colors: [ '#4e9a06' ] } },
-        { type: 'player-input' },
-        { type: 'diamond-collector' },
-        { type: 'rigid' },
-        { type: 'can-squash' },
-        { type: 'explodable' },
-        { type: 'camera', data: { borderSize: 3} },
-        { type: 'physics', data: { strength: 10, shape: 'square' } },
-      ]
-    },
-    {
-      name: 'rock',
-      components: [
-        { type: 'render', data: { colors: [ '#babdb6' ] } },
-        { type: 'rigid' },
-        { type: 'ai', data: { type: 'gravity' } },
-        { type: 'physics', data: { strength: 20, shape: 'circle' } },
-        { type: 'smash-down' },
-      ]
-    },
-    {
-      name: 'dynamite',
-      components: [
-        { type: 'render', data: { colors: [ '#cc0000' ] } },
-        { type: 'rigid' },
-        { type: 'ai', data: { type: 'gravity' } },
-        { type: 'explodable' },
-        { type: 'physics', data: { strength: 20, shape: 'circle' } },
-        { type: 'smash-down' },
-      ]
-    },
-    {
-      name: 'explosion',
-      components: [
-        { type: 'render', data: { colors: [ '#cc0000', '#ce5c00', '#edd400' ], ticksPerColor: 2 } },
-        { type: 'damage', data: { remainingTicks: 8, damageStrength: 80 } },
-      ]
-    },
-    {
-      name: 'enemy',
-      components: [
-        { type: 'render', data: { colors: [ '#ce5c00' ] } },
-        { type: 'rigid' },
-        { type: 'physics', data: { strength: 20, shape: 'circle' } },
-        { type: 'ai', data: { type: 'walkaround' } },
-        { type: 'explodable' },
-        { type: 'trigger-explodable', data: { triggerStrength: 20 } },
-      ]
-    },
-    {
-      name: 'pet',
-      components: [
-        { type: 'render', data: { colors: [ '#75507b', '#ad7fa8' ], ticksPerColor: 8 } },
-        { type: 'rigid' },
-        { type: 'physics', data: { strength: 10, shape: 'circle' } },
-        { type: 'ai', data: { type: 'walkaround' } },
-        { type: 'explodable' },
-      ]
-    },
-    {
-      name: 'dirt',
-      components: [
-        { type: 'render', data: { colors: [ '#e9b96e' ] } },
-        { type: 'rigid' },
-        { type: 'squasable' },
-        { type: 'physics', data: { strength: 1, shape: 'square' } },
-      ]
-    },
-    {
-      name: 'wall',
-      components: [
-        { type: 'render', data: { colors: [ '#626457' ] } },
-        { type: 'rigid' },
-        { type: 'physics', data: { strength: 50, shape: 'square' } },
-      ]
-    },
-    {
-      name: 'strongwall',
-      components: [
-        { type: 'render', data: { colors: [ '#000000' ] } },
-        { type: 'rigid' },
-        { type: 'physics', data: { strength: 100, shape: 'square' } },
-      ]
-    },
-    {
-      name: 'diamond',
-      components: [
-        { type: 'render', data: { colors: [ '#3465a4', '#729fcf' ], ticksPerColor: 12 } },
-        { type: 'rigid' },
-        { type: 'diamond' },
-        { type: 'ai', data: { type: 'gravity' } },
-        { type: 'physics', data: { strength: 100, shape: 'circle' } },
-      ]
-    }
-  ],
+  entities: {
+    'player': [
+      {type: 'render', data: {colors: ['#4e9a06']}},
+      {type: 'player-input'},
+      {type: 'diamond-collector'},
+      {type: 'rigid'},
+      {type: 'can-squash'},
+      {type: 'explodable'},
+      {type: 'camera', data: {borderSize: 3}},
+      {type: 'physics', data: {strength: 10, shape: 'square'}},
+    ],
+    'rock': [
+      {type: 'render', data: {colors: ['#babdb6']}},
+      {type: 'rigid'},
+      {type: 'ai', data: {type: 'gravity'}},
+      {type: 'physics', data: {strength: 20, shape: 'circle'}},
+      {type: 'smash-down'},
+    ],
+    'dynamite': [
+      {type: 'render', data: {colors: ['#cc0000']}},
+      {type: 'rigid'},
+      {type: 'ai', data: {type: 'gravity'}},
+      {type: 'explodable'},
+      {type: 'physics', data: {strength: 20, shape: 'circle'}},
+      {type: 'smash-down'},
+    ],
+    'explosion': [
+      {type: 'render', data: {colors: ['#cc0000', '#ce5c00', '#edd400'], ticksPerColor: 2}},
+      {type: 'damage', data: {remainingTicks: 8, damageStrength: 80}},
+    ],
+    'enemy': [
+      {type: 'render', data: {colors: ['#ce5c00']}},
+      {type: 'rigid'},
+      {type: 'physics', data: {strength: 20, shape: 'circle'}},
+      {type: 'ai', data: {type: 'walkaround'}},
+      {type: 'explodable'},
+      {type: 'trigger-explodable', data: {triggerStrength: 20}},
+    ],
+    'pet': [
+      {type: 'render', data: {colors: ['#75507b', '#ad7fa8'], ticksPerColor: 8}},
+      {type: 'rigid'},
+      {type: 'physics', data: {strength: 10, shape: 'circle'}},
+      {type: 'ai', data: {type: 'walkaround'}},
+      {type: 'explodable'},
+    ],
+    'dirt': [
+      {type: 'render', data: {colors: ['#e9b96e']}},
+      {type: 'rigid'},
+      {type: 'squasable'},
+      {type: 'physics', data: {strength: 1, shape: 'square'}},
+    ],
+    'wall': [
+      {type: 'render', data: {colors: ['#626457']}},
+      {type: 'rigid'},
+      {type: 'physics', data: {strength: 50, shape: 'square'}},
+    ],
+    'strongwall': [
+      {type: 'render', data: {colors: ['#000000']}},
+      {type: 'rigid'},
+      {type: 'physics', data: {strength: 100, shape: 'square'}},
+    ],
+    'diamond': [
+      {type: 'render', data: {colors: ['#3465a4', '#729fcf'], ticksPerColor: 12}},
+      {type: 'rigid'},
+      {type: 'diamond'},
+      {type: 'ai', data: {type: 'gravity'}},
+      {type: 'physics', data: {strength: 100, shape: 'circle'}},
+    ]
+  },
   signs: {
     'p': 'player',
     'o': 'rock',
@@ -143,7 +113,10 @@ let game = {
   scene: defaultLevel.split("\n")
 };
 
+document.getElementsByTagName('body')[0].innerHTML = '';
+Elm.Main.fullscreen(game);
 
+/*
 document.getElementById('textarea-level').value =
   localStorage.getItem('level') || defaultLevel;
 
@@ -175,3 +148,4 @@ document.getElementById('edit-level')
       location.reload();
     }
   );
+*/

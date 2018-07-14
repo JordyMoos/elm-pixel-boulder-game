@@ -13,11 +13,7 @@ import InputController
 import Actor exposing (Level)
 import UpdateLoop
 import CanvasRenderer
-
-
-defaultCameraBorderSize : Int
-defaultCameraBorderSize =
-    3
+import Json.Decode
 
 
 type alias Model =
@@ -31,13 +27,16 @@ type alias Model =
     }
 
 
-type alias Flags =
-    { debug : Bool
-    , scene : List String
-    }
+
+--
+--type alias Flags =
+--    { debug : Bool
+--    , signs : Dict Char String
+--    , scene : List String
+--    }
 
 
-main : Program Flags Model Msg
+main : Program Json.Decode.Value Model Msg
 main =
     Html.programWithFlags
         { init = init
@@ -53,7 +52,7 @@ type Msg
     | GameSpeed (Maybe Time.Time)
 
 
-init : Flags -> ( Model, Cmd Msg )
+init : Json.Decode.Value -> ( Model, Cmd Msg )
 init flags =
     let
         width =
@@ -62,10 +61,19 @@ init flags =
         height =
             12
 
+        levelConfig =
+            case Json.Decode.decodeValue Actor.levelConfigDecoder flags of
+                Ok levelConfig ->
+                    levelConfig
+
+                Err error ->
+                    Debug.crash error
+
         level =
             List.indexedMap
                 (,)
-                flags.scene
+                []
+                --flags.scene
                 |> List.foldr
                     (\( y, line ) level ->
                         List.indexedMap
@@ -84,7 +92,7 @@ init flags =
                                             Actor.addDirt x y level
 
                                         'P' ->
-                                            Actor.addPlayer x y defaultCameraBorderSize level
+                                            Actor.addPlayer x y 3 level
 
                                         'O' ->
                                             Actor.addRock x y level
@@ -109,7 +117,9 @@ init flags =
                                 )
                                 level
                     )
-                    { actors = Dict.fromList []
+                    { entities = Dict.fromList []
+                    , signs = Dict.fromList []
+                    , actors = Dict.fromList []
                     , positionIndex = Dict.fromList []
                     , nextActorId = 1
                     , diamonds =
@@ -127,8 +137,8 @@ init flags =
         , width = width
         , height = height
         , inputController = InputController.init
-        , debug = flags.debug
-        , gameSpeed = Just <| 40 * Time.millisecond
+        , debug = True
+        , gameSpeed = Nothing -- Just <| 40 * Time.millisecond
         , currentTick = 0
         }
             ! []

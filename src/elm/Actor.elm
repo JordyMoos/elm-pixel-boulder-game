@@ -3,6 +3,8 @@ module Actor
         ( ActorId
         , Actor
         , Level
+        , LevelConfig
+        , levelConfigDecoder
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -43,6 +45,14 @@ import Data.Common exposing (Position, Direction, Tick)
 import Color exposing (Color)
 import Maybe.Extra
 import List.Extra
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as JDP
+import Color.Convert
+
+
+defaultCameraBorderSize : Int
+defaultCameraBorderSize =
+    3
 
 
 type alias ActorId =
@@ -80,8 +90,41 @@ type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
 
 
+type alias EntityName =
+    String
+
+
+type alias KeyedComponent =
+    ( String, Component )
+
+
+type alias KeyedComponents =
+    List KeyedComponent
+
+
+type alias Entities =
+    Dict String KeyedComponents
+
+
+type alias Signs =
+    Dict String String
+
+
+type alias Scene =
+    List String
+
+
+type alias LevelConfig =
+    { entities : Entities
+    , signs : Signs
+    , scene : Scene
+    }
+
+
 type alias Level =
-    { actors : Actors
+    { entities : Entities
+    , signs : Signs
+    , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
     , diamonds : Diamonds
@@ -1467,3 +1510,187 @@ getIDFromDirection direction =
 
         Data.Common.Down ->
             3
+
+
+
+{-
+
+   Json
+
+-}
+
+
+levelConfigDecoder : Decoder LevelConfig
+levelConfigDecoder =
+    JDP.decode LevelConfig
+        |> JDP.required "entities" entitiesDecoder
+        |> JDP.required "signs" signsDecoder
+        |> JDP.required "scene" sceneDecoder
+
+
+entitiesDecoder : Decoder Entities
+entitiesDecoder =
+    Decode.dict componentsDecoder
+
+
+componentsDecoder : Decoder KeyedComponents
+componentsDecoder =
+    Decode.list componentDecoder
+
+
+componentDecoder : Decoder KeyedComponent
+componentDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                (case theType of
+                    "ai" ->
+                        Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+
+                    "camera" ->
+                        Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
+
+                    "can-squash" ->
+                        Decode.succeed CanSquashComponent
+
+                    "damage" ->
+                        Decode.map DamageComponent <| Decode.field "data" damageDataDecoder
+
+                    "diamond" ->
+                        Decode.succeed DiamondComponent
+
+                    "diamond-collector" ->
+                        Decode.succeed DiamondCollectorComponent
+
+                    "explodable" ->
+                        Decode.succeed ExplodableComponent
+
+                    "physics" ->
+                        Decode.map PhysicsComponent <| Decode.field "data" physicsDataDecoder
+
+                    "player-input" ->
+                        Decode.succeed PlayerInputComponent
+
+                    "render" ->
+                        Decode.map RenderComponent <| Decode.field "data" renderDataDecoder
+
+                    "rigid" ->
+                        Decode.succeed RigidComponent
+
+                    "trigger-explodable" ->
+                        Decode.map TriggerExplodableComponent <| Decode.field "data" triggerExplodableDataDecoder
+
+                    "smash-down" ->
+                        Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
+
+                    "squasable" ->
+                        Decode.succeed SquashableComponent
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode component, but type "
+                                ++ theType
+                                ++ " is not supported"
+                )
+                    |> Decode.andThen
+                        (\component ->
+                            Decode.succeed ( theType, component )
+                        )
+            )
+
+
+renderDataDecoder : Decoder RenderComponentData
+renderDataDecoder =
+    JDP.decode RenderComponentData
+        |> JDP.required "colors" (Decode.list colorDecoder)
+        |> JDP.optional "ticksPerSecond" Decode.int 1
+
+
+cameraDataDecoder : Decoder CameraComponentData
+cameraDataDecoder =
+    JDP.decode CameraComponentData
+        |> JDP.optional "borderSize" Decode.int defaultCameraBorderSize
+
+
+physicsDataDecoder : Decoder PhysicsComponentData
+physicsDataDecoder =
+    JDP.decode PhysicsComponentData
+        |> JDP.required "strength" Decode.int
+        |> JDP.required "shape" physicsShapeDecoder
+
+
+damageDataDecoder : Decoder DamageComponentData
+damageDataDecoder =
+    JDP.decode DamageComponentData
+        |> JDP.required "remainingTicks" Decode.int
+        |> JDP.required "damageStrength" Decode.int
+
+
+triggerExplodableDataDecoder : Decoder TriggerExplodableComponentData
+triggerExplodableDataDecoder =
+    JDP.decode TriggerExplodableComponentData
+        |> JDP.required "triggerStrength" Decode.int
+
+
+physicsShapeDecoder : Decoder Shape
+physicsShapeDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\shape ->
+                case shape of
+                    "circle" ->
+                        Decode.succeed Circle
+
+                    "square" ->
+                        Decode.succeed Square
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode a physics shape, but the shape "
+                                ++ shape
+                                ++ " is not supported."
+            )
+
+
+aiDataDecoder : Decoder AiComponentData
+aiDataDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "walkaround" ->
+                        Decode.succeed <| WalkAroundAi { previousDirection = Data.Common.Left }
+
+                    "gravity" ->
+                        Decode.succeed GravityAi
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode AI, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+colorDecoder : Decoder Color
+colorDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\stringColor ->
+                case Color.Convert.hexToColor stringColor of
+                    Ok color ->
+                        Decode.succeed color
+
+                    Err _ ->
+                        Decode.fail <| "Failed to decode color: " ++ stringColor
+            )
+
+
+signsDecoder : Decoder Signs
+signsDecoder =
+    Decode.dict Decode.string
+
+
+sceneDecoder : Decoder Scene
+sceneDecoder =
+    Decode.list Decode.string
