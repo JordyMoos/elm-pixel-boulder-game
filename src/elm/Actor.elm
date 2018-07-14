@@ -20,7 +20,6 @@ module Actor
         , updatePlayerInputComponent
         , updateDiamondCollectorComponent
         , updateCanSquashComponent
-        , updatePhysicsComponent
         , updateAiComponent
         , updateCameraComponent
         , updateTransformComponent
@@ -541,78 +540,12 @@ tryToPush direction actor transformData otherActor level =
 type alias PhysicsComponentData =
     { strength : Int
     , shape : Shape
-    , affectedByGravity : Bool
     }
 
 
 type Shape
     = Circle
     | Square
-
-
-updatePhysicsComponent : PhysicsComponentData -> Actor -> Level -> Level
-updatePhysicsComponent physics actor level =
-    -- Checking if this actors requirements are met
-    [ physics ]
-        |> List.filter .affectedByGravity
-        |> List.filter isCircle
-        |> List.map
-            (\physics ->
-                getTransformComponent actor
-            )
-        |> Maybe.Extra.values
-        |> List.filter isNotMoving
-        -- Check for possible actions
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData
-                  , Data.Common.Down
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
-                  )
-                , ( transformData
-                  , Data.Common.Left
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Left)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    ]
-                  )
-                , ( transformData
-                  , Data.Common.Right
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Right)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    ]
-                  )
-                ]
-            )
-        |> List.Extra.find
-            (\( transformData, _, predicates ) ->
-                List.all
-                    (\predicate ->
-                        predicate level
-                    )
-                    predicates
-            )
-        |> Maybe.andThen
-            (\( transformData, direction, _ ) ->
-                Just <|
-                    startMovingTowards actor
-                        transformData
-                        (addPosition transformData.position <| getOffsetFromDirection direction)
-                        level
-            )
-        |> Maybe.withDefault
-            level
 
 
 isCircleAt : Position -> Level -> Bool
@@ -754,13 +687,28 @@ hasRigidComponent actor =
 -}
 
 
-type alias AiComponentData =
+type AiComponentData
+    = WalkAroundAi WalkAroundAiData
+    | GravityAi
+
+
+type alias WalkAroundAiData =
     { previousDirection : Direction
     }
 
 
 updateAiComponent : AiComponentData -> Actor -> Level -> Level
 updateAiComponent ai actor level =
+    case ai of
+        WalkAroundAi data ->
+            updateWalkAroundAi data actor level
+
+        GravityAi ->
+            updateGravityAi actor level
+
+
+updateWalkAroundAi : WalkAroundAiData -> Actor -> Level -> Level
+updateWalkAroundAi ai actor level =
     getTransformComponent actor
         |> Maybe.Extra.toList
         |> List.filter isNotMoving
@@ -782,8 +730,9 @@ updateAiComponent ai actor level =
             (\( transformData, direction ) ->
                 Dict.insert
                     "ai"
-                    (AiComponent
-                        { ai | previousDirection = direction }
+                    (AiComponent <|
+                        WalkAroundAi
+                            { ai | previousDirection = direction }
                     )
                     actor.components
                     |> updateComponents actor
@@ -797,6 +746,64 @@ updateAiComponent ai actor level =
                     |> Just
             )
         |> Maybe.withDefault level
+
+
+updateGravityAi : Actor -> Level -> Level
+updateGravityAi actor level =
+    getTransformComponent actor
+        |> Maybe.Extra.toList
+        |> List.filter isNotMoving
+        -- Check for possible actions
+        |> List.concatMap
+            (\transformData ->
+                [ ( transformData
+                  , Data.Common.Down
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
+                  )
+                , ( transformData
+                  , Data.Common.Left
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
+                    , isEmpty <|
+                        addPositions
+                            [ transformData.position
+                            , (getOffsetFromDirection Data.Common.Left)
+                            , (getOffsetFromDirection Data.Common.Down)
+                            ]
+                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    ]
+                  )
+                , ( transformData
+                  , Data.Common.Right
+                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
+                    , isEmpty <|
+                        addPositions
+                            [ transformData.position
+                            , (getOffsetFromDirection Data.Common.Right)
+                            , (getOffsetFromDirection Data.Common.Down)
+                            ]
+                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    ]
+                  )
+                ]
+            )
+        |> List.Extra.find
+            (\( transformData, _, predicates ) ->
+                List.all
+                    (\predicate ->
+                        predicate level
+                    )
+                    predicates
+            )
+        |> Maybe.andThen
+            (\( transformData, direction, _ ) ->
+                Just <|
+                    startMovingTowards actor
+                        transformData
+                        (addPosition transformData.position <| getOffsetFromDirection direction)
+                        level
+            )
+        |> Maybe.withDefault
+            level
 
 
 
@@ -1095,7 +1102,6 @@ addPlayer x y borderSize level =
                   , PhysicsComponent
                         { strength = 10
                         , shape = Square
-                        , affectedByGravity = False
                         }
                   )
                 , ( "camera", CameraComponent { borderSize = borderSize } )
@@ -1116,11 +1122,11 @@ addRock x y level =
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", RenderComponent { colors = [ Color.darkGray ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
+            , ( "ai", AiComponent GravityAi )
             , ( "physics"
               , PhysicsComponent
                     { strength = 20
                     , shape = Circle
-                    , affectedByGravity = True
                     }
               )
             , ( "downsmash", DownSmashComponent { wasMovingDown = False } )
@@ -1137,11 +1143,11 @@ addExplosive x y level =
             , ( "render", RenderComponent { colors = [ Color.red ], ticksPerColor = 1 } )
             , ( "rigid", RigidComponent )
             , ( "explodable", ExplodableComponent )
+            , ( "ai", AiComponent GravityAi )
             , ( "physics"
               , PhysicsComponent
                     { strength = 10
                     , shape = Circle
-                    , affectedByGravity = True
                     }
               )
             ]
@@ -1172,12 +1178,11 @@ addEnemy x y level =
               , PhysicsComponent
                     { strength = 20
                     , shape = Circle
-                    , affectedByGravity = False
                     }
               )
             , ( "ai"
-              , AiComponent
-                    { previousDirection = Data.Common.Right }
+              , AiComponent <|
+                    WalkAroundAi { previousDirection = Data.Common.Right }
               )
             , ( "explodable", ExplodableComponent )
             ]
@@ -1196,7 +1201,6 @@ addDirt x y level =
               , PhysicsComponent
                     { strength = 1
                     , shape = Square
-                    , affectedByGravity = False
                     }
               )
             ]
@@ -1215,7 +1219,6 @@ addWall x y level =
               , PhysicsComponent
                     { strength = 100
                     , shape = Square
-                    , affectedByGravity = False
                     }
               )
             ]
@@ -1234,7 +1237,6 @@ addStrongWall x y level =
               , PhysicsComponent
                     { strength = 100
                     , shape = Square
-                    , affectedByGravity = False
                     }
               )
             ]
@@ -1250,11 +1252,11 @@ addDiamond x y level =
                 [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
                 , ( "render", RenderComponent { colors = [ Color.blue, Color.lightBlue ], ticksPerColor = 12 } )
                 , ( "diamond", DiamondComponent )
+                , ( "ai", AiComponent GravityAi )
                 , ( "physics"
                   , PhysicsComponent
                         { strength = 100
                         , shape = Circle
-                        , affectedByGravity = True
                         }
                   )
                 ]
