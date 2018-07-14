@@ -32,7 +32,6 @@ let game = {
   entities: [
     {
       name: 'player',
-      sign: 'p',
       components: [
         { type: 'render', data: { colors: [ '#4e9a06' ] } },
         { type: 'player-input' },
@@ -46,7 +45,6 @@ let game = {
     },
     {
       name: 'rock',
-      sign: 'o',
       components: [
         { type: 'render', data: { colors: [ '#babdb6' ] } },
         { type: 'rigid' },
@@ -57,7 +55,6 @@ let game = {
     },
     {
       name: 'dynamite',
-      sign: '=',
       components: [
         { type: 'render', data: { colors: [ '#cc0000' ] } },
         { type: 'rigid' },
@@ -69,7 +66,6 @@ let game = {
     },
     {
       name: 'explosion',
-      sign: 'x',
       components: [
         { type: 'render', data: { colors: [ '#cc0000', '#ce5c00', '#edd400' ], ticksPerColor: 2 } },
         { type: 'damage', data: { remainingTicks: 8, damageStrength: 80 } },
@@ -77,7 +73,6 @@ let game = {
     },
     {
       name: 'enemy',
-      sign: 'e',
       components: [
         { type: 'render', data: { colors: [ '#ce5c00' ] } },
         { type: 'rigid' },
@@ -89,7 +84,6 @@ let game = {
     },
     {
       name: 'pet',
-      sign: 'c',
       components: [
         { type: 'render', data: { colors: [ '#75507b', '#ad7fa8' ], ticksPerColor: 8 } },
         { type: 'rigid' },
@@ -100,7 +94,6 @@ let game = {
     },
     {
       name: 'dirt',
-      sign: '.',
       components: [
         { type: 'render', data: { colors: [ '#e9b96e' ] } },
         { type: 'rigid' },
@@ -110,7 +103,6 @@ let game = {
     },
     {
       name: 'wall',
-      sign: '|',
       components: [
         { type: 'render', data: { colors: [ '#626457' ] } },
         { type: 'rigid' },
@@ -119,7 +111,6 @@ let game = {
     },
     {
       name: 'strongwall',
-      sign: '#',
       components: [
         { type: 'render', data: { colors: [ '#000000' ] } },
         { type: 'rigid' },
@@ -128,7 +119,6 @@ let game = {
     },
     {
       name: 'diamond',
-      sign: '*',
       components: [
         { type: 'render', data: { colors: [ '#3465a4', '#729fcf' ], ticksPerColor: 12 } },
         { type: 'rigid' },
@@ -137,7 +127,19 @@ let game = {
         { type: 'physics', data: { strength: 100, shape: 'circle' } },
       ]
     }
-  ]
+  ],
+  signs: {
+    'p': 'player',
+    'o': 'rock',
+    '=': 'dynamite',
+    'x': 'explosion',
+    'e': 'enemy',
+    'c': 'pet',
+    '.': 'dirt',
+    '|': 'wall',
+    '#': 'strongwall',
+    '*': 'diamond',
+  }
 };
 
 
