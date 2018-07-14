@@ -99,7 +99,7 @@ init flags =
                                             Actor.addEnemy x y level
 
                                         '=' ->
-                                            Actor.addExplosive x y level
+                                            Actor.addDynamite x y level
 
                                         _ ->
                                             level

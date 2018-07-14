@@ -25,6 +25,7 @@ module Actor
         , updateTransformComponent
         , updateDownSmashComponent
         , updateDamageComponent
+        , updateTriggerExplodableComponent
           -- Actor creation
         , addStrongWall
         , addWall
@@ -33,7 +34,7 @@ module Actor
         , addRock
         , addDiamond
         , addEnemy
-        , addExplosive
+        , addDynamite
         )
 
 import Dict exposing (Dict)
@@ -102,6 +103,7 @@ type Component
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
     | DamageComponent DamageComponentData
+    | TriggerExplodableComponent TriggerExplodableComponentData
 
 
 
@@ -874,7 +876,67 @@ updateViewPosition position view =
 
 {-
 
-   DamageComponent
+   TriggerExplodableComponent
+
+-}
+
+
+type alias TriggerExplodableComponentData =
+    { triggerStrength : Int
+    }
+
+
+updateTriggerExplodableComponent : TriggerExplodableComponentData -> Actor -> Level -> Level
+updateTriggerExplodableComponent triggerData actor level =
+    getTransformComponent actor
+        |> Maybe.Extra.toList
+        |> List.concatMap
+            (\transformData ->
+                [ addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
+                , addPosition transformData.position (getOffsetFromDirection Data.Common.Up)
+                , addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
+                , addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                ]
+            )
+        |> List.filterMap
+            (\position ->
+                getActorsThatAffect position level
+                    |> List.filter (willTriggerBy triggerData.triggerStrength)
+                    |> List.map
+                        (\explodableActor ->
+                            ( position, explodableActor )
+                        )
+                    |> Just
+            )
+        |> List.concat
+        |> List.foldr
+            (\( position, explodableActor ) level ->
+                level
+                    |> addBigExplosion position
+                    |> removeActorWithPosition position explodableActor.id
+            )
+            level
+
+
+willTriggerBy : Int -> Actor -> Bool
+willTriggerBy triggerStrength actor =
+    [ actor ]
+        |> List.filter hasExplodableComponent
+        |> List.map getPhysicsComponent
+        |> Maybe.Extra.values
+        |> List.filter
+            (\physics ->
+                physics.strength < triggerStrength
+            )
+        |> List.isEmpty
+        |> not
+
+
+
+{-
+   }
+
+      DamageComponent
 
 -}
 
@@ -955,7 +1017,7 @@ updateDownSmashComponent downSmashData actor level =
                             |> List.foldr
                                 (\downActor level ->
                                     level
-                                        |> createBigExplosion (addPosition position <| getOffsetFromDirection Data.Common.Down)
+                                        |> addBigExplosion (addPosition position <| getOffsetFromDirection Data.Common.Down)
                                         |> removeActorWithPosition (addPosition position <| getOffsetFromDirection Data.Common.Down) downActor.id
                                 )
                                 level
@@ -984,25 +1046,6 @@ updateDownSmash downSmashData actor level =
         |> updateComponents actor
         |> updateActor level.actors
         |> updateActors level
-
-
-createBigExplosion : Position -> Level -> Level
-createBigExplosion position level =
-    List.foldr
-        (\position level ->
-            level |> addExplosion position.x position.y
-        )
-        level
-        [ addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Up ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Up ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Up ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Left ]
-        , position
-        , addPositions [ position, getOffsetFromDirection Data.Common.Right ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Down ]
-        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ]
-        ]
 
 
 
@@ -1135,8 +1178,8 @@ addRock x y level =
         level
 
 
-addExplosive : Int -> Int -> Level -> Level
-addExplosive x y level =
+addDynamite : Int -> Int -> Level -> Level
+addDynamite x y level =
     addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
@@ -1146,7 +1189,7 @@ addExplosive x y level =
             , ( "ai", AiComponent GravityAi )
             , ( "physics"
               , PhysicsComponent
-                    { strength = 10
+                    { strength = 20
                     , shape = Circle
                     }
               )
@@ -1185,6 +1228,7 @@ addEnemy x y level =
                     WalkAroundAi { previousDirection = Data.Common.Right }
               )
             , ( "explodable", ExplodableComponent )
+            , ( "trigger-explodable", TriggerExplodableComponent { triggerStrength = 20 } )
             ]
         )
         level
@@ -1266,6 +1310,25 @@ addDiamond x y level =
                     (incrementTotalDiamonds level.diamonds)
                     level
            )
+
+
+addBigExplosion : Position -> Level -> Level
+addBigExplosion position level =
+    List.foldr
+        (\position level ->
+            level |> addExplosion position.x position.y
+        )
+        level
+        [ addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Up ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Left ]
+        , position
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Down ]
+        , addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ]
+        ]
 
 
 
