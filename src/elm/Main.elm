@@ -27,15 +27,6 @@ type alias Model =
     }
 
 
-
---
---type alias Flags =
---    { debug : Bool
---    , signs : Dict Char String
---    , scene : List String
---    }
-
-
 main : Program Json.Decode.Value Model Msg
 main =
     Html.programWithFlags
@@ -94,16 +85,12 @@ update msg model =
             { model | gameSpeed = gameSpeed } ! []
 
         GameTick _ ->
-            let
-                _ =
-                    Debug.log "GameTick" ""
-            in
-                { model
-                    | inputController = InputController.resetWasPressed model.inputController
-                    , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                    , currentTick = model.currentTick + 1
-                }
-                    ! []
+            { model
+                | inputController = InputController.resetWasPressed model.inputController
+                , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+                , currentTick = model.currentTick + 1
+            }
+                ! []
 
 
 view : Model -> Html Msg

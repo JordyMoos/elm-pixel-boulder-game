@@ -207,7 +207,7 @@ setActors scene level =
                     |> List.foldr
                         (\( x, char ) level ->
                             Dict.get
-                                (String.fromChar <| Char.toUpper char)
+                                (String.fromChar char)
                                 level.signs
                                 |> Maybe.andThen
                                     (\entityName ->
@@ -1282,6 +1282,14 @@ addActor components level =
                     |> Maybe.withDefault
                         ( level, actor )
            )
+        --        -- Update total diamonds if needed
+        --        |> (\( level, actor ) ->
+        --                ""
+        --           )
+        --        -- Update view if needed
+        --        |> (\( level, actor ) ->
+        --                ""
+        --           )
         -- Add actor to the actors
         |> (\( level, actor ) ->
                 updateActor level.actors actor
@@ -1669,7 +1677,7 @@ componentDecoder =
                     "smash-down" ->
                         Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
 
-                    "squasable" ->
+                    "squashable" ->
                         Decode.succeed SquashableComponent
 
                     _ ->
