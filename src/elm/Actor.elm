@@ -3,6 +3,7 @@ module Actor
         ( ActorId
         , Actor
         , Level
+          -- Initialization
         , LevelConfig
         , levelConfigDecoder
           -- Actor
@@ -146,10 +147,53 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
 
 
+init : LevelConfig -> Int -> Int -> Level
+init config width height =
+    emptyLevel width height
+        |> setEntities config.entities
+        |> setSigns config.signs
+        |> setActors config.scene
+
+
+emptyLevel : Int -> Int -> Level
+emptyLevel width height =
+    { entities = Dict.fromList []
+    , signs = Dict.fromList []
+    , actors = Dict.fromList []
+    , positionIndex = Dict.fromList []
+    , nextActorId = 1
+    , diamonds =
+        { total = 0
+        , collected = 0
+        }
+    , view =
+        { position = { x = 0, y = 0 }
+        , width = width
+        , height = height
+        }
+    }
+
+
+setEntities : Entities -> Level -> Level
+setEntities entities level =
+    { level | entities = entities }
+
+
+setSigns : Signs -> Level -> Level
+setSigns signs level =
+    { level | signs = signs }
+
+
+
+setActors : Scene -> Level -> Level
+setActors scene level =
+    
+
 
 {-
+   }
 
-   Actor Mutation
+      Actor Mutation
 
 -}
 
