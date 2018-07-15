@@ -117,6 +117,7 @@ type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
+    , backgroundColor : Color
     }
 
 
@@ -128,6 +129,7 @@ type alias Level =
     , nextActorId : Int
     , diamonds : Diamonds
     , view : View
+    , backgroundColor : Color
     }
 
 
@@ -160,6 +162,7 @@ type Component
 init : LevelConfig -> Int -> Int -> Level
 init config width height =
     emptyLevel width height
+        |> setBackgroundColor config.backgroundColor
         |> setEntities config.entities
         |> setSigns config.signs
         |> setActors config.scene
@@ -181,7 +184,13 @@ emptyLevel width height =
         , width = width
         , height = height
         }
+    , backgroundColor = Color.white
     }
+
+
+setBackgroundColor : Color -> Level -> Level
+setBackgroundColor color level =
+    { level | backgroundColor = color }
 
 
 setEntities : Entities -> Level -> Level
@@ -713,6 +722,19 @@ isCircle physicsData =
 
 {-
 
+   DiamondComponent
+
+-}
+
+
+hasDiamondComponent : Actor -> Bool
+hasDiamondComponent actor =
+    Dict.member "diamond" actor.components
+
+
+
+{-
+
    DiamondCollectorComponent
 
 -}
@@ -987,6 +1009,20 @@ updateCameraComponent camera actor level =
                     Just { level | view = updateViewPosition newViewPosition view }
             )
         |> Maybe.withDefault level
+
+
+getCameraComponent : Actor -> Maybe CameraComponentData
+getCameraComponent actor =
+    Dict.get "camera" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CameraComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 updateView : View -> Level -> Level
@@ -1282,14 +1318,46 @@ addActor components level =
                     |> Maybe.withDefault
                         ( level, actor )
            )
-        --        -- Update total diamonds if needed
-        --        |> (\( level, actor ) ->
-        --                ""
-        --           )
-        --        -- Update view if needed
-        --        |> (\( level, actor ) ->
-        --                ""
-        --           )
+        -- Update total diamonds if needed
+        |> (\( level, actor ) ->
+                [ actor ]
+                    |> List.filter
+                        (\actor ->
+                            hasDiamondComponent actor
+                        )
+                    |> List.foldr
+                        (\actor level ->
+                            incrementTotalDiamonds level.diamonds
+                                |> (flip updateDiamonds) level
+                        )
+                        level
+                    |> (\level ->
+                            ( level, actor )
+                       )
+           )
+        -- Update view if needed
+        |> (\( level, actor ) ->
+                getCameraComponent actor
+                    |> Maybe.andThen
+                        (\camera ->
+                            getTransformComponent actor
+                        )
+                    |> Maybe.andThen
+                        (\transform ->
+                            updateViewPosition
+                                { x = transform.position.x - (round ((toFloat level.view.width) / 2))
+                                , y = transform.position.y - (round ((toFloat level.view.height) / 2))
+                                }
+                                level.view
+                                |> (flip updateView) level
+                                |> Just
+                        )
+                    |> Maybe.andThen
+                        (\level ->
+                            Just ( level, actor )
+                        )
+                    |> Maybe.withDefault ( level, actor )
+           )
         -- Add actor to the actors
         |> (\( level, actor ) ->
                 updateActor level.actors actor
@@ -1616,6 +1684,7 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
+        |> JDP.optional "backgroundColor" colorDecoder (Color.white)
 
 
 entitiesDecoder : Decoder Entities
