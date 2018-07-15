@@ -27,7 +27,7 @@ document.getElementById('submit-level')
           JSON.parse(document.getElementById('textarea-level').value)
         );
       } catch (e) {
-        console.log(e);
+        console.dir(e);
         document.getElementById('elm').innerText = 'Error: ' + e.message;
       }
     }
