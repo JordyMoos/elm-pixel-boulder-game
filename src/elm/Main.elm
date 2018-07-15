@@ -65,7 +65,7 @@ init flags =
         , height = height
         , inputController = InputController.init
         , debug = True
-        , gameSpeed = Nothing -- Just <| 40 * Time.millisecond
+        , gameSpeed = Just <| 40 * Time.millisecond
         , currentTick = 0
         }
             ! []
