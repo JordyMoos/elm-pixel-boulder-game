@@ -30,16 +30,6 @@ module Actor
         , updateDownSmashComponent
         , updateDamageComponent
         , updateTriggerExplodableComponent
-          -- Actor creation
-        , addStrongWall
-        , addWall
-        , addDirt
-        , addPlayer
-        , addRock
-        , addDiamond
-        , addEnemy
-        , addPet
-        , addDynamite
         )
 
 import Dict exposing (Dict)
@@ -455,7 +445,7 @@ type MovingState
 
 movingTicks : Tick
 movingTicks =
-    5
+    4
 
 
 updateTransformComponent : TransformComponentData -> Actor -> Level -> Level
@@ -1370,74 +1360,6 @@ incrementNextActorId level =
     { level | nextActorId = level.nextActorId + 1 }
 
 
-addPlayer : Int -> Int -> Int -> Level -> Level
-addPlayer x y borderSize level =
-    level
-        |> addActor
-            (Dict.fromList
-                [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-                , ( "render", RenderComponent { colors = [ Color.darkGreen ], ticksPerColor = 1 } )
-                , ( "player-input", PlayerInputComponent )
-                , ( "diamond-collector", DiamondCollectorComponent )
-                , ( "can-squash", CanSquashComponent )
-                , ( "rigid", RigidComponent )
-                , ( "physics"
-                  , PhysicsComponent
-                        { strength = 10
-                        , shape = Square
-                        }
-                  )
-                , ( "camera", CameraComponent { borderSize = borderSize } )
-                , ( "explodable", ExplodableComponent )
-                ]
-            )
-        |> (\level ->
-                level.view
-                    |> updateViewPosition { x = x - borderSize, y = y - borderSize }
-                    |> (flip updateView) level
-           )
-
-
-addRock : Int -> Int -> Level -> Level
-addRock x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.darkGray ], ticksPerColor = 1 } )
-            , ( "rigid", RigidComponent )
-            , ( "ai", AiComponent GravityAi )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 20
-                    , shape = Circle
-                    }
-              )
-            , ( "downsmash", DownSmashComponent { movingDownState = NotMovingDown } )
-            ]
-        )
-        level
-
-
-addDynamite : Int -> Int -> Level -> Level
-addDynamite x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.red ], ticksPerColor = 1 } )
-            , ( "rigid", RigidComponent )
-            , ( "explodable", ExplodableComponent )
-            , ( "ai", AiComponent GravityAi )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 20
-                    , shape = Circle
-                    }
-              )
-            ]
-        )
-        level
-
-
 addExplosion : Int -> Int -> Level -> Level
 addExplosion x y level =
     addActor
@@ -1448,131 +1370,6 @@ addExplosion x y level =
             ]
         )
         level
-
-
-addEnemy : Int -> Int -> Level -> Level
-addEnemy x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.darkOrange ], ticksPerColor = 1 } )
-            , ( "rigid", RigidComponent )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 20
-                    , shape = Circle
-                    }
-              )
-            , ( "ai"
-              , AiComponent <|
-                    WalkAroundAi { previousDirection = Data.Common.Right }
-              )
-            , ( "explodable", ExplodableComponent )
-            , ( "trigger-explodable", TriggerExplodableComponent { triggerStrength = 20 } )
-            ]
-        )
-        level
-
-
-addPet : Int -> Int -> Level -> Level
-addPet x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.purple, Color.lightPurple ], ticksPerColor = 8 } )
-            , ( "rigid", RigidComponent )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 10
-                    , shape = Circle
-                    }
-              )
-            , ( "ai"
-              , AiComponent <|
-                    WalkAroundAi { previousDirection = Data.Common.Right }
-              )
-            , ( "explodable", ExplodableComponent )
-            ]
-        )
-        level
-
-
-addDirt : Int -> Int -> Level -> Level
-addDirt x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.lightBrown ], ticksPerColor = 1 } )
-            , ( "squashable", SquashableComponent )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 1
-                    , shape = Square
-                    }
-              )
-            ]
-        )
-        level
-
-
-addWall : Int -> Int -> Level -> Level
-addWall x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.rgb 98 100 87 ], ticksPerColor = 1 } )
-            , ( "rigid", RigidComponent )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 50
-                    , shape = Square
-                    }
-              )
-            ]
-        )
-        level
-
-
-addStrongWall : Int -> Int -> Level -> Level
-addStrongWall x y level =
-    addActor
-        (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.black ], ticksPerColor = 1 } )
-            , ( "rigid", RigidComponent )
-            , ( "physics"
-              , PhysicsComponent
-                    { strength = 100
-                    , shape = Square
-                    }
-              )
-            ]
-        )
-        level
-
-
-addDiamond : Int -> Int -> Level -> Level
-addDiamond x y level =
-    level
-        |> addActor
-            (Dict.fromList
-                [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-                , ( "render", RenderComponent { colors = [ Color.blue, Color.lightBlue ], ticksPerColor = 12 } )
-                , ( "diamond", DiamondComponent )
-                , ( "ai", AiComponent GravityAi )
-                , ( "physics"
-                  , PhysicsComponent
-                        { strength = 100
-                        , shape = Circle
-                        }
-                  )
-                ]
-            )
-        |> (\level ->
-                updateDiamonds
-                    (incrementTotalDiamonds level.diamonds)
-                    level
-           )
 
 
 addBigExplosion : Position -> Level -> Level
