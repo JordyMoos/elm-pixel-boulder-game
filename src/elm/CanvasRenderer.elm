@@ -18,6 +18,7 @@ pixelSize =
 view : Tick -> Level -> Html msg
 view currentTick level =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
+        |> Canvas.batch (background level.backgroundColor level.view.width level.view.height)
         |> Canvas.batch
             (List.range level.view.position.y (level.view.position.y + level.view.height - 1)
                 |> List.map
@@ -33,6 +34,15 @@ view currentTick level =
                 |> List.concat
             )
         |> Canvas.toHtml []
+
+
+background : Color -> Int -> Int -> List Canvas.DrawOp
+background color width height =
+    [ Canvas.FillStyle color
+    , Canvas.FillRect
+        (Canvas.Point.fromInts ( 0, 0 ))
+        (Canvas.Size (width * pixelSize) (height * pixelSize))
+    ]
 
 
 getPixel : Tick -> Position -> Position -> Level -> Maybe (List Canvas.DrawOp)

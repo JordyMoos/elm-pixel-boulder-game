@@ -3,6 +3,10 @@ module Actor
         ( ActorId
         , Actor
         , Level
+          -- Initialization
+        , LevelConfig
+        , levelConfigDecoder
+        , init
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -43,6 +47,15 @@ import Data.Common exposing (Position, Direction, Tick)
 import Color exposing (Color)
 import Maybe.Extra
 import List.Extra
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as JDP
+import Color.Convert
+import Char
+
+
+defaultCameraBorderSize : Int
+defaultCameraBorderSize =
+    3
 
 
 type alias ActorId =
@@ -80,12 +93,43 @@ type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
 
 
+type alias EntityName =
+    String
+
+
+type alias KeyedComponent =
+    ( String, Component )
+
+
+type alias Entities =
+    Dict EntityName Components
+
+
+type alias Signs =
+    Dict String EntityName
+
+
+type alias Scene =
+    List String
+
+
+type alias LevelConfig =
+    { entities : Entities
+    , signs : Signs
+    , scene : Scene
+    , backgroundColor : Color
+    }
+
+
 type alias Level =
-    { actors : Actors
+    { entities : Entities
+    , signs : Signs
+    , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
     , diamonds : Diamonds
     , view : View
+    , backgroundColor : Color
     }
 
 
@@ -110,7 +154,97 @@ type Component
 
 {-
 
-   Actor Mutation
+   Initialization
+
+-}
+
+
+init : LevelConfig -> Int -> Int -> Level
+init config width height =
+    emptyLevel width height
+        |> setBackgroundColor config.backgroundColor
+        |> setEntities config.entities
+        |> setSigns config.signs
+        |> setActors config.scene
+
+
+emptyLevel : Int -> Int -> Level
+emptyLevel width height =
+    { entities = Dict.fromList []
+    , signs = Dict.fromList []
+    , actors = Dict.fromList []
+    , positionIndex = Dict.fromList []
+    , nextActorId = 1
+    , diamonds =
+        { total = 0
+        , collected = 0
+        }
+    , view =
+        { position = { x = 0, y = 0 }
+        , width = width
+        , height = height
+        }
+    , backgroundColor = Color.white
+    }
+
+
+setBackgroundColor : Color -> Level -> Level
+setBackgroundColor color level =
+    { level | backgroundColor = color }
+
+
+setEntities : Entities -> Level -> Level
+setEntities entities level =
+    { level | entities = entities }
+
+
+setSigns : Signs -> Level -> Level
+setSigns signs level =
+    { level | signs = signs }
+
+
+setActors : Scene -> Level -> Level
+setActors scene level =
+    List.indexedMap
+        (,)
+        scene
+        |> List.foldr
+            (\( y, line ) level ->
+                List.indexedMap
+                    (,)
+                    (String.toList line)
+                    |> List.foldr
+                        (\( x, char ) level ->
+                            Dict.get
+                                (String.fromChar char)
+                                level.signs
+                                |> Maybe.andThen
+                                    (\entityName ->
+                                        Dict.get entityName level.entities
+                                    )
+                                |> Maybe.andThen
+                                    (\entity ->
+                                        addActor
+                                            (Dict.insert
+                                                "transform"
+                                                (TransformComponent { position = { x = x, y = y }, movingState = NotMoving })
+                                                entity
+                                            )
+                                            level
+                                            |> Just
+                                    )
+                                |> Maybe.withDefault level
+                        )
+                        level
+            )
+            level
+
+
+
+{-
+   }
+
+      Actor Mutation
 
 -}
 
@@ -588,6 +722,19 @@ isCircle physicsData =
 
 {-
 
+   DiamondComponent
+
+-}
+
+
+hasDiamondComponent : Actor -> Bool
+hasDiamondComponent actor =
+    Dict.member "diamond" actor.components
+
+
+
+{-
+
    DiamondCollectorComponent
 
 -}
@@ -862,6 +1009,20 @@ updateCameraComponent camera actor level =
                     Just { level | view = updateViewPosition newViewPosition view }
             )
         |> Maybe.withDefault level
+
+
+getCameraComponent : Actor -> Maybe CameraComponentData
+getCameraComponent actor =
+    Dict.get "camera" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CameraComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 updateView : View -> Level -> Level
@@ -1156,6 +1317,46 @@ addActor components level =
                         )
                     |> Maybe.withDefault
                         ( level, actor )
+           )
+        -- Update total diamonds if needed
+        |> (\( level, actor ) ->
+                [ actor ]
+                    |> List.filter
+                        (\actor ->
+                            hasDiamondComponent actor
+                        )
+                    |> List.foldr
+                        (\actor level ->
+                            incrementTotalDiamonds level.diamonds
+                                |> (flip updateDiamonds) level
+                        )
+                        level
+                    |> (\level ->
+                            ( level, actor )
+                       )
+           )
+        -- Update view if needed
+        |> (\( level, actor ) ->
+                getCameraComponent actor
+                    |> Maybe.andThen
+                        (\camera ->
+                            getTransformComponent actor
+                        )
+                    |> Maybe.andThen
+                        (\transform ->
+                            updateViewPosition
+                                { x = transform.position.x - (round ((toFloat level.view.width) / 2))
+                                , y = transform.position.y - (round ((toFloat level.view.height) / 2))
+                                }
+                                level.view
+                                |> (flip updateView) level
+                                |> Just
+                        )
+                    |> Maybe.andThen
+                        (\level ->
+                            Just ( level, actor )
+                        )
+                    |> Maybe.withDefault ( level, actor )
            )
         -- Add actor to the actors
         |> (\( level, actor ) ->
@@ -1467,3 +1668,192 @@ getIDFromDirection direction =
 
         Data.Common.Down ->
             3
+
+
+
+{-
+
+   Json
+
+-}
+
+
+levelConfigDecoder : Decoder LevelConfig
+levelConfigDecoder =
+    JDP.decode LevelConfig
+        |> JDP.required "entities" entitiesDecoder
+        |> JDP.required "signs" signsDecoder
+        |> JDP.required "scene" sceneDecoder
+        |> JDP.optional "backgroundColor" colorDecoder (Color.white)
+
+
+entitiesDecoder : Decoder Entities
+entitiesDecoder =
+    Decode.dict componentsDecoder
+
+
+componentsDecoder : Decoder Components
+componentsDecoder =
+    Decode.list componentDecoder
+        |> Decode.andThen
+            (\keyedComponents ->
+                Decode.succeed <| Dict.fromList keyedComponents
+            )
+
+
+componentDecoder : Decoder KeyedComponent
+componentDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                (case theType of
+                    "ai" ->
+                        Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+
+                    "camera" ->
+                        Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
+
+                    "can-squash" ->
+                        Decode.succeed CanSquashComponent
+
+                    "damage" ->
+                        Decode.map DamageComponent <| Decode.field "data" damageDataDecoder
+
+                    "diamond" ->
+                        Decode.succeed DiamondComponent
+
+                    "diamond-collector" ->
+                        Decode.succeed DiamondCollectorComponent
+
+                    "explodable" ->
+                        Decode.succeed ExplodableComponent
+
+                    "physics" ->
+                        Decode.map PhysicsComponent <| Decode.field "data" physicsDataDecoder
+
+                    "player-input" ->
+                        Decode.succeed PlayerInputComponent
+
+                    "render" ->
+                        Decode.map RenderComponent <| Decode.field "data" renderDataDecoder
+
+                    "rigid" ->
+                        Decode.succeed RigidComponent
+
+                    "trigger-explodable" ->
+                        Decode.map TriggerExplodableComponent <| Decode.field "data" triggerExplodableDataDecoder
+
+                    "smash-down" ->
+                        Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
+
+                    "squashable" ->
+                        Decode.succeed SquashableComponent
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode component, but type "
+                                ++ theType
+                                ++ " is not supported"
+                )
+                    |> Decode.andThen
+                        (\component ->
+                            Decode.succeed ( theType, component )
+                        )
+            )
+
+
+renderDataDecoder : Decoder RenderComponentData
+renderDataDecoder =
+    JDP.decode RenderComponentData
+        |> JDP.required "colors" (Decode.list colorDecoder)
+        |> JDP.optional "ticksPerColor" Decode.int 1
+
+
+cameraDataDecoder : Decoder CameraComponentData
+cameraDataDecoder =
+    JDP.decode CameraComponentData
+        |> JDP.optional "borderSize" Decode.int defaultCameraBorderSize
+
+
+physicsDataDecoder : Decoder PhysicsComponentData
+physicsDataDecoder =
+    JDP.decode PhysicsComponentData
+        |> JDP.required "strength" Decode.int
+        |> JDP.required "shape" physicsShapeDecoder
+
+
+damageDataDecoder : Decoder DamageComponentData
+damageDataDecoder =
+    JDP.decode DamageComponentData
+        |> JDP.required "remainingTicks" Decode.int
+        |> JDP.required "damageStrength" Decode.int
+
+
+triggerExplodableDataDecoder : Decoder TriggerExplodableComponentData
+triggerExplodableDataDecoder =
+    JDP.decode TriggerExplodableComponentData
+        |> JDP.required "triggerStrength" Decode.int
+
+
+physicsShapeDecoder : Decoder Shape
+physicsShapeDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\shape ->
+                case shape of
+                    "circle" ->
+                        Decode.succeed Circle
+
+                    "square" ->
+                        Decode.succeed Square
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode a physics shape, but the shape "
+                                ++ shape
+                                ++ " is not supported."
+            )
+
+
+aiDataDecoder : Decoder AiComponentData
+aiDataDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "walkaround" ->
+                        Decode.succeed <| WalkAroundAi { previousDirection = Data.Common.Left }
+
+                    "gravity" ->
+                        Decode.succeed GravityAi
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode AI, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+colorDecoder : Decoder Color
+colorDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\stringColor ->
+                case Color.Convert.hexToColor stringColor of
+                    Ok color ->
+                        Decode.succeed color
+
+                    Err _ ->
+                        Decode.fail <| "Failed to decode color: " ++ stringColor
+            )
+
+
+signsDecoder : Decoder Signs
+signsDecoder =
+    Decode.dict Decode.string
+
+
+sceneDecoder : Decoder Scene
+sceneDecoder =
+    Decode.list Decode.string
