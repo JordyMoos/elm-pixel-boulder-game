@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "player": [
+      {"type": "render", "data": {"colors": ["#ffff00"]}},
+      {"type": "player-input"},
+      {"type": "diamond-collector"},
+      {"type": "rigid"},
+      {"type": "can-squash"},
+      {"type": "explodable"},
+      {"type": "camera", "data": {"borderSize": 3}},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}},
+      {"type": "damage", "data": {"remainingTicks": 8, "damageStrength": 80}}
+    ],
+    "enemy1": [
+      {"type": "render", "data": {"colors": ["#ff0000"]}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "enemy2": [
+      {"type": "render", "data": {"colors": ["#ffb8ff"]}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "enemy3": [
+      {"type": "render", "data": {"colors": ["#00ffff"]}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "enemy4": [
+      {"type": "render", "data": {"colors": ["#ffb852"]}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "wall": [
+      {"type": "render", "data": {"colors": ["#1919a6"]}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+    ],
+    "diamond": [
+      {"type": "render", "data": {"colors": ["#fff1af","#f8ffaf"], "ticksPerColor": 8}},
+      {"type": "diamond"},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "candy": [
+      {"type": "render", "data": {"colors": ["#ffbeaf", "#000000"], "ticksPerColor": 6}},
+      {"type": "diamond"},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ]
+  },
+  "signs": {
+    "p": "player",
+    "w": "enemy1",
+    "x": "enemy2",
+    "y": "enemy3",
+    "z": "enemy4",
+    "|": "wall",
+    ".": "diamond",
+    "*": "candy"
+  },
+  "backgroundColor": "#000000",
+  "scene": [
+    "||||||||||||||||||||||||||||",
+    "|............||............|",
+    "|.||||.|||||.||.|||||.||||.|",
+    "|*||||.|||||.||.|||||.||||*|",
+    "|.||||.|||||.||.|||||.||||.|",
+    "|..........................|",
+    "|.||||.||.||||||||.||.||||.|",
+    "|.||||.||.||||||||.||.||||.|",
+    "|......||....||....||......|",
+    "||||||.|||||.||.|||||.||||||",
+    "|    |.|||||.||.|||||.|     ",
+    "|    |.||..........||.|     ",
+    "|    |.||.|||  |||.||.|     ",
+    "||||||.||.| x    |.||.||||||",
+    "|.........|     y|.........|",
+    "||||||.||.|      |.||.||||||",
+    "|   ||.||.|w   z |.||.||    ",
+    "|   ||.||.||||||||.||.||    ",
+    "|   ||.||..........||.||    ",
+    "|   ||.||.||||||||.||.||    ",
+    "||||||.||.||||||||.||.||||||",
+    "|............||............|",
+    "|.||||.|||||.||.|||||.||||.|",
+    "|.||||.|||||.||.|||||.||||.|",
+    "|*..||.......p........||..*|",
+    "|||.||.||.||||||||.||.||.|||",
+    "|||.||.||.||||||||.||.||.|||",
+    "|......||....||....||......|",
+    "|.||||||||||.||.||||||||||.|",
+    "|.||||||||||.||.||||||||||.|",
+    "|..........................|",
+    "||||||||||||||||||||||||||||"
+  ]
+}
