@@ -52,7 +52,7 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"colors": ["#fff1af","#f8ffaf"], "ticksPerColor": 8}},
+      {"type": "render", "data": {"colors": ["#fff1af", "#f8ffaf", "#ebf2a2"], "ticksPerColor": 8}},
       {"type": "diamond"},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
