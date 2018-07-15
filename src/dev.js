@@ -20,10 +20,16 @@ document.getElementById('submit-level')
 
       localStorage.setItem('advanced-level', document.getElementById('textarea-level').value);
 
-      Elm.Main.embed(
-        document.getElementById('elm'),
-        JSON.parse(document.getElementById('textarea-level').value)
-      );
+      try {
+
+        Elm.Main.embed(
+          document.getElementById('elm'),
+          JSON.parse(document.getElementById('textarea-level').value)
+        );
+      } catch (e) {
+        console.log(e);
+        document.getElementById('elm').innerText = 'Error: ' + e.message;
+      }
     }
   );
 
