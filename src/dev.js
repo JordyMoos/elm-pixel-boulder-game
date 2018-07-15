@@ -2,17 +2,22 @@
 
 require('./static/style.css');
 const Elm = require('./elm/Main.elm');
-const defaultGame = require('./static/level-001');
+const level001 = require('./static/level-001');
+const levelPacman = require('./static/level-pacman');
 
 
 document.getElementById('textarea-level').value =
-  localStorage.getItem('advanced-level') || JSON.stringify(defaultGame, null, 2);
+  localStorage.getItem('advanced-level') || JSON.stringify(level001, null, 2);
 
-
-document.getElementById('reset-level')
+document.getElementById('level-001')
   .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(defaultGame, null, 2);
+    document.getElementById('textarea-level').value = JSON.stringify(level001, null, 2);
   });
+document.getElementById('level-pacman')
+  .addEventListener('click', function () {
+    document.getElementById('textarea-level').value = JSON.stringify(levelPacman, null, 2);
+  });
+
 document.getElementById('submit-level')
   .addEventListener('click', function () {
       document.getElementById('editor-container').style.display = 'none';
