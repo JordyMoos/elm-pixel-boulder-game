@@ -59,6 +59,35 @@ downArrow =
     40
 
 
+escKey : Int
+escKey =
+    27
+
+
+submitKey : Int
+submitKey =
+    -- a
+    65
+
+
+cancelKey : Int
+cancelKey =
+    -- s
+    83
+
+
+startKey : Int
+startKey =
+    -- z
+    90
+
+
+selectKey : Int
+selectKey =
+    -- x
+    88
+
+
 keyCodeToDirection : Dict Keyboard.KeyCode Direction
 keyCodeToDirection =
     Dict.fromList
@@ -77,6 +106,10 @@ init =
             , ( upArrow, NotPressed )
             , ( rightArrow, NotPressed )
             , ( downArrow, NotPressed )
+            , ( escKey, NotPressed )
+            , ( selectKey, NotPressed )
+            , ( submitKey, NotPressed )
+            , ( selectKey, NotPressed )
             ]
     , counter = 0
     }
