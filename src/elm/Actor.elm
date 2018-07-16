@@ -634,6 +634,10 @@ tryToPush direction actor transformData otherActor level =
     getPhysicsComponent otherActor
         |> Maybe.Extra.toList
         |> List.filter isCircle
+        |> List.filter
+            (\physics ->
+                isAllowedToBePushedByAi direction otherActor
+            )
         |> List.head
         |> Maybe.andThen
             (\physics ->
@@ -837,6 +841,20 @@ type alias WalkAroundAiData =
     }
 
 
+getAiComponent : Actor -> Maybe AiComponentData
+getAiComponent actor =
+    Dict.get "ai" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    AiComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
 updateAiComponent : AiComponentData -> Actor -> Level -> Level
 updateAiComponent ai actor level =
     case ai of
@@ -944,6 +962,21 @@ updateGravityAi actor level =
             )
         |> Maybe.withDefault
             level
+
+
+isAllowedToBePushedByAi : Direction -> Actor -> Bool
+isAllowedToBePushedByAi direction actor =
+    getAiComponent actor
+        |> Maybe.andThen
+            (\ai ->
+                case ai of
+                    WalkAroundAi data ->
+                        Just False
+
+                    GravityAi ->
+                        Just <| direction /= Data.Common.Up
+            )
+        |> Maybe.withDefault True
 
 
 
