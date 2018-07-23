@@ -8,49 +8,178 @@ import Color exposing (Color)
 import Canvas.Point
 import Maybe.Extra
 import List.Extra
+import Dict exposing (Dict)
 
 
 pixelSize : Int
 pixelSize =
-    30
+    32
 
 
-view : Tick -> Level -> Html msg
-view currentTick level =
+type alias Images =
+    Dict String Canvas.Canvas
+
+
+view : Tick -> Images -> Level -> Html msg
+view currentTick images level =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
-        |> Canvas.batch (background level.backgroundColor level.view.width level.view.height)
-        |> Canvas.batch
-            (List.range level.view.position.y (level.view.position.y + level.view.height - 1)
-                |> List.map
-                    (\y ->
+        |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
+        |> Canvas.batch (background images level.backgroundColor level.view.width level.view.height)
+        |> (\canvas ->
+                List.foldr
+                    (\y acc ->
                         List.range level.view.position.x (level.view.position.x + level.view.height - 1)
-                            |> List.map
-                                (\x ->
-                                    getPixel currentTick level.view.position { x = x, y = y } level
-                                        |> Maybe.withDefault []
+                            |> List.foldr
+                                (\x acc ->
+                                    getDrawOps currentTick images level.view.position { x = x, y = y } level acc
                                 )
-                            |> List.concat
+                                acc
                     )
-                |> List.concat
-            )
+                    ( [], [] )
+                    (List.range level.view.position.y (level.view.position.y + level.view.height - 1))
+                    |> (\( back, front ) ->
+                            [ back, front ]
+                       )
+                    |> List.foldl
+                        (\ops canvas ->
+                            Canvas.batch ops canvas
+                        )
+                        canvas
+           )
         |> Canvas.toHtml []
 
 
-background : Color -> Int -> Int -> List Canvas.DrawOp
-background color width height =
-    [ Canvas.FillStyle color
-    , Canvas.FillRect
-        (Canvas.Point.fromInts ( 0, 0 ))
-        (Canvas.Size (width * pixelSize) (height * pixelSize))
-    ]
+background : Images -> Color -> Int -> Int -> List Canvas.DrawOp
+background images color width height =
+    List.append
+        [ Canvas.FillStyle color
+        , Canvas.FillRect
+            (Canvas.Point.fromInts ( 0, 0 ))
+            (Canvas.Size (width * pixelSize) (height * pixelSize))
+        ]
+        (Dict.get
+            "background-big"
+            images
+            |> Maybe.andThen
+                (\image ->
+                    Just [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
+                )
+            |> Maybe.withDefault []
+        )
 
 
-getPixel : Tick -> Position -> Position -> Level -> Maybe (List Canvas.DrawOp)
-getPixel tick viewPosition position level =
+getImage : Images -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImage images viewPosition position level acc =
+    Actor.getActorsThatAffect position level
+        |> List.foldr
+            (\actor ( backOps, frontOps ) ->
+                Actor.getRenderComponent actor
+                    |> Maybe.andThen
+                        (\renderData ->
+                            case renderData of
+                                Actor.ImageRenderComponent data ->
+                                    Just data
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> Maybe.andThen
+                        (\imageData ->
+                            Dict.get
+                                imageData.name
+                                images
+                        )
+                    |> Maybe.andThen
+                        (\image ->
+                            Actor.getTransformComponent actor
+                                |> Maybe.andThen
+                                    (\transformData ->
+                                        if transformData.position == position then
+                                            Just transformData
+                                        else
+                                            Nothing
+                                    )
+                                |> Maybe.andThen
+                                    (\transformData ->
+                                        Just <| getImageOp image transformData viewPosition acc
+                                    )
+                        )
+                    |> Maybe.withDefault acc
+            )
+            acc
+
+
+getImageOp : Canvas.Canvas -> Actor.TransformComponentData -> Position -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImageOp image transformData viewPosition ( backOps, frontOps ) =
+    case transformData.movingState of
+        Actor.NotMoving ->
+            ( List.append backOps
+                [ Canvas.DrawImage image <|
+                    Canvas.At <|
+                        Canvas.Point.fromInts
+                            ( (transformData.position.x - viewPosition.x) * pixelSize
+                            , (transformData.position.y - viewPosition.y) * pixelSize
+                            )
+                ]
+            , frontOps
+            )
+
+        Actor.MovingTowards towardsData ->
+            let
+                calculateWithCompletion : Int -> Int -> Int
+                calculateWithCompletion a b =
+                    let
+                        aFloat =
+                            toFloat (a * pixelSize)
+
+                        bFloat =
+                            toFloat (b * pixelSize)
+
+                        diffFloat =
+                            bFloat - aFloat
+
+                        offset =
+                            diffFloat * (towardsData.completionPercentage / 100)
+
+                        result =
+                            round <| aFloat + offset
+                    in
+                        result
+            in
+                ( backOps
+                , List.append frontOps
+                    [ Canvas.DrawImage image <|
+                        Canvas.At <|
+                            Canvas.Point.fromInts
+                                ( calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                                , calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                                )
+                    ]
+                )
+
+
+getDrawOps : Tick -> Images -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getDrawOps tick images viewPosition position level acc =
+    acc
+        |> (getPixel tick viewPosition position level)
+        |> (getImage images viewPosition position level)
+
+
+getPixel : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getPixel tick viewPosition position level ( backOps, frontOps ) =
     Actor.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
                 (Actor.getRenderComponent actor
+                    |> Maybe.andThen
+                        (\renderData ->
+                            case renderData of
+                                Actor.PixelRenderComponent data ->
+                                    Just data
+
+                                _ ->
+                                    Nothing
+                        )
                     |> Maybe.andThen
                         (\renderData ->
                             Actor.getTransformComponent actor
@@ -92,11 +221,12 @@ getPixel tick viewPosition position level =
             Nothing
         |> Maybe.andThen
             (\color ->
-                Just <| asPixel viewPosition position color
+                Just <| ( List.append backOps (asPixel viewPosition position color), frontOps )
             )
+        |> Maybe.withDefault ( backOps, frontOps )
 
 
-getColor : Tick -> Actor.RenderComponentData -> Color
+getColor : Tick -> Actor.PixelRenderComponentData -> Color
 getColor tick renderData =
     round ((toFloat tick) / (toFloat (max renderData.ticksPerColor 1)))
         % (max 1 <| List.length renderData.colors)

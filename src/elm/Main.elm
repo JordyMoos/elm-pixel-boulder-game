@@ -14,6 +14,8 @@ import Actor exposing (Level)
 import UpdateLoop
 import CanvasRenderer
 import Json.Decode
+import Canvas
+import Task
 
 
 type alias Model =
@@ -24,6 +26,7 @@ type alias Model =
     , gameSpeed : Maybe Time.Time
     , currentTick : Tick
     , inputController : InputController.Model
+    , images : Dict String Canvas.Canvas
     }
 
 
@@ -41,6 +44,7 @@ type Msg
     = InputControllerMsg InputController.Msg
     | GameTick Time.Time
     | GameSpeed (Maybe Time.Time)
+    | ImageLoaded String (Result Canvas.Error Canvas.Canvas)
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -67,8 +71,17 @@ init flags =
         , debug = True
         , gameSpeed = Just <| 40 * Time.millisecond
         , currentTick = 0
+        , images = Dict.fromList []
         }
-            ! []
+            ! [ Task.attempt (ImageLoaded "dirt") (Canvas.loadImage "./images/dirt.png")
+              , Task.attempt (ImageLoaded "rock") (Canvas.loadImage "./images/rock.png")
+              , Task.attempt (ImageLoaded "diamond") (Canvas.loadImage "./images/diamond.png")
+              , Task.attempt (ImageLoaded "wall") (Canvas.loadImage "./images/wall.png")
+              , Task.attempt (ImageLoaded "hero") (Canvas.loadImage "./images/hero.png")
+              , Task.attempt (ImageLoaded "enemy") (Canvas.loadImage "./images/enemy.png")
+              , Task.attempt (ImageLoaded "explosive") (Canvas.loadImage "./images/explosive.png")
+              , Task.attempt (ImageLoaded "background-big") (Canvas.loadImage "./images/background-big.png")
+              ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,12 +105,22 @@ update msg model =
             }
                 ! []
 
+        ImageLoaded name (Ok canvas) ->
+            { model | images = Dict.insert name canvas model.images } ! []
+
+        ImageLoaded name (Err error) ->
+            let
+                _ =
+                    Debug.log "Error loading image" (toString error)
+            in
+                model ! []
+
 
 view : Model -> Html Msg
 view model =
     div
         []
-        [ CanvasRenderer.view model.currentTick model.level
+        [ CanvasRenderer.view model.currentTick model.images model.level
         , debugView model
         ]
 

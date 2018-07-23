@@ -17,9 +17,12 @@ module Actor
         , Component(..)
         , getRenderComponent
         , getTransformComponent
+        , TransformComponentData
         , MovingTowardsData
         , MovingState(..)
-        , RenderComponentData
+        , RenderComponentData(..)
+        , PixelRenderComponentData
+        , ImageRenderComponentData
           -- Updates
         , updatePlayerInputComponent
         , updateDiamondCollectorComponent
@@ -1279,10 +1282,19 @@ updateDownSmash actor level downSmashData =
 -}
 
 
-type alias RenderComponentData =
+type RenderComponentData
+    = PixelRenderComponent PixelRenderComponentData
+    | ImageRenderComponent ImageRenderComponentData
+
+
+type alias PixelRenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
     }
+
+
+type alias ImageRenderComponentData =
+    { name : String }
 
 
 getRenderComponent : Actor -> Maybe RenderComponentData
@@ -1398,7 +1410,7 @@ addExplosion x y level =
     addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
+            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
             , ( "damage", DamageComponent { remainingTicks = 8, damageStrength = 80 } )
             ]
         )
@@ -1594,9 +1606,35 @@ componentDecoder =
 
 renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
-    JDP.decode RenderComponentData
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "pixel" ->
+                        Decode.map PixelRenderComponent <| Decode.field "data" renderPixelDataDecoder
+
+                    "image" ->
+                        Decode.map ImageRenderComponent <| Decode.field "data" renderImageDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode render, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+renderPixelDataDecoder : Decoder PixelRenderComponentData
+renderPixelDataDecoder =
+    JDP.decode PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
+
+
+renderImageDataDecoder : Decoder ImageRenderComponentData
+renderImageDataDecoder =
+    JDP.decode ImageRenderComponentData
+        |> JDP.required "name" Decode.string
 
 
 cameraDataDecoder : Decoder CameraComponentData
