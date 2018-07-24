@@ -16,6 +16,7 @@ import CanvasRenderer
 import Json.Decode
 import Canvas
 import Task
+import AnimationFrame
 
 
 type alias Model =
@@ -27,6 +28,7 @@ type alias Model =
     , currentTick : Tick
     , inputController : InputController.Model
     , images : Dict String Canvas.Canvas
+    , timeBuffer : Int
     }
 
 
@@ -42,8 +44,8 @@ main =
 
 type Msg
     = InputControllerMsg InputController.Msg
-    | GameTick Time.Time
     | GameSpeed (Maybe Time.Time)
+    | AnimationFrameUpdate Time.Time
     | ImageLoaded String (Result Canvas.Error Canvas.Canvas)
 
 
@@ -72,6 +74,7 @@ init flags =
         , gameSpeed = Just <| 40 * Time.millisecond
         , currentTick = 0
         , images = Dict.fromList []
+        , timeBuffer = 0
         }
             ! [ Task.attempt (ImageLoaded "dirt") (Canvas.loadImage "./images/dirt.png")
               , Task.attempt (ImageLoaded "rock") (Canvas.loadImage "./images/rock.png")
@@ -97,14 +100,6 @@ update msg model =
         GameSpeed gameSpeed ->
             { model | gameSpeed = gameSpeed } ! []
 
-        GameTick _ ->
-            { model
-                | inputController = InputController.resetWasPressed model.inputController
-                , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                , currentTick = model.currentTick + 1
-            }
-                ! []
-
         ImageLoaded name (Ok canvas) ->
             { model | images = Dict.insert name canvas model.images } ! []
 
@@ -115,37 +110,56 @@ update msg model =
             in
                 model ! []
 
+        AnimationFrameUpdate time ->
+            List.foldr
+                (\_ model ->
+                    { model
+                        | inputController = InputController.resetWasPressed model.inputController
+                        , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+                        , currentTick = model.currentTick + 1
+                    }
+                )
+                model
+                (List.repeat ((model.timeBuffer + (round time)) // 41) ())
+                |> updateTimeBuffer (round time)
+                |> flip (!) []
+
+
+updateTimeBuffer : Int -> Model -> Model
+updateTimeBuffer time model =
+    { model | timeBuffer = (model.timeBuffer + time) % 41 }
+
 
 view : Model -> Html Msg
-view model =
+view { currentTick, images, level, debug } =
     div
         []
-        [ CanvasRenderer.view model.currentTick model.images model.level
-        , debugView model
+        [ CanvasRenderer.view currentTick images level
+        , if debug then
+            debugView
+          else
+            text ""
         ]
 
 
-debugView : Model -> Html Msg
-debugView model =
-    if model.debug then
-        div
+debugView : Html Msg
+debugView =
+    div
+        []
+        [ text "Hint: Use the Arrow Keys"
+        , br [] []
+        , text "GameTick speed:"
+        , br [] []
+        , div
             []
-            [ text "Hint: Use the Arrow Keys"
-            , br [] []
-            , text "GameTick speed:"
-            , br [] []
-            , div
-                []
-                [ button [ onClick <| GameSpeed Nothing ] [ text "Off" ]
-                , button [ onClick <| GameSpeed (Just <| 10 * Time.second) ] [ text "0.1 fps" ]
-                , button [ onClick <| GameSpeed (Just <| 5 * Time.second) ] [ text "0.5 fps" ]
-                , button [ onClick <| GameSpeed (Just <| 1 * Time.second) ] [ text "1 fps" ]
-                , button [ onClick <| GameSpeed (Just <| 80 * Time.millisecond) ] [ text "12 fps" ]
-                , button [ onClick <| GameSpeed (Just <| 40 * Time.millisecond) ] [ text "24 fps" ]
-                ]
+            [ button [ onClick <| GameSpeed Nothing ] [ text "Off" ]
+            , button [ onClick <| GameSpeed <| Just 10000 ] [ text "0.1 fps" ]
+            , button [ onClick <| GameSpeed <| Just 5000 ] [ text "0.5 fps" ]
+            , button [ onClick <| GameSpeed <| Just 1000 ] [ text "1 fps" ]
+            , button [ onClick <| GameSpeed <| Just 83 ] [ text "12 fps" ]
+            , button [ onClick <| GameSpeed <| Just 41 ] [ text "24 fps" ]
             ]
-    else
-        text ""
+        ]
 
 
 subscriptions : Model -> Sub Msg
@@ -153,13 +167,15 @@ subscriptions model =
     let
         gameSpeedSub =
             case model.gameSpeed of
-                Just delay ->
-                    [ Time.every delay GameTick ]
+                Just _ ->
+                    [ AnimationFrame.diffs AnimationFrameUpdate
+                    ]
 
                 Nothing ->
                     []
     in
         List.append
-            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputController) ]
+            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputController)
+            ]
             gameSpeedSub
             |> Sub.batch
