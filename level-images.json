@@ -1,7 +1,7 @@
 {
   "entities": {
     "player": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
       {"type": "player-input"},
       {"type": "diamond-collector"},
       {"type": "rigid"},
@@ -11,14 +11,14 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "rock": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#babdb6"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "rock"}}},
       {"type": "rigid"},
       {"type": "ai", "data": {"type": "gravity"}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "explosive"}}},
       {"type": "rigid"},
       {"type": "ai", "data": {"type": "gravity"}},
       {"type": "explodable"},
@@ -30,7 +30,7 @@
       {"type": "damage", "data": {"remainingTicks": 8, "damageStrength": 80}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ce5c00"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "enemy"}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "ai", "data": {"type": "walkaround"}},
@@ -45,12 +45,12 @@
       {"type": "explodable"}
     ],
     "dirt": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#e9b96e"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "dirt"}}},
       {"type": "squashable"},
       {"type": "physics", "data": {"strength": 1, "shape": "square"}}
     ],
     "wall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#626457"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "wall"}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
@@ -60,7 +60,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#3465a4", "#729fcf"], "ticksPerColor": 12}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "diamond"}}},
       {"type": "diamond"},
       {"type": "ai", "data": {"type": "gravity"}},
       {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
