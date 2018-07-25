@@ -24,7 +24,7 @@ type alias Model =
     , width : Int
     , height : Int
     , debug : Bool
-    , gameSpeed : Maybe Time.Time
+    , gameSpeed : Maybe Int
     , currentTick : Tick
     , inputController : InputController.Model
     , images : Dict String Canvas.Canvas
@@ -44,7 +44,7 @@ main =
 
 type Msg
     = InputControllerMsg InputController.Msg
-    | GameSpeed (Maybe Time.Time)
+    | GameSpeed (Maybe Int)
     | AnimationFrameUpdate Time.Time
     | ImageLoaded String (Result Canvas.Error Canvas.Canvas)
 
@@ -71,7 +71,7 @@ init flags =
         , height = height
         , inputController = InputController.init
         , debug = True
-        , gameSpeed = Just <| 40 * Time.millisecond
+        , gameSpeed = Just 41
         , currentTick = 0
         , images = Dict.fromList []
         , timeBuffer = 0
@@ -111,23 +111,28 @@ update msg model =
                 model ! []
 
         AnimationFrameUpdate time ->
-            List.foldr
-                (\_ model ->
-                    { model
-                        | inputController = InputController.resetWasPressed model.inputController
-                        , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                        , currentTick = model.currentTick + 1
-                    }
-                )
-                model
-                (List.repeat ((model.timeBuffer + (round time)) // 41) ())
-                |> updateTimeBuffer (round time)
-                |> flip (!) []
+            case model.gameSpeed of
+                Just gameSpeed ->
+                    List.foldr
+                        (\_ model ->
+                            { model
+                                | inputController = InputController.resetWasPressed model.inputController
+                                , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+                                , currentTick = model.currentTick + 1
+                            }
+                        )
+                        model
+                        (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                        |> updateTimeBuffer (round time) gameSpeed
+                        |> flip (!) []
+
+                Nothing ->
+                    model ! []
 
 
-updateTimeBuffer : Int -> Model -> Model
-updateTimeBuffer time model =
-    { model | timeBuffer = (model.timeBuffer + time) % 41 }
+updateTimeBuffer : Int -> Int -> Model -> Model
+updateTimeBuffer time gameSpeed model =
+    { model | timeBuffer = (model.timeBuffer + time) % gameSpeed }
 
 
 view : Model -> Html Msg
