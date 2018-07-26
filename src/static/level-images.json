@@ -89,7 +89,12 @@
     "background": "./images/background.png",
     "background-big": "./images/background-big.png"
   },
-  "backgroundColor": "#ffffff",
+  "background": {
+    "type": "image",
+    "data": {
+      "name": "background-big"
+    }
+  },
   "scene": [
     "#########################################",
     "#.......................................#",

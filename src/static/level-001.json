@@ -78,7 +78,12 @@
     "#": "strongwall",
     "*": "diamond"
   },
-  "backgroundColor": "#ffffff",
+  "background": {
+    "type": "pixel",
+    "data": {
+      "color": "#ffffff"
+    }
+  },
   "scene": [
     "#########################################",
     "#.......................................#",
