@@ -16,22 +16,18 @@ pixelSize =
     32
 
 
-type alias Images =
-    Dict String Canvas.Canvas
-
-
-view : Tick -> Images -> Level -> Html msg
-view currentTick images level =
+view : Tick -> Level -> Html msg
+view currentTick level =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
         |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
-        |> Canvas.batch (background images level.backgroundColor level.view.width level.view.height)
+        |> Canvas.batch (background level.images level.backgroundColor level.view.width level.view.height)
         |> (\canvas ->
                 List.foldr
                     (\y acc ->
                         List.range level.view.position.x (level.view.position.x + level.view.height - 1)
                             |> List.foldr
                                 (\x acc ->
-                                    getDrawOps currentTick images level.view.position { x = x, y = y } level acc
+                                    getDrawOps currentTick level.view.position { x = x, y = y } level acc
                                 )
                                 acc
                     )
@@ -49,7 +45,7 @@ view currentTick images level =
         |> Canvas.toHtml []
 
 
-background : Images -> Color -> Int -> Int -> List Canvas.DrawOp
+background : Actor.CanvasImages -> Color -> Int -> Int -> List Canvas.DrawOp
 background images color width height =
     List.append
         [ Canvas.FillStyle color
@@ -68,8 +64,8 @@ background images color width height =
         )
 
 
-getImage : Images -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImage images viewPosition position level acc =
+getImage : Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImage viewPosition position level acc =
     Actor.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
@@ -87,7 +83,7 @@ getImage images viewPosition position level acc =
                         (\imageData ->
                             Dict.get
                                 imageData.name
-                                images
+                                level.images
                         )
                     |> Maybe.andThen
                         (\image ->
@@ -158,11 +154,11 @@ getImageOp image transformData viewPosition ( backOps, frontOps ) =
                 )
 
 
-getDrawOps : Tick -> Images -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getDrawOps tick images viewPosition position level acc =
+getDrawOps : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getDrawOps tick viewPosition position level acc =
     acc
         |> (getPixel tick viewPosition position level)
-        |> (getImage images viewPosition position level)
+        |> (getImage viewPosition position level)
 
 
 getPixel : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )

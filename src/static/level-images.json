@@ -78,6 +78,17 @@
     "#": "strongwall",
     "*": "diamond"
   },
+  "images": {
+    "hero": "./images/hero.png",
+    "diamond": "./images/diamond.png",
+    "dirt": "./images/dirt.png",
+    "enemy": "./images/enemy.png",
+    "explosive": "./images/explosive.png",
+    "rock": "./images/rock.png",
+    "wall": "./images/wall.png",
+    "background": "./images/background.png",
+    "background-big": "./images/background-big.png"
+  },
   "backgroundColor": "#ffffff",
   "scene": [
     "#########################################",

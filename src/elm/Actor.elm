@@ -3,10 +3,13 @@ module Actor
         ( ActorId
         , Actor
         , Level
+        , CanvasImages
           -- Initialization
         , LevelConfig
         , levelConfigDecoder
         , init
+        , Msg
+        , update
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -44,6 +47,8 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Color.Convert
 import Char
+import Canvas
+import Task
 
 
 defaultCameraBorderSize : Int
@@ -106,10 +111,19 @@ type alias Scene =
     List String
 
 
+type alias CanvasImages =
+    Dict String Canvas.Canvas
+
+
+type alias Images =
+    Dict String String
+
+
 type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
+    , images : Images
     , backgroundColor : Color
     }
 
@@ -117,6 +131,7 @@ type alias LevelConfig =
 type alias Level =
     { entities : Entities
     , signs : Signs
+    , images : CanvasImages
     , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
@@ -144,6 +159,24 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
 
 
+type Msg
+    = ImageLoaded String (Result Canvas.Error Canvas.Canvas)
+
+
+update : Msg -> Level -> Level
+update msg level =
+    case msg of
+        ImageLoaded name (Ok canvas) ->
+            { level | images = Dict.insert name canvas level.images }
+
+        ImageLoaded name (Err error) ->
+            let
+                _ =
+                    Debug.log "Error loading image" (toString error)
+            in
+                level
+
+
 
 {-
 
@@ -152,19 +185,34 @@ type Component
 -}
 
 
-init : LevelConfig -> Int -> Int -> Level
+init : LevelConfig -> Int -> Int -> ( Level, Cmd Msg )
 init config width height =
     emptyLevel width height
         |> setBackgroundColor config.backgroundColor
         |> setEntities config.entities
         |> setSigns config.signs
         |> setActors config.scene
+        |> setImages config.images
+        |> addImageCommands config.images
+
+
+addImageCommands : Images -> Level -> ( Level, Cmd Msg )
+addImageCommands images level =
+    ( level
+    , Dict.toList images
+        |> List.map
+            (\( name, src ) ->
+                Task.attempt (ImageLoaded name) (Canvas.loadImage src)
+            )
+        |> Cmd.batch
+    )
 
 
 emptyLevel : Int -> Int -> Level
 emptyLevel width height =
     { entities = Dict.fromList []
     , signs = Dict.fromList []
+    , images = Dict.fromList []
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , nextActorId = 1
@@ -194,6 +242,18 @@ setEntities entities level =
 setSigns : Signs -> Level -> Level
 setSigns signs level =
     { level | signs = signs }
+
+
+setImages : Images -> Level -> Level
+setImages images level =
+    { level
+        | images =
+            Dict.map
+                (\name src ->
+                    emptyImage
+                )
+                images
+    }
 
 
 setActors : Scene -> Level -> Level
@@ -1526,6 +1586,7 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
+        |> JDP.required "images" imagesDecoder
         |> JDP.optional "backgroundColor" colorDecoder (Color.white)
 
 
@@ -1725,3 +1786,14 @@ signsDecoder =
 sceneDecoder : Decoder Scene
 sceneDecoder =
     Decode.list Decode.string
+
+
+imagesDecoder : Decoder Images
+imagesDecoder =
+    Decode.dict Decode.string
+
+
+emptyImage : Canvas.Canvas
+emptyImage =
+    Canvas.Size 32 32
+        |> Canvas.initialize

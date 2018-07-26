@@ -27,7 +27,6 @@ type alias Model =
     , gameSpeed : Maybe Int
     , currentTick : Tick
     , inputController : InputController.Model
-    , images : Dict String Canvas.Canvas
     , timeBuffer : Int
     }
 
@@ -44,9 +43,9 @@ main =
 
 type Msg
     = InputControllerMsg InputController.Msg
+    | ActorMsg Actor.Msg
     | GameSpeed (Maybe Int)
     | AnimationFrameUpdate Time.Time
-    | ImageLoaded String (Result Canvas.Error Canvas.Canvas)
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -65,25 +64,20 @@ init flags =
 
                 Err error ->
                     Debug.crash error
+
+        ( level, levelCmd ) =
+            Actor.init levelConfig width height
     in
-        { level = Actor.init levelConfig width height
+        { level = level
         , width = width
         , height = height
         , inputController = InputController.init
         , debug = True
         , gameSpeed = Just 41
         , currentTick = 0
-        , images = Dict.fromList []
         , timeBuffer = 0
         }
-            ! [ Task.attempt (ImageLoaded "dirt") (Canvas.loadImage "./images/dirt.png")
-              , Task.attempt (ImageLoaded "rock") (Canvas.loadImage "./images/rock.png")
-              , Task.attempt (ImageLoaded "diamond") (Canvas.loadImage "./images/diamond.png")
-              , Task.attempt (ImageLoaded "wall") (Canvas.loadImage "./images/wall.png")
-              , Task.attempt (ImageLoaded "hero") (Canvas.loadImage "./images/hero.png")
-              , Task.attempt (ImageLoaded "enemy") (Canvas.loadImage "./images/enemy.png")
-              , Task.attempt (ImageLoaded "explosive") (Canvas.loadImage "./images/explosive.png")
-              , Task.attempt (ImageLoaded "background-big") (Canvas.loadImage "./images/background-big.png")
+            ! [ Cmd.map ActorMsg levelCmd
               ]
 
 
@@ -97,18 +91,15 @@ update msg model =
             }
                 ! []
 
+        ActorMsg subMsg ->
+            { model
+                | level =
+                    Actor.update subMsg model.level
+            }
+                ! []
+
         GameSpeed gameSpeed ->
             { model | gameSpeed = gameSpeed } ! []
-
-        ImageLoaded name (Ok canvas) ->
-            { model | images = Dict.insert name canvas model.images } ! []
-
-        ImageLoaded name (Err error) ->
-            let
-                _ =
-                    Debug.log "Error loading image" (toString error)
-            in
-                model ! []
 
         AnimationFrameUpdate time ->
             case model.gameSpeed of
@@ -136,10 +127,10 @@ updateTimeBuffer time gameSpeed model =
 
 
 view : Model -> Html Msg
-view { currentTick, images, level, debug } =
+view { currentTick, level, debug } =
     div
         []
-        [ CanvasRenderer.view currentTick images level
+        [ CanvasRenderer.view currentTick level
         , if debug then
             debugView
           else
