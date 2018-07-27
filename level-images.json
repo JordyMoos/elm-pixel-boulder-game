@@ -3,9 +3,8 @@
     "player": [
       {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
       {"type": "player-input"},
-      {"type": "diamond-collector"},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
-      {"type": "can-squash"},
       {"type": "explodable"},
       {"type": "camera", "data": {"borderSize": 3}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
@@ -46,7 +45,7 @@
     ],
     "dirt": [
       {"type": "render", "data": {"type": "image", "data": {"name": "dirt"}}},
-      {"type": "squashable"},
+      {"type": "collectible", "data": {"name": "dirt"}},
       {"type": "physics", "data": {"strength": 1, "shape": "square"}}
     ],
     "wall": [
@@ -61,7 +60,7 @@
     ],
     "diamond": [
       {"type": "render", "data": {"type": "image", "data": {"name": "diamond"}}},
-      {"type": "diamond"},
+      {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "ai", "data": {"type": "gravity"}},
       {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
     ]
@@ -78,14 +77,30 @@
     "#": "strongwall",
     "*": "diamond"
   },
-  "backgroundColor": "#ffffff",
+  "images": {
+    "hero": "./images/hero.png",
+    "diamond": "./images/diamond.png",
+    "dirt": "./images/dirt.png",
+    "enemy": "./images/enemy.png",
+    "explosive": "./images/explosive.png",
+    "rock": "./images/rock.png",
+    "wall": "./images/wall.png",
+    "background": "./images/background.png",
+    "background-big": "./images/background-big.png"
+  },
+  "background": {
+    "type": "image",
+    "data": {
+      "name": "background-big"
+    }
+  },
   "scene": [
     "#########################################",
     "#.......................................#",
-    "#.......................e         ......#",
-    "#|||||||||..........p...          ......#",
+    "#.................******e  .............#",
+    "#|||||||||........******   .............#",
     "#|**| o  o..............................#",
-    "#|**| || |....ooooooooo.................#",
+    "#|**| || |....ooooooooo.p...............#",
     "#|**| || |.....ooooooo........*.........#",
     "#|**| || |......ooooo...................#",
     "#|**| ||=|...................*..........#",

@@ -3,9 +3,8 @@
     "player": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffff00"]}}},
       {"type": "player-input"},
-      {"type": "diamond-collector"},
+      {"type": "collector", "data": {"interestedIn": ["candy", "diamond"]}},
       {"type": "rigid"},
-      {"type": "can-squash"},
       {"type": "explodable"},
       {"type": "camera", "data": {"borderSize": 3}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
@@ -53,12 +52,12 @@
     ],
     "diamond": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#fff1af", "#f8ffaf", "#ebf2a2"], "ticksPerColor": 8}}},
-      {"type": "diamond"},
+      {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "candy": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffbeaf", "#000000"], "ticksPerColor": 6}}},
-      {"type": "diamond"},
+      {"type": "collectible", "data": {"name": "candy"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ]
   },
@@ -72,7 +71,12 @@
     ".": "diamond",
     "*": "candy"
   },
-  "backgroundColor": "#000000",
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": ["#000000"]
+    }
+  },
   "scene": [
     "||||||||||||||||||||||||||||",
     "|............||............|",
