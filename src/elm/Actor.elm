@@ -3,10 +3,13 @@ module Actor
         ( ActorId
         , Actor
         , Level
+        , CanvasImages
           -- Initialization
         , LevelConfig
         , levelConfigDecoder
         , init
+        , Msg
+        , update
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -17,13 +20,15 @@ module Actor
         , Component(..)
         , getRenderComponent
         , getTransformComponent
+        , TransformComponentData
         , MovingTowardsData
         , MovingState(..)
-        , RenderComponentData
+        , RenderComponentData(..)
+        , PixelRenderComponentData
+        , ImageRenderComponentData
           -- Updates
         , updatePlayerInputComponent
-        , updateDiamondCollectorComponent
-        , updateCanSquashComponent
+        , updateCollectorComponent
         , updateAiComponent
         , updateCameraComponent
         , updateTransformComponent
@@ -41,6 +46,8 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Color.Convert
 import Char
+import Canvas
+import Task
 
 
 defaultCameraBorderSize : Int
@@ -73,12 +80,6 @@ type alias View =
     }
 
 
-type alias Diamonds =
-    { total : Int
-    , collected : Int
-    }
-
-
 type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
 
@@ -103,23 +104,32 @@ type alias Scene =
     List String
 
 
+type alias CanvasImages =
+    Dict String Canvas.Canvas
+
+
+type alias Images =
+    Dict String String
+
+
 type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
-    , backgroundColor : Color
+    , images : Images
+    , background : RenderComponentData
     }
 
 
 type alias Level =
     { entities : Entities
     , signs : Signs
+    , images : CanvasImages
     , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
-    , diamonds : Diamonds
     , view : View
-    , backgroundColor : Color
+    , background : RenderComponentData
     }
 
 
@@ -127,10 +137,8 @@ type Component
     = TransformComponent TransformComponentData
     | RenderComponent RenderComponentData
     | PlayerInputComponent
-    | DiamondCollectorComponent
-    | DiamondComponent
-    | SquashableComponent
-    | CanSquashComponent
+    | CollectorComponent CollectorComponentData
+    | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
     | AiComponent AiComponentData
@@ -141,6 +149,24 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
 
 
+type Msg
+    = ImageLoaded String (Result Canvas.Error Canvas.Canvas)
+
+
+update : Msg -> Level -> Level
+update msg level =
+    case msg of
+        ImageLoaded name (Ok canvas) ->
+            { level | images = Dict.insert name canvas level.images }
+
+        ImageLoaded name (Err error) ->
+            let
+                _ =
+                    Debug.log "Error loading image" (toString error)
+            in
+                level
+
+
 
 {-
 
@@ -149,38 +175,49 @@ type Component
 -}
 
 
-init : LevelConfig -> Int -> Int -> Level
+init : LevelConfig -> Int -> Int -> ( Level, Cmd Msg )
 init config width height =
     emptyLevel width height
-        |> setBackgroundColor config.backgroundColor
+        |> setBackground config.background
         |> setEntities config.entities
         |> setSigns config.signs
         |> setActors config.scene
+        |> setImages config.images
+        |> addImageCommands config.images
+
+
+addImageCommands : Images -> Level -> ( Level, Cmd Msg )
+addImageCommands images level =
+    ( level
+    , Dict.toList images
+        |> List.map
+            (\( name, src ) ->
+                Task.attempt (ImageLoaded name) (Canvas.loadImage src)
+            )
+        |> Cmd.batch
+    )
 
 
 emptyLevel : Int -> Int -> Level
 emptyLevel width height =
     { entities = Dict.fromList []
     , signs = Dict.fromList []
+    , images = Dict.fromList []
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , nextActorId = 1
-    , diamonds =
-        { total = 0
-        , collected = 0
-        }
     , view =
         { position = { x = 0, y = 0 }
         , width = width
         , height = height
         }
-    , backgroundColor = Color.white
+    , background = defaultBackground
     }
 
 
-setBackgroundColor : Color -> Level -> Level
-setBackgroundColor color level =
-    { level | backgroundColor = color }
+setBackground : RenderComponentData -> Level -> Level
+setBackground background level =
+    { level | background = background }
 
 
 setEntities : Entities -> Level -> Level
@@ -191,6 +228,18 @@ setEntities entities level =
 setSigns : Signs -> Level -> Level
 setSigns signs level =
     { level | signs = signs }
+
+
+setImages : Images -> Level -> Level
+setImages images level =
+    { level
+        | images =
+            Dict.map
+                (\name src ->
+                    emptyImage
+                )
+                images
+    }
 
 
 setActors : Scene -> Level -> Level
@@ -716,26 +765,70 @@ isCircle physicsData =
 
 {-
 
-   DiamondComponent
+   CollectibleComponent
 
 -}
 
 
-hasDiamondComponent : Actor -> Bool
-hasDiamondComponent actor =
-    Dict.member "diamond" actor.components
+type alias CollectibleComponentData =
+    { name : String
+    , quantity : Int
+    }
+
+
+hasCollectibleComponent : Actor -> Bool
+hasCollectibleComponent actor =
+    Dict.member "collectible" actor.components
+
+
+getCollectibleComponent : Actor -> Maybe CollectibleComponentData
+getCollectibleComponent actor =
+    Dict.get "collectible" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CollectibleComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 
 {-
 
-   DiamondCollectorComponent
+   CollectorComponent
 
 -}
 
 
-updateDiamondCollectorComponent : Actor -> Level -> Level
-updateDiamondCollectorComponent collectorActor level =
+type alias Inventory =
+    Dict String Int
+
+
+type alias CollectorComponentData =
+    { intrestedIn : List String
+    , inventory : Inventory
+    }
+
+
+getCollectibleDataIfCanCollect : Actor -> List String -> Maybe CollectibleComponentData
+getCollectibleDataIfCanCollect targetActor interestedIn =
+    getCollectibleComponent targetActor
+        |> Maybe.Extra.filter
+            (\collectibleData ->
+                List.member collectibleData.name interestedIn
+            )
+
+
+canCollect : collectibleComponentData -> List String -> Bool
+canCollect collectibleData =
+    List.member collectibleData.name
+
+
+updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
+updateCollectorComponent collectorData collectorActor level =
     getTransformComponent collectorActor
         |> Maybe.Extra.toList
         |> List.map .position
@@ -747,36 +840,53 @@ updateDiamondCollectorComponent collectorActor level =
                             ( position, actor )
                         )
             )
+        |> List.filterMap
+            (\( position, actor ) ->
+                getCollectibleComponent actor
+                    |> Maybe.andThen
+                        (\collectibleData ->
+                            Just ( position, actor, collectibleData )
+                        )
+            )
+        |> List.filter
+            (\( position, actor, collectibleData ) ->
+                canCollect collectibleData collectibleData.interestedIn
+            )
         |> List.foldr
-            (\( position, actor ) level ->
-                if Dict.member "diamond" actor.components then
-                    level
-                        |> removeActorWithPosition position actor.id
-                        |> collectDiamond
-                else
-                    level
+            (\( position, actor, collectibleData ) level ->
+                updateCollectorComponentData collectorData collectibleData
+                    |> setCollectorComponent collectorActor.components
+                    |> updateComponents collectorActor
+                    |> updateActor level.actors
+                    |> updateActors level
+                    |> removeActorWithPosition position actor.id
             )
             level
 
 
-collectDiamond : Level -> Level
-collectDiamond level =
-    { level | diamonds = incrementDiamondsCollected level.diamonds }
+updateCollectorComponentData : CollectorComponentData -> CollectibleComponentData -> CollectorComponentData
+updateCollectorComponentData collector collectible =
+    collector.inventor
+        |> Dict.update
+            collectible.name
+            (\maybeCurrentQuantity ->
+                maybeCurrentQuantity.withDefault 0 + collectible.quantity
+            )
+            y
+        |> updateCollectorInventory collector
 
 
-incrementDiamondsCollected : Diamonds -> Diamonds
-incrementDiamondsCollected diamonds =
-    { diamonds | collected = diamonds.collected + 1 }
+updateCollectorInventory : CollectorComponentData -> Inventory -> CollectorComponentData
+updateCollectorInventory collector newInventory =
+    { collector | inventory = newInventory }
 
 
-incrementTotalDiamonds : Diamonds -> Diamonds
-incrementTotalDiamonds diamonds =
-    { diamonds | total = diamonds.total + 1 }
-
-
-updateDiamonds : Diamonds -> Level -> Level
-updateDiamonds diamonds level =
-    { level | diamonds = diamonds }
+setCollectorComponent : Components -> CollectorComponentData -> Components
+setCollectorComponent components collectorData =
+    Dict.insert
+        "collector"
+        (CollectorComponent collectorData)
+        components
 
 
 
@@ -1279,10 +1389,19 @@ updateDownSmash actor level downSmashData =
 -}
 
 
-type alias RenderComponentData =
+type RenderComponentData
+    = PixelRenderComponent PixelRenderComponentData
+    | ImageRenderComponent ImageRenderComponentData
+
+
+type alias PixelRenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
     }
+
+
+type alias ImageRenderComponentData =
+    { name : String }
 
 
 getRenderComponent : Actor -> Maybe RenderComponentData
@@ -1398,7 +1517,7 @@ addExplosion x y level =
     addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
+            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
             , ( "damage", DamageComponent { remainingTicks = 8, damageStrength = 80 } )
             ]
         )
@@ -1514,7 +1633,16 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
-        |> JDP.optional "backgroundColor" colorDecoder (Color.white)
+        |> JDP.optional "images" imagesDecoder Dict.empty
+        |> JDP.optional "background" renderDataDecoder defaultBackground
+
+
+defaultBackground : RenderComponentData
+defaultBackground =
+    PixelRenderComponent
+        { colors = [ Color.white ]
+        , ticksPerColor = 1
+        }
 
 
 entitiesDecoder : Decoder Entities
@@ -1594,9 +1722,35 @@ componentDecoder =
 
 renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
-    JDP.decode RenderComponentData
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "pixel" ->
+                        Decode.map PixelRenderComponent <| Decode.field "data" renderPixelDataDecoder
+
+                    "image" ->
+                        Decode.map ImageRenderComponent <| Decode.field "data" renderImageDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode render, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+renderPixelDataDecoder : Decoder PixelRenderComponentData
+renderPixelDataDecoder =
+    JDP.decode PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
+
+
+renderImageDataDecoder : Decoder ImageRenderComponentData
+renderImageDataDecoder =
+    JDP.decode ImageRenderComponentData
+        |> JDP.required "name" Decode.string
 
 
 cameraDataDecoder : Decoder CameraComponentData
@@ -1687,3 +1841,14 @@ signsDecoder =
 sceneDecoder : Decoder Scene
 sceneDecoder =
     Decode.list Decode.string
+
+
+imagesDecoder : Decoder Images
+imagesDecoder =
+    Decode.dict Decode.string
+
+
+emptyImage : Canvas.Canvas
+emptyImage =
+    Canvas.Size 32 32
+        |> Canvas.initialize
