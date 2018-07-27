@@ -808,7 +808,7 @@ type alias Inventory =
 
 
 type alias CollectorComponentData =
-    { intrestedIn : List String
+    { interestedIn : List String
     , inventory : Inventory
     }
 
@@ -822,7 +822,7 @@ getCollectibleDataIfCanCollect targetActor interestedIn =
             )
 
 
-canCollect : collectibleComponentData -> List String -> Bool
+canCollect : CollectibleComponentData -> List String -> Bool
 canCollect collectibleData =
     List.member collectibleData.name
 
@@ -850,7 +850,7 @@ updateCollectorComponent collectorData collectorActor level =
             )
         |> List.filter
             (\( position, actor, collectibleData ) ->
-                canCollect collectibleData collectibleData.interestedIn
+                canCollect collectibleData collectorData.interestedIn
             )
         |> List.foldr
             (\( position, actor, collectibleData ) level ->
@@ -866,13 +866,12 @@ updateCollectorComponent collectorData collectorActor level =
 
 updateCollectorComponentData : CollectorComponentData -> CollectibleComponentData -> CollectorComponentData
 updateCollectorComponentData collector collectible =
-    collector.inventor
+    collector.inventory
         |> Dict.update
             collectible.name
             (\maybeCurrentQuantity ->
-                maybeCurrentQuantity.withDefault 0 + collectible.quantity
+                Just <| (Maybe.withDefault 0 maybeCurrentQuantity) + collectible.quantity
             )
-            y
         |> updateCollectorInventory collector
 
 
@@ -887,37 +886,6 @@ setCollectorComponent components collectorData =
         "collector"
         (CollectorComponent collectorData)
         components
-
-
-
-{-
-
-   CanSquashComponent
-
--}
-
-
-updateCanSquashComponent : Actor -> Level -> Level
-updateCanSquashComponent squashingActor level =
-    getTransformComponent squashingActor
-        |> Maybe.Extra.toList
-        |> List.map .position
-        |> List.concatMap
-            (\position ->
-                getActorsByPosition position level
-                    |> List.map
-                        (\actor ->
-                            ( position, actor )
-                        )
-            )
-        |> List.foldr
-            (\( position, actor ) level ->
-                if Dict.member "squashable" actor.components then
-                    removeActorWithPosition position actor.id level
-                else
-                    level
-            )
-            level
 
 
 
@@ -1460,23 +1428,6 @@ addActor components level =
                     |> Maybe.withDefault
                         ( level, actor )
            )
-        -- Update total diamonds if needed
-        |> (\( level, actor ) ->
-                [ actor ]
-                    |> List.filter
-                        (\actor ->
-                            hasDiamondComponent actor
-                        )
-                    |> List.foldr
-                        (\actor level ->
-                            incrementTotalDiamonds level.diamonds
-                                |> (flip updateDiamonds) level
-                        )
-                        level
-                    |> (\level ->
-                            ( level, actor )
-                       )
-           )
         -- Update view if needed
         |> (\( level, actor ) ->
                 getCameraComponent actor
@@ -1671,17 +1622,14 @@ componentDecoder =
                     "camera" ->
                         Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
 
-                    "can-squash" ->
-                        Decode.succeed CanSquashComponent
-
                     "damage" ->
                         Decode.map DamageComponent <| Decode.field "data" damageDataDecoder
 
-                    "diamond" ->
-                        Decode.succeed DiamondComponent
+                    "collectible" ->
+                        Decode.map CollectibleComponent <| Decode.field "data" collectibleDecoder
 
-                    "diamond-collector" ->
-                        Decode.succeed DiamondCollectorComponent
+                    "collector" ->
+                        Decode.map CollectorComponent <| Decode.field "data" collectorDecoder
 
                     "explodable" ->
                         Decode.succeed ExplodableComponent
@@ -1703,9 +1651,6 @@ componentDecoder =
 
                     "smash-down" ->
                         Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
-
-                    "squashable" ->
-                        Decode.succeed SquashableComponent
 
                     _ ->
                         Decode.fail <|
@@ -1777,6 +1722,25 @@ triggerExplodableDataDecoder : Decoder TriggerExplodableComponentData
 triggerExplodableDataDecoder =
     JDP.decode TriggerExplodableComponentData
         |> JDP.required "triggerStrength" Decode.int
+
+
+collectibleDecoder : Decoder CollectibleComponentData
+collectibleDecoder =
+    JDP.decode CollectibleComponentData
+        |> JDP.required "name" Decode.string
+        |> JDP.optional "quantity" Decode.int 1
+
+
+collectorDecoder : Decoder CollectorComponentData
+collectorDecoder =
+    JDP.decode CollectorComponentData
+        |> JDP.required "interestedIn" (Decode.list Decode.string)
+        |> JDP.optional "inventory" inventoryDecoder Dict.empty
+
+
+inventoryDecoder : Decoder Inventory
+inventoryDecoder =
+    Decode.dict Decode.int
 
 
 physicsShapeDecoder : Decoder Shape

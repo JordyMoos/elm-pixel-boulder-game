@@ -3,9 +3,8 @@
     "player": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
       {"type": "player-input"},
-      {"type": "diamond-collector"},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
-      {"type": "can-squash"},
       {"type": "explodable"},
       {"type": "camera", "data": {"borderSize": 3}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
@@ -46,7 +45,7 @@
     ],
     "dirt": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#e9b96e"]}}},
-      {"type": "squashable"},
+      {"type": "collectible", "data": {"name": "dirt"}},
       {"type": "physics", "data": {"strength": 1, "shape": "square"}}
     ],
     "wall": [
@@ -61,7 +60,7 @@
     ],
     "diamond": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#3465a4", "#729fcf"], "ticksPerColor": 12}}},
-      {"type": "diamond"},
+      {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "ai", "data": {"type": "gravity"}},
       {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
     ]
@@ -87,10 +86,10 @@
   "scene": [
     "#########################################",
     "#.......................................#",
-    "#.......................e         ......#",
-    "#|||||||||..........p...          ......#",
+    "#.................******e  .............#",
+    "#|||||||||........******   .............#",
     "#|**| o  o..............................#",
-    "#|**| || |....ooooooooo.................#",
+    "#|**| || |....ooooooooo.p...............#",
     "#|**| || |.....ooooooo........*.........#",
     "#|**| || |......ooooo...................#",
     "#|**| ||=|...................*..........#",
