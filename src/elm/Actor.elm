@@ -1728,14 +1728,14 @@ collectibleDecoder : Decoder CollectibleComponentData
 collectibleDecoder =
     JDP.decode CollectibleComponentData
         |> JDP.required "name" Decode.string
-        |> JDP.required "quantity" Decode.int
+        |> JDP.optional "quantity" Decode.int 1
 
 
 collectorDecoder : Decoder CollectorComponentData
 collectorDecoder =
     JDP.decode CollectorComponentData
         |> JDP.required "interestedIn" (Decode.list Decode.string)
-        |> JDP.required "inventory" inventoryDecoder
+        |> JDP.optional "inventory" inventoryDecoder Dict.empty
 
 
 inventoryDecoder : Decoder Inventory
