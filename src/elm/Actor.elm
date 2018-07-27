@@ -28,8 +28,7 @@ module Actor
         , ImageRenderComponentData
           -- Updates
         , updatePlayerInputComponent
-        , updateDiamondCollectorComponent
-        , updateCanSquashComponent
+        , updateCollectorComponent
         , updateAiComponent
         , updateCameraComponent
         , updateTransformComponent
@@ -81,12 +80,6 @@ type alias View =
     }
 
 
-type alias Diamonds =
-    { total : Int
-    , collected : Int
-    }
-
-
 type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
 
@@ -135,7 +128,6 @@ type alias Level =
     , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
-    , diamonds : Diamonds
     , view : View
     , background : RenderComponentData
     }
@@ -145,10 +137,8 @@ type Component
     = TransformComponent TransformComponentData
     | RenderComponent RenderComponentData
     | PlayerInputComponent
-    | DiamondCollectorComponent
-    | DiamondComponent
-    | SquashableComponent
-    | CanSquashComponent
+    | CollectorComponent CollectorComponentData
+    | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
     | AiComponent AiComponentData
@@ -216,10 +206,6 @@ emptyLevel width height =
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , nextActorId = 1
-    , diamonds =
-        { total = 0
-        , collected = 0
-        }
     , view =
         { position = { x = 0, y = 0 }
         , width = width
@@ -779,26 +765,70 @@ isCircle physicsData =
 
 {-
 
-   DiamondComponent
+   CollectibleComponent
 
 -}
 
 
-hasDiamondComponent : Actor -> Bool
-hasDiamondComponent actor =
-    Dict.member "diamond" actor.components
+type alias CollectibleComponentData =
+    { name : String
+    , quantity : Int
+    }
+
+
+hasCollectibleComponent : Actor -> Bool
+hasCollectibleComponent actor =
+    Dict.member "collectible" actor.components
+
+
+getCollectibleComponent : Actor -> Maybe CollectibleComponentData
+getCollectibleComponent actor =
+    Dict.get "collectible" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CollectibleComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 
 {-
 
-   DiamondCollectorComponent
+   CollectorComponent
 
 -}
 
 
-updateDiamondCollectorComponent : Actor -> Level -> Level
-updateDiamondCollectorComponent collectorActor level =
+type alias Inventory =
+    Dict String Int
+
+
+type alias CollectorComponentData =
+    { intrestedIn : List String
+    , inventory : Inventory
+    }
+
+
+getCollectibleDataIfCanCollect : Actor -> List String -> Maybe CollectibleComponentData
+getCollectibleDataIfCanCollect targetActor interestedIn =
+    getCollectibleComponent targetActor
+        |> Maybe.Extra.filter
+            (\collectibleData ->
+                List.member collectibleData.name interestedIn
+            )
+
+
+canCollect : collectibleComponentData -> List String -> Bool
+canCollect collectibleData =
+    List.member collectibleData.name
+
+
+updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
+updateCollectorComponent collectorData collectorActor level =
     getTransformComponent collectorActor
         |> Maybe.Extra.toList
         |> List.map .position
@@ -810,36 +840,53 @@ updateDiamondCollectorComponent collectorActor level =
                             ( position, actor )
                         )
             )
+        |> List.filterMap
+            (\( position, actor ) ->
+                getCollectibleComponent actor
+                    |> Maybe.andThen
+                        (\collectibleData ->
+                            Just ( position, actor, collectibleData )
+                        )
+            )
+        |> List.filter
+            (\( position, actor, collectibleData ) ->
+                canCollect collectibleData collectibleData.interestedIn
+            )
         |> List.foldr
-            (\( position, actor ) level ->
-                if Dict.member "diamond" actor.components then
-                    level
-                        |> removeActorWithPosition position actor.id
-                        |> collectDiamond
-                else
-                    level
+            (\( position, actor, collectibleData ) level ->
+                updateCollectorComponentData collectorData collectibleData
+                    |> setCollectorComponent collectorActor.components
+                    |> updateComponents collectorActor
+                    |> updateActor level.actors
+                    |> updateActors level
+                    |> removeActorWithPosition position actor.id
             )
             level
 
 
-collectDiamond : Level -> Level
-collectDiamond level =
-    { level | diamonds = incrementDiamondsCollected level.diamonds }
+updateCollectorComponentData : CollectorComponentData -> CollectibleComponentData -> CollectorComponentData
+updateCollectorComponentData collector collectible =
+    collector.inventor
+        |> Dict.update
+            collectible.name
+            (\maybeCurrentQuantity ->
+                maybeCurrentQuantity.withDefault 0 + collectible.quantity
+            )
+            y
+        |> updateCollectorInventory collector
 
 
-incrementDiamondsCollected : Diamonds -> Diamonds
-incrementDiamondsCollected diamonds =
-    { diamonds | collected = diamonds.collected + 1 }
+updateCollectorInventory : CollectorComponentData -> Inventory -> CollectorComponentData
+updateCollectorInventory collector newInventory =
+    { collector | inventory = newInventory }
 
 
-incrementTotalDiamonds : Diamonds -> Diamonds
-incrementTotalDiamonds diamonds =
-    { diamonds | total = diamonds.total + 1 }
-
-
-updateDiamonds : Diamonds -> Level -> Level
-updateDiamonds diamonds level =
-    { level | diamonds = diamonds }
+setCollectorComponent : Components -> CollectorComponentData -> Components
+setCollectorComponent components collectorData =
+    Dict.insert
+        "collector"
+        (CollectorComponent collectorData)
+        components
 
 
 

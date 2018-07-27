@@ -37,11 +37,8 @@ update maybeDirection level =
                                                                             Actor.TransformComponent transformData ->
                                                                                 Actor.updateTransformComponent transformData actor level
 
-                                                                            Actor.DiamondCollectorComponent ->
-                                                                                Actor.updateDiamondCollectorComponent actor level
-
-                                                                            Actor.CanSquashComponent ->
-                                                                                Actor.updateCanSquashComponent actor level
+                                                                            Actor.CollectorComponent data ->
+                                                                                Actor.updateCollectorComponent data actor level
 
                                                                             Actor.AiComponent ai ->
                                                                                 Actor.updateAiComponent ai actor level
