@@ -124,7 +124,7 @@ type alias LevelConfig =
     , signs : Signs
     , scene : Scene
     , images : Images
-    , backgroundColor : Color
+    , background : RenderComponentData
     }
 
 
@@ -137,7 +137,7 @@ type alias Level =
     , nextActorId : Int
     , diamonds : Diamonds
     , view : View
-    , backgroundColor : Color
+    , background : RenderComponentData
     }
 
 
@@ -188,7 +188,7 @@ update msg level =
 init : LevelConfig -> Int -> Int -> ( Level, Cmd Msg )
 init config width height =
     emptyLevel width height
-        |> setBackgroundColor config.backgroundColor
+        |> setBackground config.background
         |> setEntities config.entities
         |> setSigns config.signs
         |> setActors config.scene
@@ -225,13 +225,13 @@ emptyLevel width height =
         , width = width
         , height = height
         }
-    , backgroundColor = Color.white
+    , background = defaultBackground
     }
 
 
-setBackgroundColor : Color -> Level -> Level
-setBackgroundColor color level =
-    { level | backgroundColor = color }
+setBackground : RenderComponentData -> Level -> Level
+setBackground background level =
+    { level | background = background }
 
 
 setEntities : Entities -> Level -> Level
@@ -1586,8 +1586,16 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
-        |> JDP.required "images" imagesDecoder
-        |> JDP.optional "backgroundColor" colorDecoder (Color.white)
+        |> JDP.optional "images" imagesDecoder Dict.empty
+        |> JDP.optional "background" renderDataDecoder defaultBackground
+
+
+defaultBackground : RenderComponentData
+defaultBackground =
+    PixelRenderComponent
+        { colors = [ Color.white ]
+        , ticksPerColor = 1
+        }
 
 
 entitiesDecoder : Decoder Entities

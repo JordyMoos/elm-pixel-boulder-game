@@ -20,7 +20,7 @@ view : Tick -> Level -> Html msg
 view currentTick level =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
         |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
-        |> Canvas.batch (background level.images level.backgroundColor level.view.width level.view.height)
+        |> Canvas.batch (drawBackground currentTick level.images level.background level.view.width level.view.height)
         |> (\canvas ->
                 List.foldr
                     (\y acc ->
@@ -45,23 +45,25 @@ view currentTick level =
         |> Canvas.toHtml []
 
 
-background : Actor.CanvasImages -> Color -> Int -> Int -> List Canvas.DrawOp
-background images color width height =
-    List.append
-        [ Canvas.FillStyle color
-        , Canvas.FillRect
-            (Canvas.Point.fromInts ( 0, 0 ))
-            (Canvas.Size (width * pixelSize) (height * pixelSize))
-        ]
-        (Dict.get
-            "background-big"
-            images
-            |> Maybe.andThen
-                (\image ->
-                    Just [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
-                )
-            |> Maybe.withDefault []
-        )
+drawBackground : Tick -> Actor.CanvasImages -> Actor.RenderComponentData -> Int -> Int -> List Canvas.DrawOp
+drawBackground tick images backgroundData width height =
+    case backgroundData of
+        Actor.PixelRenderComponent data ->
+            [ Canvas.FillStyle <| getColor tick data
+            , Canvas.FillRect
+                (Canvas.Point.fromInts ( 0, 0 ))
+                (Canvas.Size (width * pixelSize) (height * pixelSize))
+            ]
+
+        Actor.ImageRenderComponent data ->
+            Dict.get
+                data.name
+                images
+                |> Maybe.andThen
+                    (\image ->
+                        Just [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
+                    )
+                |> Maybe.withDefault []
 
 
 getImage : Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )

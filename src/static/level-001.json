@@ -81,7 +81,7 @@
   "background": {
     "type": "pixel",
     "data": {
-      "color": "#ffffff"
+      "colors": ["#ffffff"]
     }
   },
   "scene": [
