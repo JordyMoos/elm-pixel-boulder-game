@@ -595,6 +595,22 @@ isNotMoving transformComponent =
     isMoving transformComponent |> not
 
 
+isMovingAt : Position -> Level -> Bool
+isMovingAt position level =
+    getActorsByPosition position level
+        |> List.map getTransformComponent
+        |> Maybe.Extra.values
+        |> List.filter isMoving
+        |> List.isEmpty
+        |> not
+
+
+isNotMovingAt : Position -> Level -> Bool
+isNotMovingAt position level =
+    isMovingAt position level
+        |> not
+
+
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
 getNewPosition direction transformData =
     ( transformData, addPosition transformData.position (getOffsetFromDirection direction) )
@@ -1006,6 +1022,7 @@ updateGravityAi actor level =
                             , (getOffsetFromDirection Data.Common.Down)
                             ]
                     , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
                     ]
                   )
                 , ( transformData
@@ -1018,6 +1035,7 @@ updateGravityAi actor level =
                             , (getOffsetFromDirection Data.Common.Down)
                             ]
                     , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
                     ]
                   )
                 ]
