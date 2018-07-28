@@ -136,12 +136,11 @@ type alias Level =
 type Component
     = TransformComponent TransformComponentData
     | RenderComponent RenderComponentData
-    | PlayerInputComponent
     | CollectorComponent CollectorComponentData
     | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
-    | AiComponent AiComponentData
+    | ControlComponent ControlComponentData
     | CameraComponent CameraComponentData
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
@@ -387,6 +386,20 @@ isEmpty position level =
         |> List.isEmpty
 
 
+isDestinationEmpty : Actor -> Direction -> Level -> Bool
+isDestinationEmpty actor direction level =
+    getPosition actor
+        |> Maybe.andThen
+            (\position ->
+                addPosition position (getOffsetFromDirection direction)
+            )
+        |> Maybe.andThen
+            (\targetPosition ->
+                isEmpty targetPosition level
+            )
+        |> Maybe.withDefault True
+
+
 
 {-
 
@@ -399,7 +412,7 @@ removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
         |> (\level ->
-                getPositionFromComponents actor.components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| removeActorFromIndex position actor.id level
@@ -560,18 +573,10 @@ getTransformComponent actor =
             )
 
 
-getPositionFromComponents : Components -> Maybe Position
-getPositionFromComponents components =
-    Dict.get "transform" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    TransformComponent data ->
-                        Just data.position
-
-                    _ ->
-                        Nothing
-            )
+getPosition : Actor -> Maybe Position
+getPosition actor =
+    getTransformComponent actor
+        |> Maybe.andThen .position
 
 
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
@@ -582,6 +587,13 @@ getMovingTowardsData transformData =
 
         NotMoving ->
             Nothing
+
+
+isActorMoving : Actor -> Bool
+isActorMoving actor =
+    getTransformComponent actor
+        |> Maybe.andThen isMoving
+        |> Maybe.withDefault False
 
 
 isMoving : TransformComponentData -> Bool
@@ -681,8 +693,10 @@ handleDirection direction actor level =
                     [ otherActor ] ->
                         if hasRigidComponent otherActor then
                             tryToPush direction actor transformData otherActor level
-                        else
+                        else if askPhysicsIfWeCanMoveHere then
                             Just ( transformData, position, level )
+                        else
+                            Nothing
 
                     _ ->
                         -- @todo what to do if two actors are here?
@@ -723,6 +737,18 @@ tryToPush direction actor transformData otherActor level =
                 else
                     Nothing
             )
+
+
+canBePushed : Actor -> Direction -> Level -> Bool
+canBePushed actor direction level =
+    List.all
+        (\p ->
+            p ()
+        )
+        [ \() -> isActorCircle actor
+        , \() -> isActorMoving actor
+        , \() -> isDestinationEmpty actor direction level
+        ]
 
 
 
@@ -776,6 +802,13 @@ isCircle physicsData =
 
         _ ->
             False
+
+
+isActorCircle : Actor -> Bool
+isActorCircle actor =
+    getPhysicsComponent actor
+        |> Maybe.andThen isCircle
+        |> Maybe.withDefault False
 
 
 
@@ -920,14 +953,24 @@ hasRigidComponent actor =
 
 {-
 
-   AiComponent
+   ControlComponent
 
 -}
 
 
-type AiComponentData
-    = WalkAroundAi WalkAroundAiData
-    | GravityAi
+type alias ControlComponentData =
+    { settings :
+        { pushStrength : Maybe Int
+        , walkOverStrength : Maybe Int
+        }
+    , control : ControlType
+    }
+
+
+type ControlType
+    = InputControl
+    | WalkAroundAiControl WalkAroundAiData
+    | GravityAiControl
 
 
 type alias WalkAroundAiData =
@@ -935,13 +978,13 @@ type alias WalkAroundAiData =
     }
 
 
-getAiComponent : Actor -> Maybe AiComponentData
-getAiComponent actor =
-    Dict.get "ai" actor.components
+getControlComponent : Actor -> Maybe ControlComponentData
+getControlComponent actor =
+    Dict.get "control" actor.components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    AiComponent data ->
+                    ControlComponent data ->
                         Just data
 
                     _ ->
@@ -949,14 +992,27 @@ getAiComponent actor =
             )
 
 
-updateAiComponent : AiComponentData -> Actor -> Level -> Level
-updateAiComponent ai actor level =
-    case ai of
-        WalkAroundAi data ->
-            updateWalkAroundAi data actor level
+updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent inputControllerDirection controlData actor level =
+    getControlDirection controlData actor level
+        |> Maybe.andThen
+            (\direction ->
+                handleDirection direction actor level
+            )
+        |> Maybe.withDefault level
 
-        GravityAi ->
-            updateGravityAi actor level
+
+getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe Direction
+getControlDirection inputControllerDirection controlData actor level =
+    case controlData.control of
+        InputControl ->
+            inputControllerDirection
+
+        WalkAroundAiControl aiData ->
+            getWalkAroundAiDirection controlData aiData actor level
+
+        GravityAiControl ->
+            getGravityAiDirection controlData actor level
 
 
 updateWalkAroundAi : WalkAroundAiData -> Actor -> Level -> Level
@@ -1438,7 +1494,7 @@ addActor components level =
            )
         -- Add actor to the index
         |> (\( level, actor ) ->
-                getPositionFromComponents components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| ( addActorToIndex position actor.id level, actor )
