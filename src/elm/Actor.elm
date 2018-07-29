@@ -343,6 +343,17 @@ getActorIdsByXY x y level =
         |> Maybe.withDefault []
 
 
+getActorsThatAffectNeighborPosition : Actor -> Direction -> Level -> List Actor
+getActorsThatAffectNeighborPosition actor direction level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                addPosition position (getOffsetFromDirection direction)
+            )
+        |> Maybe.map (flip getActorsThatAffect level)
+        |> Maybe.withDefault []
+
+
 getActorsThatAffect : Position -> Level -> List Actor
 getActorsThatAffect position level =
     List.map
@@ -739,16 +750,32 @@ tryToPush direction actor transformData otherActor level =
             )
 
 
-canBePushed : Actor -> Direction -> Level -> Bool
-canBePushed actor direction level =
+canPush : Actor -> Actor -> Direction -> Level -> Bool
+canPush pushingActor toBePushedActor direction level =
     List.all
         (\p ->
             p ()
         )
-        [ \() -> isActorCircle actor
-        , \() -> isActorMoving actor
-        , \() -> isDestinationEmpty actor direction level
+        [ \() -> isActorCircle toBePushedActor
+        , \() -> isActorMoving toBePushedActor |> not
+        , \() -> isDestinationEmpty toBePushedActor direction level
         ]
+
+
+canGoInDirection : Actor -> Direction -> Level -> Bool
+canGoInDirection actor direction level =
+    case getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there
+        [] ->
+            True
+
+        -- Only one actor
+        [ otherActor ] ->
+            True
+
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            False
 
 
 
