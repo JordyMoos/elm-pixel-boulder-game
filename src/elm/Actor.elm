@@ -771,11 +771,33 @@ canGoInDirection actor direction level =
 
         -- Only one actor
         [ otherActor ] ->
-            True
+            List.all
+                (\p ->
+                    p ()
+                )
+                [ \() -> canBeWalkedOver actor otherActor
+                , \() -> canBePushed actor otherActor direction level
+                ]
 
         -- Multiple actors. There is no implementation for that scenario
         _ ->
             False
+
+
+canBeWalkedOver : Actor -> Actor -> Bool
+canBeWalkedOver initiatingActor destinationActor =
+    List.all
+        (\p ->
+            ()
+        )
+        [ \() -> hasRigidComponent destinationActor |> not
+        , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
+        ]
+
+
+hasEnoughWalkOverStrength : Actor -> Actor -> Bool
+hasEnoughWalkOverStrength initiatingActor destinationActor =
+    (getPushStrength initiatingActor) > (getPhysicsStrength destinationActor)
 
 
 
@@ -819,6 +841,13 @@ getPhysicsComponent actor =
                     _ ->
                         Nothing
             )
+
+
+getPhysicsStrength : Actor -> Int
+getPhysicsStrength actor =
+    getPhysicsComponent actor
+        |> Maybe.map .strength
+        |> Maybe.withDefault 0
 
 
 isCircle : PhysicsComponentData -> Bool
@@ -1003,6 +1032,20 @@ type ControlType
 type alias WalkAroundAiData =
     { previousDirection : Direction
     }
+
+
+getPushStrength : Actor -> Int
+getPushStrength actor =
+    getControlComponent actor
+        |> Maybe.andThen (\data -> data.settings.pushStrength)
+        |> Maybe.withDefault 0
+
+
+getWalkOverStrength : Actor -> Int
+getWalkOverStrength actor =
+    getControlComponent actor
+        |> Maybe.andThen (\data -> data.settings.walkOverStrength)
+        |> Maybe.withDefault 0
 
 
 getControlComponent : Actor -> Maybe ControlComponentData
