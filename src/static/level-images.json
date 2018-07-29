@@ -87,7 +87,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
+      {"type": "physics", "data": {"strength": 10, "shape": "circle"}}
     ]
   },
   "signs": {

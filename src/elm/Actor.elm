@@ -1127,6 +1127,7 @@ canBeWalkedOver initiatingActor destinationActor =
     lazyAll
         [ \() -> hasRigidComponent destinationActor |> not
         , \() -> isActorMoving initiatingActor |> not
+        , \() -> isActorMoving destinationActor |> not
         , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
         ]
 
