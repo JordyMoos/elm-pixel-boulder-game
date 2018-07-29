@@ -781,6 +781,7 @@ canPush pushingActor toBePushedActor direction level =
         , \() -> hasRigidComponent toBePushedActor
         , \() -> isActorCircle toBePushedActor
         , \() -> isActorMoving toBePushedActor |> not
+        , \() -> isAllowedToBePushedByAi direction toBePushedActor
         , \() -> isDestinationEmpty toBePushedActor direction level
         , \() -> hasEnoughPushStrength pushingActor toBePushedActor
         ]
@@ -1169,15 +1170,18 @@ getGravityAiDirection controlData aiData actor level =
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
 isAllowedToBePushedByAi direction actor =
-    getAiComponent actor
-        |> Maybe.andThen
-            (\ai ->
-                case ai of
-                    WalkAroundAi data ->
-                        Just False
+    getControlComponent actor
+        |> Maybe.map
+            (\controlData ->
+                case controlData.control of
+                    InputControl ->
+                        False
 
-                    GravityAi ->
-                        Just <| direction /= Data.Common.Up
+                    WalkAroundAiControl data ->
+                        False
+
+                    GravityAiControl ->
+                        direction /= Data.Common.Up
             )
         |> Maybe.withDefault True
 
