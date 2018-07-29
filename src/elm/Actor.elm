@@ -916,7 +916,7 @@ updateControlComponent inputControllerDirection controlData actor level =
     if isActorMoving actor |> not then
         getControlDirection inputControllerDirection controlData actor level
             |> Maybe.map
-                (\( direction, level ) ->
+                (\( direction, actor ) ->
                     handleDirection direction actor level
                 )
             |> Maybe.withDefault level
@@ -952,11 +952,11 @@ getWalkOverStrength actor =
         |> Maybe.withDefault 0
 
 
-getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Level )
+getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
 getControlDirection inputControllerDirection controlData actor level =
     case ( controlData.control, inputControllerDirection ) of
         ( InputControl, Just direction ) ->
-            Just ( direction, level )
+            Just ( direction, actor )
 
         ( InputControl, Nothing ) ->
             Nothing
@@ -968,7 +968,7 @@ getControlDirection inputControllerDirection controlData actor level =
             getGravityAiDirection controlData actor level
 
 
-getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Level )
+getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
 getWalkAroundAiDirection controlData aiData actor level =
     [ getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 3
     , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 4
@@ -977,32 +977,33 @@ getWalkAroundAiDirection controlData aiData actor level =
     ]
         |> List.Extra.find
             (\direction ->
-                canGoInDirection actor direction level
+                let
+                    _ =
+                        Debug.log (toString direction) (toString (canGoInDirection actor direction level))
+                in
+                    canGoInDirection actor direction level
             )
         |> Maybe.map
             (\direction ->
-                ( direction
-                , Dict.insert
-                    "control"
-                    (ControlComponent
-                        { controlData
-                            | control = WalkAroundAiControl <| updateWalkAroundAiPreviousDirection aiData direction
-                        }
+                let
+                    _ =
+                        Debug.log "set previousDirection to" (toString direction)
+                in
+                    ( direction
+                    , Dict.insert
+                        "control"
+                        (ControlComponent
+                            { controlData
+                                | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                            }
+                        )
+                        actor.components
+                        |> updateComponents actor
                     )
-                    actor.components
-                    |> updateComponents actor
-                    |> updateActor level.actors
-                    |> updateActors level
-                )
             )
 
 
-updateWalkAroundAiPreviousDirection : WalkAroundAiControlData -> Direction -> WalkAroundAiControlData
-updateWalkAroundAiPreviousDirection aiData direction =
-    { aiData | previousDirection = direction }
-
-
-getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Level )
+getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
 getGravityAiDirection controlData actor level =
     getPosition actor
         |> Maybe.map
@@ -1038,7 +1039,7 @@ getGravityAiDirection controlData actor level =
             )
         |> Maybe.map
             (\( direction, _ ) ->
-                ( direction, level )
+                ( direction, actor )
             )
 
 
@@ -1116,8 +1117,6 @@ canPush pushingActor toBePushedActor direction level =
     lazyAll
         [ \() -> hasRigidComponent pushingActor
         , \() -> hasRigidComponent toBePushedActor
-        , \() -> isActorCircle toBePushedActor
-        , \() -> isActorMoving pushingActor |> not
         , \() -> isActorMoving toBePushedActor |> not
         , \() -> isAllowedToBePushedByAi direction toBePushedActor
         , \() -> isDestinationEmpty toBePushedActor direction level
@@ -1129,7 +1128,6 @@ canBeWalkedOver : Actor -> Actor -> Bool
 canBeWalkedOver initiatingActor destinationActor =
     lazyAll
         [ \() -> hasRigidComponent destinationActor |> not
-        , \() -> isActorMoving initiatingActor |> not
         , \() -> isActorMoving destinationActor |> not
         , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
         ]
