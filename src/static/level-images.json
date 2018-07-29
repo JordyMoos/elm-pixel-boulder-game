@@ -46,7 +46,6 @@
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
-        "settings": {"pushStrength": 30, "walkOverStrength": 30},
         "control": {
           "type": "walkAroundAi"
         }

@@ -1001,26 +1001,34 @@ updateWalkAroundAiPreviousDirection aiData direction =
 
 getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Level )
 getGravityAiDirection controlData actor level =
-    [ ( Data.Common.Down
-      , [ \() -> canGoInDirection actor Data.Common.Down level ]
-      )
-    , ( Data.Common.Left
-      , [ \() ->
-            isDestinationEmptyByOffset actor
-                (addPositions [ getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ])
-                level
-        , \() -> canGoInDirection actor Data.Common.Left level
-        ]
-      )
-    , ( Data.Common.Right
-      , [ \() ->
-            isDestinationEmptyByOffset actor
-                (addPositions [ getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ])
-                level
-        , \() -> canGoInDirection actor Data.Common.Right level
-        ]
-      )
-    ]
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                [ ( Data.Common.Down
+                  , [ \() -> canGoInDirection actor Data.Common.Down level ]
+                  )
+                , ( Data.Common.Left
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Left level
+                    ]
+                  )
+                , ( Data.Common.Right
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Right level
+                    ]
+                  )
+                ]
+            )
+        |> Maybe.Extra.toList
+        |> List.concat
         |> List.Extra.find
             (\( _, predicates ) ->
                 lazyAll predicates
