@@ -591,7 +591,7 @@ getTransformComponent actor =
 getPosition : Actor -> Maybe Position
 getPosition actor =
     getTransformComponent actor
-        |> Maybe.andThen .position
+        |> Maybe.map .position
 
 
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
@@ -607,7 +607,7 @@ getMovingTowardsData transformData =
 isActorMoving : Actor -> Bool
 isActorMoving actor =
     getTransformComponent actor
-        |> Maybe.andThen isMoving
+        |> Maybe.map isMoving
         |> Maybe.withDefault False
 
 
@@ -737,7 +737,7 @@ isCircle physicsData =
 isActorCircle : Actor -> Bool
 isActorCircle actor =
     getPhysicsComponent actor
-        |> Maybe.andThen isCircle
+        |> Maybe.map isCircle
         |> Maybe.withDefault False
 
 
@@ -913,9 +913,9 @@ type alias WalkAroundAiControlData =
 
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputControllerDirection controlData actor level =
-    getControlDirection controlData actor level
+    getControlDirection inputControllerDirection controlData actor level
         |> Maybe.map
-            (\( level, direction ) ->
+            (\( direction, level ) ->
                 handleDirection direction actor level
             )
         |> Maybe.withDefault level
@@ -958,10 +958,10 @@ getControlDirection inputControllerDirection controlData actor level =
         ( InputControl, Nothing ) ->
             Nothing
 
-        WalkAroundAiControl aiData ->
+        ( WalkAroundAiControl aiData, _ ) ->
             getWalkAroundAiDirection controlData aiData actor level
 
-        GravityAiControl ->
+        ( GravityAiControl, _ ) ->
             getGravityAiDirection controlData actor level
 
 
@@ -999,8 +999,8 @@ updateWalkAroundAiPreviousDirection aiData direction =
     { aiData | previousDirection = direction }
 
 
-getGravityAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Level )
-getGravityAiDirection controlData aiData actor level =
+getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Level )
+getGravityAiDirection controlData actor level =
     [ ( Data.Common.Down
       , [ \() -> canGoInDirection actor Data.Common.Down level ]
       )
@@ -1068,7 +1068,7 @@ handleDirection direction actor level =
                                 |> Maybe.map
                                     (\otherTransformData ->
                                         startMovingTowards otherActor otherTransformData (addPositions [ otherTransformData.position, getOffsetFromDirection direction ]) level
-                                            |> startMovingTowards actor transformData (addPosition [ transformData.position, getOffsetFromDirection direction ])
+                                            |> startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ])
                                     )
                                 |> Maybe.withDefault level
                         else

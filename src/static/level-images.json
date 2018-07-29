@@ -19,7 +19,7 @@
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
-          "type": "gravity"
+          "type": "gravityAi"
         }
       }},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
@@ -30,7 +30,7 @@
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
-          "type": "gravity"
+          "type": "gravityAi"
         }
       }},
       {"type": "explodable"},
@@ -85,7 +85,7 @@
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
         "control": {
-          "type": "gravity"
+          "type": "gravityAi"
         }
       }},
       {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
