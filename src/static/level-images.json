@@ -3,7 +3,7 @@
     "player": [
       {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
       {"type": "control", "data": {
-        "settings": {"pushStrength": 30, "walkOverStrength": 30},
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
           "type": "input"
         }
@@ -67,7 +67,7 @@
     "dirt": [
       {"type": "render", "data": {"type": "image", "data": {"name": "dirt"}}},
       {"type": "collectible", "data": {"name": "dirt"}},
-      {"type": "physics", "data": {"strength": 1, "shape": "square"}}
+      {"type": "physics", "data": {"strength": 30, "shape": "square"}}
     ],
     "wall": [
       {"type": "render", "data": {"type": "image", "data": {"name": "wall"}}},
@@ -87,7 +87,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "physics", "data": {"strength": 10, "shape": "circle"}}
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ]
   },
   "signs": {
