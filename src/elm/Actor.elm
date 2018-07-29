@@ -399,12 +399,17 @@ isEmpty position level =
 
 isDestinationEmpty : Actor -> Direction -> Level -> Bool
 isDestinationEmpty actor direction level =
+    isDestinationEmptyByOffset actor (getOffsetFromDirection direction) level
+
+
+isDestinationEmptyByOffset : Actor -> Position -> Level -> Bool
+isDestinationEmptyByOffset actor offset level =
     getPosition actor
-        |> Maybe.andThen
+        |> Maybe.map
             (\position ->
-                addPosition position (getOffsetFromDirection direction)
+                addPosition position offset
             )
-        |> Maybe.andThen
+        |> Maybe.map
             (\targetPosition ->
                 isEmpty targetPosition level
             )
@@ -750,18 +755,6 @@ tryToPush direction actor transformData otherActor level =
             )
 
 
-canPush : Actor -> Actor -> Direction -> Level -> Bool
-canPush pushingActor toBePushedActor direction level =
-    List.all
-        (\p ->
-            p ()
-        )
-        [ \() -> isActorCircle toBePushedActor
-        , \() -> isActorMoving toBePushedActor |> not
-        , \() -> isDestinationEmpty toBePushedActor direction level
-        ]
-
-
 canGoInDirection : Actor -> Direction -> Level -> Bool
 canGoInDirection actor direction level =
     case getActorsThatAffectNeighborPosition actor direction level of
@@ -771,12 +764,9 @@ canGoInDirection actor direction level =
 
         -- Only one actor
         [ otherActor ] ->
-            List.all
-                (\p ->
-                    p ()
-                )
+            lazyAny
                 [ \() -> canBeWalkedOver actor otherActor
-                , \() -> canBePushed actor otherActor direction level
+                , \() -> canPush actor otherActor direction level
                 ]
 
         -- Multiple actors. There is no implementation for that scenario
@@ -784,20 +774,46 @@ canGoInDirection actor direction level =
             False
 
 
+canPush : Actor -> Actor -> Direction -> Level -> Bool
+canPush pushingActor toBePushedActor direction level =
+    lazyAll
+        [ \() -> hasRigidComponent pushingActor
+        , \() -> hasRigidComponent toBePushedActor
+        , \() -> isActorCircle toBePushedActor
+        , \() -> isActorMoving toBePushedActor |> not
+        , \() -> isDestinationEmpty toBePushedActor direction level
+        , \() -> hasEnoughPushStrength pushingActor toBePushedActor
+        ]
+
+
 canBeWalkedOver : Actor -> Actor -> Bool
 canBeWalkedOver initiatingActor destinationActor =
-    List.all
-        (\p ->
-            ()
-        )
+    lazyAll
         [ \() -> hasRigidComponent destinationActor |> not
         , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
         ]
 
 
+hasEnoughPushStrength : Actor -> Actor -> Bool
+hasEnoughPushStrength initiatingActor destinationActor =
+    (getPushStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
 hasEnoughWalkOverStrength : Actor -> Actor -> Bool
 hasEnoughWalkOverStrength initiatingActor destinationActor =
-    (getPushStrength initiatingActor) > (getPhysicsStrength destinationActor)
+    (getWalkOverStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
+lazyAll : List (() -> Bool) -> Bool
+lazyAll =
+    List.all
+        (\p -> p ())
+
+
+lazyAny : List (() -> Bool) -> Bool
+lazyAny =
+    List.any
+        (\p -> p ())
 
 
 
@@ -1065,18 +1081,18 @@ getControlComponent actor =
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputControllerDirection controlData actor level =
     getControlDirection controlData actor level
-        |> Maybe.andThen
-            (\direction ->
+        |> Maybe.map
+            (\( level, direction ) ->
                 handleDirection direction actor level
             )
         |> Maybe.withDefault level
 
 
-getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe Direction
+getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Level )
 getControlDirection inputControllerDirection controlData actor level =
-    case controlData.control of
-        InputControl ->
-            inputControllerDirection
+    case ( controlData.control, inputControllerDirection ) of
+        ( InputControl, Just direction ) ->
+            Just ( direction, level )
 
         WalkAroundAiControl aiData ->
             getWalkAroundAiDirection controlData aiData actor level
@@ -1085,105 +1101,70 @@ getControlDirection inputControllerDirection controlData actor level =
             getGravityAiDirection controlData actor level
 
 
-updateWalkAroundAi : WalkAroundAiData -> Actor -> Level -> Level
-updateWalkAroundAi ai actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 3 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 4 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 5 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 6 )
-                ]
-            )
+getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiData -> Actor -> Level -> Maybe ( Direction, Level )
+getWalkAroundAiDirection controlData aiData actor level =
+    [ getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 3
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 4
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 5
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 6
+    ]
         |> List.Extra.find
-            (\( transformData, direction ) ->
-                isEmpty
-                    (addPosition transformData.position (getOffsetFromDirection direction))
-                    level
+            (\direction ->
+                canGoInDirection actor direction level
             )
-        |> Maybe.andThen
-            (\( transformData, direction ) ->
-                Dict.insert
-                    "ai"
-                    (AiComponent <|
-                        WalkAroundAi
-                            { ai | previousDirection = direction }
+        |> Maybe.map
+            (\direction ->
+                ( direction
+                , Dict.insert
+                    "control"
+                    (ControlComponent
+                        { controlData
+                            | control = WalkAroundAiControl <| updateWalkAroundAiPreviousDirection aiData direction
+                        }
                     )
                     actor.components
                     |> updateComponents actor
-                    |> (\actor ->
-                            startMovingTowards
-                                actor
-                                transformData
-                                (addPosition transformData.position <| getOffsetFromDirection direction)
-                                level
-                       )
-                    |> Just
+                    |> updateActor level.actors
+                    |> updateActors level
+                )
             )
-        |> Maybe.withDefault level
 
 
-updateGravityAi : Actor -> Level -> Level
-updateGravityAi actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        -- Check for possible actions
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData
-                  , Data.Common.Down
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
-                  )
-                , ( transformData
-                  , Data.Common.Left
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Left)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    ]
-                  )
-                , ( transformData
-                  , Data.Common.Right
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Right)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    ]
-                  )
-                ]
-            )
+updateWalkAroundAiPreviousDirection : WalkAroundAiData -> Direction -> WalkAroundAiData
+updateWalkAroundAiPreviousDirection aiData direction =
+    { aiData | previousDirection = direction }
+
+
+getGravityAiDirection : ControlComponentData -> WalkAroundAiData -> Actor -> Level -> Maybe ( Direction, Level )
+getGravityAiDirection controlData aiData actor level =
+    [ ( Data.Common.Down
+      , [ \() -> canGoInDirection actor Data.Common.Down level ]
+      )
+    , ( Data.Common.Left
+      , [ \() ->
+            isDestinationEmptyByOffset actor
+                (addPositions [ getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ])
+                level
+        , \() -> canGoInDirection actor Data.Common.Left level
+        ]
+      )
+    , ( Data.Common.Right
+      , [ \() ->
+            isDestinationEmptyByOffset actor
+                (addPositions [ getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ])
+                level
+        , \() -> canGoInDirection actor Data.Common.Right level
+        ]
+      )
+    ]
         |> List.Extra.find
-            (\( transformData, _, predicates ) ->
-                List.all
-                    (\predicate ->
-                        predicate level
-                    )
-                    predicates
+            (\( _, predicates ) ->
+                lazyAll predicates
             )
-        |> Maybe.andThen
-            (\( transformData, direction, _ ) ->
-                Just <|
-                    startMovingTowards actor
-                        transformData
-                        (addPosition transformData.position <| getOffsetFromDirection direction)
-                        level
+        |> Maybe.map
+            (\( direction, _ ) ->
+                ( direction, level )
             )
-        |> Maybe.withDefault
-            level
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
