@@ -1049,66 +1049,36 @@ isAllowedToBePushedByAi direction actor =
         |> Maybe.withDefault True
 
 
-handleDirection : Direction -> Actor -> Level -> Maybe Level
+handleDirection : Direction -> Actor -> Level -> Level
 handleDirection direction actor level =
     getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( transformData, position ) ->
-                case getActorsThatAffect position level of
+        |> Maybe.map
+            (\transformData ->
+                case getActorsThatAffectNeighborPosition actor direction level of
+                    -- No one there
                     [] ->
-                        Just ( transformData, position, level )
+                        startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
 
+                    -- Only one actor
                     [ otherActor ] ->
-                        if hasRigidComponent otherActor then
-                            tryToPush direction actor transformData otherActor level
-                        else if askPhysicsIfWeCanMoveHere then
-                            Just ( transformData, position, level )
+                        if canBeWalkedOver actor otherActor then
+                            startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
+                        else if canPush actor otherActor direction level then
+                            getTransformComponent otherActor
+                                |> Maybe.map
+                                    (\otherTransformData ->
+                                        startMovingTowards otherActor otherTransformData (addPositions [ otherTransformData.position, getOffsetFromDirection direction ]) level
+                                            |> startMovingTowards actor transformData (addPosition [ transformData.position, getOffsetFromDirection direction ])
+                                    )
+                                |> Maybe.withDefault level
                         else
-                            Nothing
+                            level
 
+                    -- Multiple actors. There is no implementation for that scenario
                     _ ->
-                        -- @todo what to do if two actors are here?
-                        Nothing
+                        level
             )
-        |> Maybe.andThen
-            (\( transformData, newPosition, level ) ->
-                Just <| startMovingTowards actor transformData newPosition level
-            )
-
-
-tryToPush : Direction -> Actor -> TransformComponentData -> Actor -> Level -> Maybe ( TransformComponentData, Position, Level )
-tryToPush direction actor transformData otherActor level =
-    getPhysicsComponent otherActor
-        |> Maybe.Extra.toList
-        |> List.filter isCircle
-        |> List.filter
-            (\physics ->
-                isAllowedToBePushedByAi direction otherActor
-            )
-        |> List.head
-        |> Maybe.andThen
-            (\physics ->
-                getTransformComponent otherActor
-            )
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( otherTransformData, pushedToPosition ) ->
-                if isEmpty pushedToPosition level then
-                    Just
-                        ( transformData
-                        , otherTransformData.position
-                        , startMovingTowards otherActor otherTransformData pushedToPosition level
-                        )
-                else
-                    Nothing
-            )
+        |> Maybe.withDefault level
 
 
 canGoInDirection : Actor -> Direction -> Level -> Bool
@@ -1136,6 +1106,7 @@ canPush pushingActor toBePushedActor direction level =
         [ \() -> hasRigidComponent pushingActor
         , \() -> hasRigidComponent toBePushedActor
         , \() -> isActorCircle toBePushedActor
+        , \() -> isActorMoving pushingActor |> not
         , \() -> isActorMoving toBePushedActor |> not
         , \() -> isAllowedToBePushedByAi direction toBePushedActor
         , \() -> isDestinationEmpty toBePushedActor direction level
@@ -1147,6 +1118,7 @@ canBeWalkedOver : Actor -> Actor -> Bool
 canBeWalkedOver initiatingActor destinationActor =
     lazyAll
         [ \() -> hasRigidComponent destinationActor |> not
+        , \() -> isActorMoving initiatingActor |> not
         , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
         ]
 
