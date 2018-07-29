@@ -913,12 +913,15 @@ type alias WalkAroundAiControlData =
 
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputControllerDirection controlData actor level =
-    getControlDirection inputControllerDirection controlData actor level
-        |> Maybe.map
-            (\( direction, level ) ->
-                handleDirection direction actor level
-            )
-        |> Maybe.withDefault level
+    if isActorMoving actor |> not then
+        getControlDirection inputControllerDirection controlData actor level
+            |> Maybe.map
+                (\( direction, level ) ->
+                    handleDirection direction actor level
+                )
+            |> Maybe.withDefault level
+    else
+        level
 
 
 getControlComponent : Actor -> Maybe ControlComponentData
