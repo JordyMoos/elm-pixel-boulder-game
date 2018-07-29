@@ -31,17 +31,14 @@ update maybeDirection level =
                                                                 let
                                                                     updatedLevel =
                                                                         case component of
-                                                                            Actor.PlayerInputComponent ->
-                                                                                Actor.updatePlayerInputComponent maybeDirection actor level
-
                                                                             Actor.TransformComponent transformData ->
                                                                                 Actor.updateTransformComponent transformData actor level
 
                                                                             Actor.CollectorComponent data ->
                                                                                 Actor.updateCollectorComponent data actor level
 
-                                                                            Actor.AiComponent ai ->
-                                                                                Actor.updateAiComponent ai actor level
+                                                                            Actor.ControlComponent control ->
+                                                                                Actor.updateControlComponent maybeDirection control actor level
 
                                                                             Actor.CameraComponent camera ->
                                                                                 Actor.updateCameraComponent camera actor level

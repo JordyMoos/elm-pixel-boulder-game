@@ -2,7 +2,12 @@
   "entities": {
     "player": [
       {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
-      {"type": "player-input"},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 30, "walkOverStrength": 30},
+        "control": {
+          "type": "input"
+        }
+      }},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -12,14 +17,22 @@
     "rock": [
       {"type": "render", "data": {"type": "image", "data": {"name": "rock"}}},
       {"type": "rigid"},
-      {"type": "ai", "data": {"type": "gravity"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "gravity"
+        }
+      }},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
     "dynamite": [
       {"type": "render", "data": {"type": "image", "data": {"name": "explosive"}}},
       {"type": "rigid"},
-      {"type": "ai", "data": {"type": "gravity"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "gravity"
+        }
+      }},
       {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
@@ -32,7 +45,12 @@
       {"type": "render", "data": {"type": "image", "data": {"name": "enemy"}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 30, "walkOverStrength": 30},
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -40,7 +58,11 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#75507b", "#ad7fa8"], "ticksPerColor": 8}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"}
     ],
     "dirt": [
@@ -61,7 +83,11 @@
     "diamond": [
       {"type": "render", "data": {"type": "image", "data": {"name": "diamond"}}},
       {"type": "collectible", "data": {"name": "diamond"}},
-      {"type": "ai", "data": {"type": "gravity"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "gravity"
+        }
+      }},
       {"type": "physics", "data": {"strength": 100, "shape": "circle"}}
     ]
   },
