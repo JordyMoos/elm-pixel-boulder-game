@@ -2,7 +2,12 @@
   "entities": {
     "player": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffff00"]}}},
-      {"type": "player-input"},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
       {"type": "collector", "data": {"interestedIn": ["candy", "diamond"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -17,7 +22,12 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ff0000"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "settings": {"walkOverStrength": 50},
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -25,7 +35,12 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffb8ff"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "settings": {"walkOverStrength": 50},
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -33,7 +48,12 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#00ffff"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "settings": {"walkOverStrength": 50},
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -41,7 +61,12 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffb852"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "ai", "data": {"type": "walkaround"}},
+      {"type": "control", "data": {
+        "settings": {"walkOverStrength": 50},
+        "control": {
+          "type": "walkAroundAi"
+        }
+      }},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -93,8 +118,8 @@
     "|    |.||.|||  |||.||.|     ",
     "||||||.||.| x    |.||.||||||",
     "|.........|     y|.........|",
-    "||||||.||.|      |.||.||||||",
-    "|   ||.||.|w   z |.||.||    ",
+    "||||||.||.|w     |.||.||||||",
+    "|   ||.||.|    z |.||.||    ",
     "|   ||.||.||||||||.||.||    ",
     "|   ||.||..........||.||    ",
     "|   ||.||.||||||||.||.||    ",

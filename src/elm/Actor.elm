@@ -27,9 +27,8 @@ module Actor
         , PixelRenderComponentData
         , ImageRenderComponentData
           -- Updates
-        , updatePlayerInputComponent
         , updateCollectorComponent
-        , updateAiComponent
+        , updateControlComponent
         , updateCameraComponent
         , updateTransformComponent
         , updateDownSmashComponent
@@ -136,12 +135,11 @@ type alias Level =
 type Component
     = TransformComponent TransformComponentData
     | RenderComponent RenderComponentData
-    | PlayerInputComponent
     | CollectorComponent CollectorComponentData
     | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
-    | AiComponent AiComponentData
+    | ControlComponent ControlComponentData
     | CameraComponent CameraComponentData
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
@@ -344,6 +342,17 @@ getActorIdsByXY x y level =
         |> Maybe.withDefault []
 
 
+getActorsThatAffectNeighborPosition : Actor -> Direction -> Level -> List Actor
+getActorsThatAffectNeighborPosition actor direction level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                addPosition position (getOffsetFromDirection direction)
+            )
+        |> Maybe.map (flip getActorsThatAffect level)
+        |> Maybe.withDefault []
+
+
 getActorsThatAffect : Position -> Level -> List Actor
 getActorsThatAffect position level =
     List.map
@@ -387,6 +396,25 @@ isEmpty position level =
         |> List.isEmpty
 
 
+isDestinationEmpty : Actor -> Direction -> Level -> Bool
+isDestinationEmpty actor direction level =
+    isDestinationEmptyByOffset actor (getOffsetFromDirection direction) level
+
+
+isDestinationEmptyByOffset : Actor -> Position -> Level -> Bool
+isDestinationEmptyByOffset actor offset level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                addPosition position offset
+            )
+        |> Maybe.map
+            (\targetPosition ->
+                isEmpty targetPosition level
+            )
+        |> Maybe.withDefault True
+
+
 
 {-
 
@@ -399,7 +427,7 @@ removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
         |> (\level ->
-                getPositionFromComponents actor.components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| removeActorFromIndex position actor.id level
@@ -560,18 +588,10 @@ getTransformComponent actor =
             )
 
 
-getPositionFromComponents : Components -> Maybe Position
-getPositionFromComponents components =
-    Dict.get "transform" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    TransformComponent data ->
-                        Just data.position
-
-                    _ ->
-                        Nothing
-            )
+getPosition : Actor -> Maybe Position
+getPosition actor =
+    getTransformComponent actor
+        |> Maybe.map .position
 
 
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
@@ -582,6 +602,13 @@ getMovingTowardsData transformData =
 
         NotMoving ->
             Nothing
+
+
+isActorMoving : Actor -> Bool
+isActorMoving actor =
+    getTransformComponent actor
+        |> Maybe.map isMoving
+        |> Maybe.withDefault False
 
 
 isMoving : TransformComponentData -> Bool
@@ -650,84 +677,6 @@ startMovingTowards actor transformData newPosition level =
 
 {-
 
-   PlayerInputComponent
-
--}
-
-
-updatePlayerInputComponent : Maybe Direction -> Actor -> Level -> Level
-updatePlayerInputComponent maybeDirection actor level =
-    maybeDirection
-        |> Maybe.andThen
-            (\direction ->
-                handleDirection direction actor level
-            )
-        |> Maybe.withDefault level
-
-
-handleDirection : Direction -> Actor -> Level -> Maybe Level
-handleDirection direction actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( transformData, position ) ->
-                case getActorsThatAffect position level of
-                    [] ->
-                        Just ( transformData, position, level )
-
-                    [ otherActor ] ->
-                        if hasRigidComponent otherActor then
-                            tryToPush direction actor transformData otherActor level
-                        else
-                            Just ( transformData, position, level )
-
-                    _ ->
-                        -- @todo what to do if two actors are here?
-                        Nothing
-            )
-        |> Maybe.andThen
-            (\( transformData, newPosition, level ) ->
-                Just <| startMovingTowards actor transformData newPosition level
-            )
-
-
-tryToPush : Direction -> Actor -> TransformComponentData -> Actor -> Level -> Maybe ( TransformComponentData, Position, Level )
-tryToPush direction actor transformData otherActor level =
-    getPhysicsComponent otherActor
-        |> Maybe.Extra.toList
-        |> List.filter isCircle
-        |> List.filter
-            (\physics ->
-                isAllowedToBePushedByAi direction otherActor
-            )
-        |> List.head
-        |> Maybe.andThen
-            (\physics ->
-                getTransformComponent otherActor
-            )
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( otherTransformData, pushedToPosition ) ->
-                if isEmpty pushedToPosition level then
-                    Just
-                        ( transformData
-                        , otherTransformData.position
-                        , startMovingTowards otherActor otherTransformData pushedToPosition level
-                        )
-                else
-                    Nothing
-            )
-
-
-
-{-
-
    PhysicsComponent
 
 -}
@@ -768,6 +717,13 @@ getPhysicsComponent actor =
             )
 
 
+getPhysicsStrength : Actor -> Int
+getPhysicsStrength actor =
+    getPhysicsComponent actor
+        |> Maybe.map .strength
+        |> Maybe.withDefault 0
+
+
 isCircle : PhysicsComponentData -> Bool
 isCircle physicsData =
     case physicsData.shape of
@@ -776,6 +732,13 @@ isCircle physicsData =
 
         _ ->
             False
+
+
+isActorCircle : Actor -> Bool
+isActorCircle actor =
+    getPhysicsComponent actor
+        |> Maybe.map isCircle
+        |> Maybe.withDefault False
 
 
 
@@ -920,28 +883,54 @@ hasRigidComponent actor =
 
 {-
 
-   AiComponent
+   ControlComponent
 
 -}
 
 
-type AiComponentData
-    = WalkAroundAi WalkAroundAiData
-    | GravityAi
+type alias ControlComponentData =
+    { settings : ControlSettings
+    , control : ControlType
+    }
 
 
-type alias WalkAroundAiData =
+type alias ControlSettings =
+    { pushStrength : Int
+    , walkOverStrength : Int
+    }
+
+
+type ControlType
+    = InputControl
+    | WalkAroundAiControl WalkAroundAiControlData
+    | GravityAiControl
+
+
+type alias WalkAroundAiControlData =
     { previousDirection : Direction
     }
 
 
-getAiComponent : Actor -> Maybe AiComponentData
-getAiComponent actor =
-    Dict.get "ai" actor.components
+updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent inputControllerDirection controlData actor level =
+    if isActorMoving actor |> not then
+        getControlDirection inputControllerDirection controlData actor level
+            |> Maybe.map
+                (\( direction, actor ) ->
+                    handleDirection direction actor level
+                )
+            |> Maybe.withDefault level
+    else
+        level
+
+
+getControlComponent : Actor -> Maybe ControlComponentData
+getControlComponent actor =
+    Dict.get "control" actor.components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    AiComponent data ->
+                    ControlComponent data ->
                         Just data
 
                     _ ->
@@ -949,130 +938,221 @@ getAiComponent actor =
             )
 
 
-updateAiComponent : AiComponentData -> Actor -> Level -> Level
-updateAiComponent ai actor level =
-    case ai of
-        WalkAroundAi data ->
-            updateWalkAroundAi data actor level
-
-        GravityAi ->
-            updateGravityAi actor level
+getPushStrength : Actor -> Int
+getPushStrength actor =
+    getControlComponent actor
+        |> Maybe.map (\data -> data.settings.pushStrength)
+        |> Maybe.withDefault 0
 
 
-updateWalkAroundAi : WalkAroundAiData -> Actor -> Level -> Level
-updateWalkAroundAi ai actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 3 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 4 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 5 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 6 )
-                ]
-            )
+getWalkOverStrength : Actor -> Int
+getWalkOverStrength actor =
+    getControlComponent actor
+        |> Maybe.map (\data -> data.settings.walkOverStrength)
+        |> Maybe.withDefault 0
+
+
+getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
+getControlDirection inputControllerDirection controlData actor level =
+    case ( controlData.control, inputControllerDirection ) of
+        ( InputControl, Just direction ) ->
+            Just ( direction, actor )
+
+        ( InputControl, Nothing ) ->
+            Nothing
+
+        ( WalkAroundAiControl aiData, _ ) ->
+            getWalkAroundAiDirection controlData aiData actor level
+
+        ( GravityAiControl, _ ) ->
+            getGravityAiDirection controlData actor level
+
+
+getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
+getWalkAroundAiDirection controlData aiData actor level =
+    [ getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 3
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 4
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 5
+    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 6
+    ]
         |> List.Extra.find
-            (\( transformData, direction ) ->
-                isEmpty
-                    (addPosition transformData.position (getOffsetFromDirection direction))
-                    level
+            (\direction ->
+                let
+                    _ =
+                        Debug.log (toString direction) (toString (canGoInDirection actor direction level))
+                in
+                    canGoInDirection actor direction level
             )
-        |> Maybe.andThen
-            (\( transformData, direction ) ->
-                Dict.insert
-                    "ai"
-                    (AiComponent <|
-                        WalkAroundAi
-                            { ai | previousDirection = direction }
+        |> Maybe.map
+            (\direction ->
+                let
+                    _ =
+                        Debug.log "set previousDirection to" (toString direction)
+                in
+                    ( direction
+                    , Dict.insert
+                        "control"
+                        (ControlComponent
+                            { controlData
+                                | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                            }
+                        )
+                        actor.components
+                        |> updateComponents actor
                     )
-                    actor.components
-                    |> updateComponents actor
-                    |> (\actor ->
-                            startMovingTowards
-                                actor
-                                transformData
-                                (addPosition transformData.position <| getOffsetFromDirection direction)
-                                level
-                       )
-                    |> Just
             )
-        |> Maybe.withDefault level
 
 
-updateGravityAi : Actor -> Level -> Level
-updateGravityAi actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        -- Check for possible actions
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData
-                  , Data.Common.Down
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
+getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
+getGravityAiDirection controlData actor level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                [ ( Data.Common.Down
+                  , [ \() -> canGoInDirection actor Data.Common.Down level ]
                   )
-                , ( transformData
-                  , Data.Common.Left
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Left)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                , ( Data.Common.Left
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Left level
                     ]
                   )
-                , ( transformData
-                  , Data.Common.Right
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Right)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
-                    , isNotMovingAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                , ( Data.Common.Right
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Right level
                     ]
                   )
                 ]
             )
+        |> Maybe.Extra.toList
+        |> List.concat
         |> List.Extra.find
-            (\( transformData, _, predicates ) ->
-                List.all
-                    (\predicate ->
-                        predicate level
-                    )
-                    predicates
+            (\( _, predicates ) ->
+                lazyAll predicates
             )
-        |> Maybe.andThen
-            (\( transformData, direction, _ ) ->
-                Just <|
-                    startMovingTowards actor
-                        transformData
-                        (addPosition transformData.position <| getOffsetFromDirection direction)
-                        level
+        |> Maybe.map
+            (\( direction, _ ) ->
+                ( direction, actor )
             )
-        |> Maybe.withDefault
-            level
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
 isAllowedToBePushedByAi direction actor =
-    getAiComponent actor
-        |> Maybe.andThen
-            (\ai ->
-                case ai of
-                    WalkAroundAi data ->
-                        Just False
+    getControlComponent actor
+        |> Maybe.map
+            (\controlData ->
+                case controlData.control of
+                    InputControl ->
+                        False
 
-                    GravityAi ->
-                        Just <| direction /= Data.Common.Up
+                    WalkAroundAiControl data ->
+                        False
+
+                    GravityAiControl ->
+                        direction /= Data.Common.Up
             )
         |> Maybe.withDefault True
+
+
+handleDirection : Direction -> Actor -> Level -> Level
+handleDirection direction actor level =
+    getTransformComponent actor
+        |> Maybe.map
+            (\transformData ->
+                case getActorsThatAffectNeighborPosition actor direction level of
+                    -- No one there
+                    [] ->
+                        startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
+
+                    -- Only one actor
+                    [ otherActor ] ->
+                        if canBeWalkedOver actor otherActor then
+                            startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
+                        else if canPush actor otherActor direction level then
+                            getTransformComponent otherActor
+                                |> Maybe.map
+                                    (\otherTransformData ->
+                                        startMovingTowards otherActor otherTransformData (addPositions [ otherTransformData.position, getOffsetFromDirection direction ]) level
+                                            |> startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ])
+                                    )
+                                |> Maybe.withDefault level
+                        else
+                            level
+
+                    -- Multiple actors. There is no implementation for that scenario
+                    _ ->
+                        level
+            )
+        |> Maybe.withDefault level
+
+
+canGoInDirection : Actor -> Direction -> Level -> Bool
+canGoInDirection actor direction level =
+    case getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there
+        [] ->
+            True
+
+        -- Only one actor
+        [ otherActor ] ->
+            lazyAny
+                [ \() -> canBeWalkedOver actor otherActor
+                , \() -> canPush actor otherActor direction level
+                ]
+
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            False
+
+
+canPush : Actor -> Actor -> Direction -> Level -> Bool
+canPush pushingActor toBePushedActor direction level =
+    lazyAll
+        [ \() -> hasRigidComponent pushingActor
+        , \() -> hasRigidComponent toBePushedActor
+        , \() -> isActorMoving toBePushedActor |> not
+        , \() -> isAllowedToBePushedByAi direction toBePushedActor
+        , \() -> isDestinationEmpty toBePushedActor direction level
+        , \() -> hasEnoughPushStrength pushingActor toBePushedActor
+        ]
+
+
+canBeWalkedOver : Actor -> Actor -> Bool
+canBeWalkedOver initiatingActor destinationActor =
+    lazyAll
+        [ \() -> hasRigidComponent destinationActor |> not
+        , \() -> isActorMoving destinationActor |> not
+        , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
+        ]
+
+
+hasEnoughPushStrength : Actor -> Actor -> Bool
+hasEnoughPushStrength initiatingActor destinationActor =
+    (getPushStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
+hasEnoughWalkOverStrength : Actor -> Actor -> Bool
+hasEnoughWalkOverStrength initiatingActor destinationActor =
+    (getWalkOverStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
+lazyAll : List (() -> Bool) -> Bool
+lazyAll =
+    List.all
+        (\p -> p ())
+
+
+lazyAny : List (() -> Bool) -> Bool
+lazyAny =
+    List.any
+        (\p -> p ())
 
 
 
@@ -1438,7 +1518,7 @@ addActor components level =
            )
         -- Add actor to the index
         |> (\( level, actor ) ->
-                getPositionFromComponents components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| ( addActorToIndex position actor.id level, actor )
@@ -1634,8 +1714,8 @@ componentDecoder =
         |> Decode.andThen
             (\theType ->
                 (case theType of
-                    "ai" ->
-                        Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+                    "control" ->
+                        Decode.map ControlComponent <| Decode.field "data" controlDataDecoder
 
                     "camera" ->
                         Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
@@ -1654,9 +1734,6 @@ componentDecoder =
 
                     "physics" ->
                         Decode.map PhysicsComponent <| Decode.field "data" physicsDataDecoder
-
-                    "player-input" ->
-                        Decode.succeed PlayerInputComponent
 
                     "render" ->
                         Decode.map RenderComponent <| Decode.field "data" renderDataDecoder
@@ -1781,21 +1858,45 @@ physicsShapeDecoder =
             )
 
 
-aiDataDecoder : Decoder AiComponentData
-aiDataDecoder =
+controlDataDecoder : Decoder ControlComponentData
+controlDataDecoder =
+    JDP.decode ControlComponentData
+        |> JDP.optional "settings" controlSettingsDecoder emptyControlSettings
+        |> JDP.required "control" controlTypeDecoder
+
+
+controlSettingsDecoder : Decoder ControlSettings
+controlSettingsDecoder =
+    JDP.decode ControlSettings
+        |> JDP.optional "pushStrength" Decode.int emptyControlSettings.pushStrength
+        |> JDP.optional "walkOverStrength" Decode.int emptyControlSettings.walkOverStrength
+
+
+emptyControlSettings : ControlSettings
+emptyControlSettings =
+    { pushStrength = 0
+    , walkOverStrength = 0
+    }
+
+
+controlTypeDecoder : Decoder ControlType
+controlTypeDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
-                    "walkaround" ->
-                        Decode.succeed <| WalkAroundAi { previousDirection = Data.Common.Left }
+                    "input" ->
+                        Decode.succeed InputControl
 
-                    "gravity" ->
-                        Decode.succeed GravityAi
+                    "walkAroundAi" ->
+                        Decode.succeed <| WalkAroundAiControl { previousDirection = Data.Common.Left }
+
+                    "gravityAi" ->
+                        Decode.succeed GravityAiControl
 
                     _ ->
                         Decode.fail <|
-                            "Trying to decode AI, but the type "
+                            "Trying to decode control components control type, but the type "
                                 ++ theType
                                 ++ " is not supported."
             )
