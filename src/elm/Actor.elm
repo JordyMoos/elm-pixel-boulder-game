@@ -35,6 +35,7 @@ module Actor
         , updateDamageComponent
         , updateLifetimeComponent
         , updateTriggerExplodableComponent
+        , updateSpawnComponent
         )
 
 import Dict exposing (Dict)
@@ -147,6 +148,7 @@ type Component
     | LifetimeComponent LifetimeComponentData
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
+    | SpawnComponent SpawnComponentData
 
 
 type Msg
@@ -1357,6 +1359,140 @@ updateDamageComponent damageData damageDealingActor level =
 
 {-
 
+   SpawnComponent
+
+-}
+
+
+type alias SpawnComponentData =
+    { entityName : String
+    , position : Position
+    , delayTicks : Int
+    , repeat : SpawnRepeat
+    }
+
+
+type alias SpawnRepeat =
+    { times : SpawnRepeatTimes
+    , delayTicks : Int
+    }
+
+
+type SpawnRepeatTimes
+    = RepeatNever
+    | RepeatForever
+    | RepeatTimes Int
+
+
+spawnNeverRepeat : SpawnRepeat
+spawnNeverRepeat =
+    { times = RepeatNever
+    , delayTicks = 0
+    }
+
+
+updateSpawnComponent : SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponent data actor level =
+    if data.delayTicks > 0 then
+        spawnDecrementDelayTicks data
+            |> setSpawnComponentData actor level
+            |> Tuple.second
+    else
+        spawnActor data level
+            |> updateSpawnComponentAfterSpawn data actor
+
+
+setSpawnComponentData : Actor -> Level -> SpawnComponentData -> ( Actor, Level )
+setSpawnComponentData actor level data =
+    data
+        |> SpawnComponent
+        |> (\component ->
+                Dict.insert "spawn" component actor.components
+           )
+        |> updateComponents actor
+        |> (\actor ->
+                ( actor
+                , updateActor level.actors actor
+                    |> updateActors level
+                )
+           )
+
+
+spawnActor : SpawnComponentData -> Level -> Level
+spawnActor data level =
+    if getActorsThatAffect data.position level |> List.isEmpty then
+        Dict.get
+            data.entityName
+            level.entities
+            |> Maybe.map
+                (\entity ->
+                    addActor
+                        (Dict.insert
+                            "transform"
+                            (TransformComponent { position = data.position, movingState = NotMoving })
+                            entity
+                        )
+                        level
+                )
+            |> Maybe.withDefault level
+    else
+        level
+
+
+updateSpawnComponentAfterSpawn : SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponentAfterSpawn data actor level =
+    case data.repeat.times of
+        RepeatNever ->
+            removeSpawnComponent actor level
+
+        RepeatForever ->
+            spawnResetDelayTicks data
+                |> setSpawnComponentData actor level
+                |> Tuple.second
+
+        RepeatTimes count ->
+            if count > 0 then
+                RepeatTimes (count - 1)
+                    |> flip spawnUpdateRepeatTimes data.repeat
+                    |> flip spawnUpdateRepeat data
+                    |> spawnResetDelayTicks
+                    |> setSpawnComponentData actor level
+                    |> Tuple.second
+            else
+                removeSpawnComponent actor level
+
+
+removeSpawnComponent : Actor -> Level -> Level
+removeSpawnComponent actor level =
+    Dict.remove "spawn" actor.components
+        |> updateComponents actor
+        |> updateActor level.actors
+        |> updateActors level
+
+
+spawnUpdateRepeatTimes : SpawnRepeatTimes -> SpawnRepeat -> SpawnRepeat
+spawnUpdateRepeatTimes times repeat =
+    { repeat | times = times }
+
+
+spawnUpdateRepeat : SpawnRepeat -> SpawnComponentData -> SpawnComponentData
+spawnUpdateRepeat repeat data =
+    { data | repeat = repeat }
+
+
+spawnDecrementDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnDecrementDelayTicks data =
+    { data | delayTicks = data.delayTicks - 1 }
+
+
+spawnResetDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnResetDelayTicks data =
+    { data | delayTicks = data.repeat.delayTicks }
+
+
+
+{-
+
    DownSmashComponent
 
 -}
@@ -1748,6 +1884,9 @@ componentDecoder =
                     "smash-down" ->
                         Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
 
+                    "spawn" ->
+                        Decode.map SpawnComponent <| Decode.field "data" spawnDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -1792,6 +1931,61 @@ renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
         |> JDP.required "name" Decode.string
+
+
+spawnDataDecoder : Decoder SpawnComponentData
+spawnDataDecoder =
+    JDP.decode SpawnComponentData
+        |> JDP.required "entityName" Decode.string
+        |> JDP.required "position" positionDecoder
+        |> JDP.optional "delayTicks" Decode.int 0
+        |> JDP.optional "repeat" spawnRepeatDecoder spawnNeverRepeat
+
+
+spawnRepeatDecoder : Decoder SpawnRepeat
+spawnRepeatDecoder =
+    JDP.decode SpawnRepeat
+        |> JDP.required "times" spawnRepeatTimesDecoder
+        |> JDP.required "delayTicks" Decode.int
+
+
+spawnRepeatTimesDecoder : Decoder SpawnRepeatTimes
+spawnRepeatTimesDecoder =
+    Decode.oneOf
+        [ Decode.string
+            |> Decode.andThen
+                (\times ->
+                    case times of
+                        "forever" ->
+                            Decode.succeed RepeatForever
+
+                        "never" ->
+                            Decode.succeed RepeatNever
+
+                        other ->
+                            case String.toInt other of
+                                Ok timesInt ->
+                                    Decode.succeed <| RepeatTimes timesInt
+
+                                Err error ->
+                                    Decode.fail <|
+                                        "Trying to decode spawn repeat times, but the times "
+                                            ++ other
+                                            ++ " should be something that can be parsed to an int."
+                )
+        , Decode.int
+            |> Decode.andThen
+                (\times ->
+                    Decode.succeed <| RepeatTimes times
+                )
+        ]
+
+
+positionDecoder : Decoder Position
+positionDecoder =
+    JDP.decode Position
+        |> JDP.required "x" Decode.int
+        |> JDP.required "y" Decode.int
 
 
 cameraDataDecoder : Decoder CameraComponentData
