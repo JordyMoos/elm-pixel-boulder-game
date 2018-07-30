@@ -22,6 +22,7 @@
           "type": "gravityAi"
         }
       }},
+      {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],

@@ -1400,7 +1400,6 @@ updateSpawnComponent data actor level =
     else
         spawnActor data level
             |> updateSpawnComponentAfterSpawn data actor
-            |> Tuple.second
 
 
 setSpawnComponentData : Actor -> Level -> SpawnComponentData -> ( Actor, Level )
@@ -1440,23 +1439,35 @@ spawnActor data level =
         level
 
 
-updateSpawnComponentAfterSpawn : SpawnComponentData -> Actor -> Level -> ( Actor, Level )
+updateSpawnComponentAfterSpawn : SpawnComponentData -> Actor -> Level -> Level
 updateSpawnComponentAfterSpawn data actor level =
     case data.repeat.times of
         RepeatNever ->
-            -- @todo we need to remove the component
-            ( actor, level )
+            removeSpawnComponent actor level
 
         RepeatForever ->
             spawnResetDelayTicks data
                 |> setSpawnComponentData actor level
+                |> Tuple.second
 
         RepeatTimes count ->
-            RepeatTimes (count - 1)
-                |> flip spawnUpdateRepeatTimes data.repeat
-                |> flip spawnUpdateRepeat data
-                |> spawnResetDelayTicks
-                |> setSpawnComponentData actor level
+            if count > 0 then
+                RepeatTimes (count - 1)
+                    |> flip spawnUpdateRepeatTimes data.repeat
+                    |> flip spawnUpdateRepeat data
+                    |> spawnResetDelayTicks
+                    |> setSpawnComponentData actor level
+                    |> Tuple.second
+            else
+                removeSpawnComponent actor level
+
+
+removeSpawnComponent : Actor -> Level -> Level
+removeSpawnComponent actor level =
+    Dict.remove "spawn" actor.components
+        |> updateComponents actor
+        |> updateActor level.actors
+        |> updateActors level
 
 
 spawnUpdateRepeatTimes : SpawnRepeatTimes -> SpawnRepeat -> SpawnRepeat
@@ -1940,27 +1951,34 @@ spawnRepeatDecoder =
 
 spawnRepeatTimesDecoder : Decoder SpawnRepeatTimes
 spawnRepeatTimesDecoder =
-    Decode.string
-        |> Decode.andThen
-            (\times ->
-                case times of
-                    "forever" ->
-                        Decode.succeed RepeatForever
+    Decode.oneOf
+        [ Decode.string
+            |> Decode.andThen
+                (\times ->
+                    case times of
+                        "forever" ->
+                            Decode.succeed RepeatForever
 
-                    "never" ->
-                        Decode.succeed RepeatForever
+                        "never" ->
+                            Decode.succeed RepeatNever
 
-                    other ->
-                        case String.toInt other of
-                            Ok timesInt ->
-                                Decode.succeed <| RepeatTimes timesInt
+                        other ->
+                            case String.toInt other of
+                                Ok timesInt ->
+                                    Decode.succeed <| RepeatTimes timesInt
 
-                            Err error ->
-                                Decode.fail <|
-                                    "Trying to decode spawn repeat times, but the times "
-                                        ++ other
-                                        ++ " should be something that can be parsed to an int."
-            )
+                                Err error ->
+                                    Decode.fail <|
+                                        "Trying to decode spawn repeat times, but the times "
+                                            ++ other
+                                            ++ " should be something that can be parsed to an int."
+                )
+        , Decode.int
+            |> Decode.andThen
+                (\times ->
+                    Decode.succeed <| RepeatTimes times
+                )
+        ]
 
 
 positionDecoder : Decoder Position
