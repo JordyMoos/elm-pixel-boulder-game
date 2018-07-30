@@ -912,6 +912,7 @@ type ControlType
 
 type alias WalkAroundAiControlData =
     { previousDirection : Direction
+    , nextDirectionOffsets : List Int
     }
 
 
@@ -974,11 +975,11 @@ getControlDirection inputControllerDirection controlData actor level =
 
 getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
 getWalkAroundAiDirection controlData aiData actor level =
-    [ getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 3
-    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 4
-    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 5
-    , getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - 6
-    ]
+    aiData.nextDirectionOffsets
+        |> List.map
+            (\directionOffset ->
+                getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - directionOffset
+            )
         |> List.Extra.find
             (\direction ->
                 canGoInDirection actor direction level
@@ -2089,7 +2090,7 @@ controlTypeDecoder =
                         Decode.succeed InputControl
 
                     "walkAroundAi" ->
-                        Decode.succeed <| WalkAroundAiControl { previousDirection = Data.Common.Left }
+                        Decode.map WalkAroundAiControl <| Decode.field "data" walkAroundAiDataDecoder
 
                     "gravityAi" ->
                         Decode.succeed GravityAiControl
@@ -2099,6 +2100,39 @@ controlTypeDecoder =
                             "Trying to decode control components control type, but the type "
                                 ++ theType
                                 ++ " is not supported."
+            )
+
+
+walkAroundAiDataDecoder : Decoder WalkAroundAiControlData
+walkAroundAiDataDecoder =
+    JDP.decode WalkAroundAiControlData
+        |> JDP.optional "previousDirection" directionDecoder Data.Common.Left
+        |> JDP.required "nextDirectionOffsets" (Decode.list Decode.int)
+
+
+directionDecoder : Decoder Direction
+directionDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\direction ->
+                case direction of
+                    "left" ->
+                        Decode.succeed Data.Common.Left
+
+                    "up" ->
+                        Decode.succeed Data.Common.Up
+
+                    "right" ->
+                        Decode.succeed Data.Common.Right
+
+                    "down" ->
+                        Decode.succeed Data.Common.Down
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode direction, but the direction "
+                                ++ direction
+                                ++ " is not supported. Supported directions are: left, up, right, down."
             )
 
 
