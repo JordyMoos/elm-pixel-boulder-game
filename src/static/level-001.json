@@ -39,7 +39,8 @@
     ],
     "explosion": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
-      {"type": "damage", "data": {"remainingTicks": 8, "damageStrength": 80}}
+      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ce5c00"]}}},
