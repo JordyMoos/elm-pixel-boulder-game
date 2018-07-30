@@ -33,6 +33,7 @@ module Actor
         , updateTransformComponent
         , updateDownSmashComponent
         , updateDamageComponent
+        , updateLifetimeComponent
         , updateTriggerExplodableComponent
         )
 
@@ -143,6 +144,7 @@ type Component
     | CameraComponent CameraComponentData
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
+    | LifetimeComponent LifetimeComponentData
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
 
@@ -977,29 +979,21 @@ getWalkAroundAiDirection controlData aiData actor level =
     ]
         |> List.Extra.find
             (\direction ->
-                let
-                    _ =
-                        Debug.log (toString direction) (toString (canGoInDirection actor direction level))
-                in
-                    canGoInDirection actor direction level
+                canGoInDirection actor direction level
             )
         |> Maybe.map
             (\direction ->
-                let
-                    _ =
-                        Debug.log "set previousDirection to" (toString direction)
-                in
-                    ( direction
-                    , Dict.insert
-                        "control"
-                        (ControlComponent
-                            { controlData
-                                | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
-                            }
-                        )
-                        actor.components
-                        |> updateComponents actor
+                ( direction
+                , Dict.insert
+                    "control"
+                    (ControlComponent
+                        { controlData
+                            | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                        }
                     )
+                    actor.components
+                    |> updateComponents actor
+                )
             )
 
 
@@ -1128,7 +1122,6 @@ canBeWalkedOver : Actor -> Actor -> Bool
 canBeWalkedOver initiatingActor destinationActor =
     lazyAll
         [ \() -> hasRigidComponent destinationActor |> not
-        , \() -> isActorMoving destinationActor |> not
         , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
         ]
 
@@ -1295,28 +1288,46 @@ willTriggerBy triggerStrength actor =
 
 
 {-
-   }
 
-      DamageComponent
+   LifetimeComponent
+
+-}
+
+
+type alias LifetimeComponentData =
+    { remainingTicks : Int
+    }
+
+
+updateLifetimeComponent : LifetimeComponentData -> Actor -> Level -> Level
+updateLifetimeComponent lifetimeData actor level =
+    if lifetimeData.remainingTicks > 0 then
+        Dict.insert
+            "lifetime"
+            (LifetimeComponent { lifetimeData | remainingTicks = lifetimeData.remainingTicks - 1 })
+            actor.components
+            |> updateComponents actor
+            |> updateActor level.actors
+            |> updateActors level
+    else
+        removeActor actor level
+
+
+
+{-
+
+   DamageComponent
 
 -}
 
 
 type alias DamageComponentData =
-    { remainingTicks : Int
-    , damageStrength : Int
+    { damageStrength : Int
     }
 
 
 updateDamageComponent : DamageComponentData -> Actor -> Level -> Level
-updateDamageComponent damageData actor level =
-    level
-        |> tryDoDamage actor damageData
-        |> removeExplosionIfEnded actor damageData
-
-
-tryDoDamage : Actor -> DamageComponentData -> Level -> Level
-tryDoDamage damageDealingActor damageData level =
+updateDamageComponent damageData damageDealingActor level =
     getTransformComponent damageDealingActor
         |> Maybe.Extra.toList
         |> List.concatMap
@@ -1341,20 +1352,6 @@ tryDoDamage damageDealingActor damageData level =
                 removeActor actor level
             )
             level
-
-
-removeExplosionIfEnded : Actor -> DamageComponentData -> Level -> Level
-removeExplosionIfEnded actor damageData level =
-    if damageData.remainingTicks > 0 then
-        Dict.insert
-            "damage"
-            (DamageComponent { damageData | remainingTicks = damageData.remainingTicks - 1 })
-            actor.components
-            |> updateComponents actor
-            |> updateActor level.actors
-            |> updateActors level
-    else
-        removeActor actor level
 
 
 
@@ -1567,7 +1564,8 @@ addExplosion x y level =
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
             , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
-            , ( "damage", DamageComponent { remainingTicks = 8, damageStrength = 80 } )
+            , ( "lifetime", LifetimeComponent { remainingTicks = 8 } )
+            , ( "damage", DamageComponent { damageStrength = 80 } )
             ]
         )
         level
@@ -1720,6 +1718,9 @@ componentDecoder =
                     "camera" ->
                         Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
 
+                    "lifetime" ->
+                        Decode.map LifetimeComponent <| Decode.field "data" lifetimeDataDecoder
+
                     "damage" ->
                         Decode.map DamageComponent <| Decode.field "data" damageDataDecoder
 
@@ -1806,10 +1807,15 @@ physicsDataDecoder =
         |> JDP.required "shape" physicsShapeDecoder
 
 
+lifetimeDataDecoder : Decoder LifetimeComponentData
+lifetimeDataDecoder =
+    JDP.decode LifetimeComponentData
+        |> JDP.required "remainingTicks" Decode.int
+
+
 damageDataDecoder : Decoder DamageComponentData
 damageDataDecoder =
     JDP.decode DamageComponentData
-        |> JDP.required "remainingTicks" Decode.int
         |> JDP.required "damageStrength" Decode.int
 
 

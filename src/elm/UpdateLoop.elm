@@ -46,6 +46,9 @@ update maybeDirection level =
                                                                             Actor.DownSmashComponent downSmash ->
                                                                                 Actor.updateDownSmashComponent downSmash actor level
 
+                                                                            Actor.LifetimeComponent lifetimeData ->
+                                                                                Actor.updateLifetimeComponent lifetimeData actor level
+
                                                                             Actor.DamageComponent damageData ->
                                                                                 Actor.updateDamageComponent damageData actor level
 
