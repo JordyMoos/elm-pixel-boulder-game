@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "player": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#75507b"]}}},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
+      {"type": "rigid"},
+      {"type": "explodable"},
+      {"type": "camera", "data": {"borderSize": 3}},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "shell": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
+      {"type": "rigid"},
+      {"type": "control", "data": {
+        "control": {
+          "type": "gravityAi"
+        }
+      }},
+      {"type": "explodable"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "smash-down"}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "damage", "data": {"damageStrength": 80}}
+    ],
+    "tank": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+    ],
+    "tire": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#637057"]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+    ],
+    "strongwall": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "shell-spawn": [
+      {
+        "type": "spawn",
+        "data": {
+          "entityName": "shell",
+          "position": {
+            "x": 14,
+            "y": 17
+          },
+          "initialDelayTicks": 20,
+          "repeat": {
+            "times": "forever",
+            "delayTicks": 50
+          }
+        }
+      }
+    ]
+  },
+  "signs": {
+    "p": "player",
+    "=": "shell",
+    "x": "explosion",
+    "t": "tank",
+    "o": "tire",
+    "#": "strongwall",
+    "<": "shell-spawn"
+  },
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": ["#ffffff"]
+    }
+  },
+  "scene": [
+    "#########################################",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#                                       #",
+    "#          p                            #",
+    "#       tt                              #",
+    "#    ttttttttt                          #",
+    "#    tttttt                             #",
+    "#     oooo                              #",
+    "#########################################",
+    "         <                               "
+  ]
+}

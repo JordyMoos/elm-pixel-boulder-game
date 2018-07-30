@@ -147,6 +147,7 @@ type Component
     | LifetimeComponent LifetimeComponentData
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
+    | SpawnComponent SpawnComponentData
 
 
 type Msg
@@ -1357,6 +1358,41 @@ updateDamageComponent damageData damageDealingActor level =
 
 {-
 
+   SpawnComponent
+
+-}
+
+
+type alias SpawnComponentData =
+    { entityName : String
+    , position : Position
+    , initialDelayTicks : Int
+    , repeat : SpawnRepeat
+    }
+
+
+type alias SpawnRepeat =
+    { times : SpawnRepeatTimes
+    , delayTicks : Int
+    }
+
+
+type SpawnRepeatTimes
+    = RepeatNever
+    | RepeatForever
+    | RepeatTimes Int Int
+
+
+spawnNeverRepeat : SpawnRepeat
+spawnNeverRepeat =
+    { times = RepeatNever
+    , delayTicks = 0
+    }
+
+
+
+{-
+
    DownSmashComponent
 
 -}
@@ -1748,6 +1784,9 @@ componentDecoder =
                     "smash-down" ->
                         Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
 
+                    "spawn" ->
+                        Decode.map SpawnComponent <| Decode.field "data" spawnDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -1792,6 +1831,54 @@ renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
         |> JDP.required "name" Decode.string
+
+
+spawnDataDecoder : Decoder SpawnComponentData
+spawnDataDecoder =
+    JDP.decode SpawnComponentData
+        |> JDP.required "entityName" Decode.string
+        |> JDP.required "position" positionDecoder
+        |> JDP.optional "initialDelayTicks" Decode.int 0
+        |> JDP.optional "repeat" spawnRepeatDecoder spawnNeverRepeat
+
+
+spawnRepeatDecoder : Decoder SpawnRepeat
+spawnRepeatDecoder =
+    JDP.decode SpawnRepeat
+        |> JDP.required "times" spawnRepeatTimesDecoder
+        |> JDP.required "delayTicks" Decode.int
+
+
+spawnRepeatTimesDecoder : Decoder SpawnRepeatTimes
+spawnRepeatTimesDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\times ->
+                case times of
+                    "forever" ->
+                        Decode.succeed RepeatForever
+
+                    "never" ->
+                        Decode.succeed RepeatForever
+
+                    other ->
+                        case String.toInt other of
+                            Ok timesInt ->
+                                Decode.succeed <| RepeatTimes timesInt 0
+
+                            Err error ->
+                                Decode.fail <|
+                                    "Trying to decode spawn repeat times, but the times "
+                                        ++ other
+                                        ++ " should be something that can be parsed to an int."
+            )
+
+
+positionDecoder : Decoder Position
+positionDecoder =
+    JDP.decode Position
+        |> JDP.required "x" Decode.int
+        |> JDP.required "y" Decode.int
 
 
 cameraDataDecoder : Decoder CameraComponentData
