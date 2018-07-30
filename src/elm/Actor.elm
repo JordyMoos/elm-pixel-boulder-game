@@ -35,6 +35,7 @@ module Actor
         , updateDamageComponent
         , updateLifetimeComponent
         , updateTriggerExplodableComponent
+        , updateSpawnComponent
         )
 
 import Dict exposing (Dict)
@@ -1366,7 +1367,7 @@ updateDamageComponent damageData damageDealingActor level =
 type alias SpawnComponentData =
     { entityName : String
     , position : Position
-    , initialDelayTicks : Int
+    , delayTicks : Int
     , repeat : SpawnRepeat
     }
 
@@ -1380,7 +1381,7 @@ type alias SpawnRepeat =
 type SpawnRepeatTimes
     = RepeatNever
     | RepeatForever
-    | RepeatTimes Int Int
+    | RepeatTimes Int
 
 
 spawnNeverRepeat : SpawnRepeat
@@ -1388,6 +1389,94 @@ spawnNeverRepeat =
     { times = RepeatNever
     , delayTicks = 0
     }
+
+
+updateSpawnComponent : SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponent data actor level =
+    if data.delayTicks > 0 then
+        spawnDecrementDelayTicks data
+            |> setSpawnComponentData actor level
+            |> Tuple.second
+    else
+        spawnActor data level
+            |> updateSpawnComponentAfterSpawn data actor
+            |> Tuple.second
+
+
+setSpawnComponentData : Actor -> Level -> SpawnComponentData -> ( Actor, Level )
+setSpawnComponentData actor level data =
+    data
+        |> SpawnComponent
+        |> (\component ->
+                Dict.insert "spawn" component actor.components
+           )
+        |> updateComponents actor
+        |> (\actor ->
+                ( actor
+                , updateActor level.actors actor
+                    |> updateActors level
+                )
+           )
+
+
+spawnActor : SpawnComponentData -> Level -> Level
+spawnActor data level =
+    if getActorsThatAffect data.position level |> List.isEmpty then
+        Dict.get
+            data.entityName
+            level.entities
+            |> Maybe.map
+                (\entity ->
+                    addActor
+                        (Dict.insert
+                            "transform"
+                            (TransformComponent { position = data.position, movingState = NotMoving })
+                            entity
+                        )
+                        level
+                )
+            |> Maybe.withDefault level
+    else
+        level
+
+
+updateSpawnComponentAfterSpawn : SpawnComponentData -> Actor -> Level -> ( Actor, Level )
+updateSpawnComponentAfterSpawn data actor level =
+    case data.repeat.times of
+        RepeatNever ->
+            -- @todo we need to remove the component
+            ( actor, level )
+
+        RepeatForever ->
+            spawnResetDelayTicks data
+                |> setSpawnComponentData actor level
+
+        RepeatTimes count ->
+            RepeatTimes (count - 1)
+                |> flip spawnUpdateRepeatTimes data.repeat
+                |> flip spawnUpdateRepeat data
+                |> spawnResetDelayTicks
+                |> setSpawnComponentData actor level
+
+
+spawnUpdateRepeatTimes : SpawnRepeatTimes -> SpawnRepeat -> SpawnRepeat
+spawnUpdateRepeatTimes times repeat =
+    { repeat | times = times }
+
+
+spawnUpdateRepeat : SpawnRepeat -> SpawnComponentData -> SpawnComponentData
+spawnUpdateRepeat repeat data =
+    { data | repeat = repeat }
+
+
+spawnDecrementDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnDecrementDelayTicks data =
+    { data | delayTicks = data.delayTicks - 1 }
+
+
+spawnResetDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnResetDelayTicks data =
+    { data | delayTicks = data.repeat.delayTicks }
 
 
 
@@ -1838,7 +1927,7 @@ spawnDataDecoder =
     JDP.decode SpawnComponentData
         |> JDP.required "entityName" Decode.string
         |> JDP.required "position" positionDecoder
-        |> JDP.optional "initialDelayTicks" Decode.int 0
+        |> JDP.optional "delayTicks" Decode.int 0
         |> JDP.optional "repeat" spawnRepeatDecoder spawnNeverRepeat
 
 
@@ -1864,7 +1953,7 @@ spawnRepeatTimesDecoder =
                     other ->
                         case String.toInt other of
                             Ok timesInt ->
-                                Decode.succeed <| RepeatTimes timesInt 0
+                                Decode.succeed <| RepeatTimes timesInt
 
                             Err error ->
                                 Decode.fail <|

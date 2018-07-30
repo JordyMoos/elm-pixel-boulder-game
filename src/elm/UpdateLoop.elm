@@ -55,6 +55,9 @@ update maybeDirection level =
                                                                             Actor.TriggerExplodableComponent triggerData ->
                                                                                 Actor.updateTriggerExplodableComponent triggerData actor level
 
+                                                                            Actor.SpawnComponent spawnData ->
+                                                                                Actor.updateSpawnComponent spawnData actor level
+
                                                                             _ ->
                                                                                 level
                                                                 in

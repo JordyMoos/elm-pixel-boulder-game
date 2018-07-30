@@ -1,7 +1,7 @@
 {
   "entities": {
     "player": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#75507b"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffffff"]}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -22,7 +22,6 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
@@ -53,9 +52,9 @@
           "entityName": "shell",
           "position": {
             "x": 14,
-            "y": 17
+            "y": 16
           },
-          "initialDelayTicks": 20,
+          "delayTicks": 20,
           "repeat": {
             "times": "forever",
             "delayTicks": 50
