@@ -48,7 +48,11 @@
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
         "control": {
-          "type": "walkAroundAi"
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
         }
       }},
       {"type": "explodable"},
@@ -60,7 +64,11 @@
       {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
       {"type": "control", "data": {
         "control": {
-          "type": "walkAroundAi"
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
         }
       }},
       {"type": "explodable"}

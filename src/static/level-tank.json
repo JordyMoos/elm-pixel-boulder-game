@@ -1,7 +1,7 @@
 {
   "entities": {
     "player": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffffff"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -10,8 +10,8 @@
       }},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
+      {"type": "camera", "data": {"borderSize": 5}},
       {"type": "explodable"},
-      {"type": "camera", "data": {"borderSize": 3}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "shell": [
@@ -19,12 +19,32 @@
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
-          "type": "gravityAi"
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "right",
+            "nextDirectionOffsets": [0]
+          }
+        }
+      }},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 100}},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "lifetime", "data": {"remainingTicks": 150}}
+    ],
+    "enemy": [
+      {"type": "render", "data": {"type": "image", "data": {"name": "enemy"}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "right",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
         }
       }},
       {"type": "explodable"},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "smash-down"}
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "explosion": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
@@ -42,7 +62,7 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"name": "wall"}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
@@ -55,7 +75,7 @@
             "x": 14,
             "y": 16
           },
-          "delayTicks": 20,
+          "delayTicks": 52,
           "repeat": {
             "times": "forever",
             "delayTicks": 50
@@ -71,7 +91,13 @@
     "t": "tank",
     "o": "tire",
     "#": "strongwall",
-    "<": "shell-spawn"
+    "<": "shell-spawn",
+    "e": "enemy"
+  },
+  "images": {
+    "hero": "./images/hero.png",
+    "enemy": "./images/enemy.png",
+    "wall": "./images/wall.png"
   },
   "background": {
     "type": "pixel",
@@ -94,11 +120,11 @@
     "#                                       #",
     "#                                       #",
     "#                                       #",
-    "#          p                            #",
-    "#       tt                              #",
+    "#                e   e                  #",
+    "#       tt       ######                 #",
     "#    ttttttttt                          #",
     "#    tttttt                             #",
-    "#     oooo                              #",
+    "#     oooo  p                           #",
     "#########################################",
     "         <                               "
   ]
