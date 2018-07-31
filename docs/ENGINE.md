@@ -12,3 +12,12 @@ Input needs to change
     While i should walk left because that was first.
     We need to store directions in een event list instead of this record.
     
+
+
+Notes:
+
+- Both has rigid -> collision
+    - Push if you are strong enough
+
+- Target has no rigid
+    - Walk on top if strength is more then target strength

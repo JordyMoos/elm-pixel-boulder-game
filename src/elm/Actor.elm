@@ -3,10 +3,13 @@ module Actor
         ( ActorId
         , Actor
         , Level
+        , CanvasImages
           -- Initialization
         , LevelConfig
         , levelConfigDecoder
         , init
+        , Msg
+        , update
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -17,19 +20,22 @@ module Actor
         , Component(..)
         , getRenderComponent
         , getTransformComponent
+        , TransformComponentData
         , MovingTowardsData
         , MovingState(..)
-        , RenderComponentData
+        , RenderComponentData(..)
+        , PixelRenderComponentData
+        , ImageRenderComponentData
           -- Updates
-        , updatePlayerInputComponent
-        , updateDiamondCollectorComponent
-        , updateCanSquashComponent
-        , updateAiComponent
+        , updateCollectorComponent
+        , updateControlComponent
         , updateCameraComponent
         , updateTransformComponent
         , updateDownSmashComponent
         , updateDamageComponent
+        , updateLifetimeComponent
         , updateTriggerExplodableComponent
+        , updateSpawnComponent
         )
 
 import Dict exposing (Dict)
@@ -41,6 +47,8 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Color.Convert
 import Char
+import Canvas
+import Task
 
 
 defaultCameraBorderSize : Int
@@ -73,12 +81,6 @@ type alias View =
     }
 
 
-type alias Diamonds =
-    { total : Int
-    , collected : Int
-    }
-
-
 type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
 
@@ -103,42 +105,68 @@ type alias Scene =
     List String
 
 
+type alias CanvasImages =
+    Dict String Canvas.Canvas
+
+
+type alias Images =
+    Dict String String
+
+
 type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
-    , backgroundColor : Color
+    , images : Images
+    , background : RenderComponentData
     }
 
 
 type alias Level =
     { entities : Entities
     , signs : Signs
+    , images : CanvasImages
     , actors : Actors
     , positionIndex : PositionIndex
     , nextActorId : Int
-    , diamonds : Diamonds
     , view : View
-    , backgroundColor : Color
+    , background : RenderComponentData
     }
 
 
 type Component
     = TransformComponent TransformComponentData
     | RenderComponent RenderComponentData
-    | PlayerInputComponent
-    | DiamondCollectorComponent
-    | DiamondComponent
-    | SquashableComponent
-    | CanSquashComponent
+    | CollectorComponent CollectorComponentData
+    | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
-    | AiComponent AiComponentData
+    | ControlComponent ControlComponentData
     | CameraComponent CameraComponentData
     | ExplodableComponent
     | DownSmashComponent DownSmashComponentData
+    | LifetimeComponent LifetimeComponentData
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
+    | SpawnComponent SpawnComponentData
+
+
+type Msg
+    = ImageLoaded String (Result Canvas.Error Canvas.Canvas)
+
+
+update : Msg -> Level -> Level
+update msg level =
+    case msg of
+        ImageLoaded name (Ok canvas) ->
+            { level | images = Dict.insert name canvas level.images }
+
+        ImageLoaded name (Err error) ->
+            let
+                _ =
+                    Debug.log "Error loading image" (toString error)
+            in
+                level
 
 
 
@@ -149,38 +177,49 @@ type Component
 -}
 
 
-init : LevelConfig -> Int -> Int -> Level
+init : LevelConfig -> Int -> Int -> ( Level, Cmd Msg )
 init config width height =
     emptyLevel width height
-        |> setBackgroundColor config.backgroundColor
+        |> setBackground config.background
         |> setEntities config.entities
         |> setSigns config.signs
         |> setActors config.scene
+        |> setImages config.images
+        |> addImageCommands config.images
+
+
+addImageCommands : Images -> Level -> ( Level, Cmd Msg )
+addImageCommands images level =
+    ( level
+    , Dict.toList images
+        |> List.map
+            (\( name, src ) ->
+                Task.attempt (ImageLoaded name) (Canvas.loadImage src)
+            )
+        |> Cmd.batch
+    )
 
 
 emptyLevel : Int -> Int -> Level
 emptyLevel width height =
     { entities = Dict.fromList []
     , signs = Dict.fromList []
+    , images = Dict.fromList []
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , nextActorId = 1
-    , diamonds =
-        { total = 0
-        , collected = 0
-        }
     , view =
         { position = { x = 0, y = 0 }
         , width = width
         , height = height
         }
-    , backgroundColor = Color.white
+    , background = defaultBackground
     }
 
 
-setBackgroundColor : Color -> Level -> Level
-setBackgroundColor color level =
-    { level | backgroundColor = color }
+setBackground : RenderComponentData -> Level -> Level
+setBackground background level =
+    { level | background = background }
 
 
 setEntities : Entities -> Level -> Level
@@ -191,6 +230,18 @@ setEntities entities level =
 setSigns : Signs -> Level -> Level
 setSigns signs level =
     { level | signs = signs }
+
+
+setImages : Images -> Level -> Level
+setImages images level =
+    { level
+        | images =
+            Dict.map
+                (\name src ->
+                    emptyImage
+                )
+                images
+    }
 
 
 setActors : Scene -> Level -> Level
@@ -295,6 +346,17 @@ getActorIdsByXY x y level =
         |> Maybe.withDefault []
 
 
+getActorsThatAffectNeighborPosition : Actor -> Direction -> Level -> List Actor
+getActorsThatAffectNeighborPosition actor direction level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                addPosition position (getOffsetFromDirection direction)
+            )
+        |> Maybe.map (flip getActorsThatAffect level)
+        |> Maybe.withDefault []
+
+
 getActorsThatAffect : Position -> Level -> List Actor
 getActorsThatAffect position level =
     List.map
@@ -338,6 +400,25 @@ isEmpty position level =
         |> List.isEmpty
 
 
+isDestinationEmpty : Actor -> Direction -> Level -> Bool
+isDestinationEmpty actor direction level =
+    isDestinationEmptyByOffset actor (getOffsetFromDirection direction) level
+
+
+isDestinationEmptyByOffset : Actor -> Position -> Level -> Bool
+isDestinationEmptyByOffset actor offset level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                addPosition position offset
+            )
+        |> Maybe.map
+            (\targetPosition ->
+                isEmpty targetPosition level
+            )
+        |> Maybe.withDefault True
+
+
 
 {-
 
@@ -350,7 +431,7 @@ removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
         |> (\level ->
-                getPositionFromComponents actor.components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| removeActorFromIndex position actor.id level
@@ -511,18 +592,10 @@ getTransformComponent actor =
             )
 
 
-getPositionFromComponents : Components -> Maybe Position
-getPositionFromComponents components =
-    Dict.get "transform" components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    TransformComponent data ->
-                        Just data.position
-
-                    _ ->
-                        Nothing
-            )
+getPosition : Actor -> Maybe Position
+getPosition actor =
+    getTransformComponent actor
+        |> Maybe.map .position
 
 
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
@@ -535,6 +608,13 @@ getMovingTowardsData transformData =
             Nothing
 
 
+isActorMoving : Actor -> Bool
+isActorMoving actor =
+    getTransformComponent actor
+        |> Maybe.map isMoving
+        |> Maybe.withDefault False
+
+
 isMoving : TransformComponentData -> Bool
 isMoving transformData =
     getMovingTowardsData transformData
@@ -544,6 +624,22 @@ isMoving transformData =
 isNotMoving : TransformComponentData -> Bool
 isNotMoving transformComponent =
     isMoving transformComponent |> not
+
+
+isMovingAt : Position -> Level -> Bool
+isMovingAt position level =
+    getActorsByPosition position level
+        |> List.map getTransformComponent
+        |> Maybe.Extra.values
+        |> List.filter isMoving
+        |> List.isEmpty
+        |> not
+
+
+isNotMovingAt : Position -> Level -> Bool
+isNotMovingAt position level =
+    isMovingAt position level
+        |> not
 
 
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
@@ -580,84 +676,6 @@ startMovingTowards actor transformData newPosition level =
         |> updateComponents actor
         |> updateActor level.actors
         |> updateActors level
-
-
-
-{-
-
-   PlayerInputComponent
-
--}
-
-
-updatePlayerInputComponent : Maybe Direction -> Actor -> Level -> Level
-updatePlayerInputComponent maybeDirection actor level =
-    maybeDirection
-        |> Maybe.andThen
-            (\direction ->
-                handleDirection direction actor level
-            )
-        |> Maybe.withDefault level
-
-
-handleDirection : Direction -> Actor -> Level -> Maybe Level
-handleDirection direction actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( transformData, position ) ->
-                case getActorsThatAffect position level of
-                    [] ->
-                        Just ( transformData, position, level )
-
-                    [ otherActor ] ->
-                        if hasRigidComponent otherActor then
-                            tryToPush direction actor transformData otherActor level
-                        else
-                            Just ( transformData, position, level )
-
-                    _ ->
-                        -- @todo what to do if two actors are here?
-                        Nothing
-            )
-        |> Maybe.andThen
-            (\( transformData, newPosition, level ) ->
-                Just <| startMovingTowards actor transformData newPosition level
-            )
-
-
-tryToPush : Direction -> Actor -> TransformComponentData -> Actor -> Level -> Maybe ( TransformComponentData, Position, Level )
-tryToPush direction actor transformData otherActor level =
-    getPhysicsComponent otherActor
-        |> Maybe.Extra.toList
-        |> List.filter isCircle
-        |> List.filter
-            (\physics ->
-                isAllowedToBePushedByAi direction otherActor
-            )
-        |> List.head
-        |> Maybe.andThen
-            (\physics ->
-                getTransformComponent otherActor
-            )
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.map (getNewPosition direction)
-        |> List.head
-        |> Maybe.andThen
-            (\( otherTransformData, pushedToPosition ) ->
-                if isEmpty pushedToPosition level then
-                    Just
-                        ( transformData
-                        , otherTransformData.position
-                        , startMovingTowards otherActor otherTransformData pushedToPosition level
-                        )
-                else
-                    Nothing
-            )
 
 
 
@@ -703,6 +721,13 @@ getPhysicsComponent actor =
             )
 
 
+getPhysicsStrength : Actor -> Int
+getPhysicsStrength actor =
+    getPhysicsComponent actor
+        |> Maybe.map .strength
+        |> Maybe.withDefault 0
+
+
 isCircle : PhysicsComponentData -> Bool
 isCircle physicsData =
     case physicsData.shape of
@@ -713,29 +738,80 @@ isCircle physicsData =
             False
 
 
-
-{-
-
-   DiamondComponent
-
--}
-
-
-hasDiamondComponent : Actor -> Bool
-hasDiamondComponent actor =
-    Dict.member "diamond" actor.components
+isActorCircle : Actor -> Bool
+isActorCircle actor =
+    getPhysicsComponent actor
+        |> Maybe.map isCircle
+        |> Maybe.withDefault False
 
 
 
 {-
 
-   DiamondCollectorComponent
+   CollectibleComponent
 
 -}
 
 
-updateDiamondCollectorComponent : Actor -> Level -> Level
-updateDiamondCollectorComponent collectorActor level =
+type alias CollectibleComponentData =
+    { name : String
+    , quantity : Int
+    }
+
+
+hasCollectibleComponent : Actor -> Bool
+hasCollectibleComponent actor =
+    Dict.member "collectible" actor.components
+
+
+getCollectibleComponent : Actor -> Maybe CollectibleComponentData
+getCollectibleComponent actor =
+    Dict.get "collectible" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CollectibleComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
+
+{-
+
+   CollectorComponent
+
+-}
+
+
+type alias Inventory =
+    Dict String Int
+
+
+type alias CollectorComponentData =
+    { interestedIn : List String
+    , inventory : Inventory
+    }
+
+
+getCollectibleDataIfCanCollect : Actor -> List String -> Maybe CollectibleComponentData
+getCollectibleDataIfCanCollect targetActor interestedIn =
+    getCollectibleComponent targetActor
+        |> Maybe.Extra.filter
+            (\collectibleData ->
+                List.member collectibleData.name interestedIn
+            )
+
+
+canCollect : CollectibleComponentData -> List String -> Bool
+canCollect collectibleData =
+    List.member collectibleData.name
+
+
+updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
+updateCollectorComponent collectorData collectorActor level =
     getTransformComponent collectorActor
         |> Maybe.Extra.toList
         |> List.map .position
@@ -747,67 +823,52 @@ updateDiamondCollectorComponent collectorActor level =
                             ( position, actor )
                         )
             )
-        |> List.foldr
-            (\( position, actor ) level ->
-                if Dict.member "diamond" actor.components then
-                    level
-                        |> removeActorWithPosition position actor.id
-                        |> collectDiamond
-                else
-                    level
-            )
-            level
-
-
-collectDiamond : Level -> Level
-collectDiamond level =
-    { level | diamonds = incrementDiamondsCollected level.diamonds }
-
-
-incrementDiamondsCollected : Diamonds -> Diamonds
-incrementDiamondsCollected diamonds =
-    { diamonds | collected = diamonds.collected + 1 }
-
-
-incrementTotalDiamonds : Diamonds -> Diamonds
-incrementTotalDiamonds diamonds =
-    { diamonds | total = diamonds.total + 1 }
-
-
-updateDiamonds : Diamonds -> Level -> Level
-updateDiamonds diamonds level =
-    { level | diamonds = diamonds }
-
-
-
-{-
-
-   CanSquashComponent
-
--}
-
-
-updateCanSquashComponent : Actor -> Level -> Level
-updateCanSquashComponent squashingActor level =
-    getTransformComponent squashingActor
-        |> Maybe.Extra.toList
-        |> List.map .position
-        |> List.concatMap
-            (\position ->
-                getActorsByPosition position level
-                    |> List.map
-                        (\actor ->
-                            ( position, actor )
+        |> List.filterMap
+            (\( position, actor ) ->
+                getCollectibleComponent actor
+                    |> Maybe.andThen
+                        (\collectibleData ->
+                            Just ( position, actor, collectibleData )
                         )
             )
+        |> List.filter
+            (\( position, actor, collectibleData ) ->
+                canCollect collectibleData collectorData.interestedIn
+            )
         |> List.foldr
-            (\( position, actor ) level ->
-                if Dict.member "squashable" actor.components then
-                    removeActorWithPosition position actor.id level
-                else
-                    level
+            (\( position, actor, collectibleData ) level ->
+                updateCollectorComponentData collectorData collectibleData
+                    |> setCollectorComponent collectorActor.components
+                    |> updateComponents collectorActor
+                    |> updateActor level.actors
+                    |> updateActors level
+                    |> removeActorWithPosition position actor.id
             )
             level
+
+
+updateCollectorComponentData : CollectorComponentData -> CollectibleComponentData -> CollectorComponentData
+updateCollectorComponentData collector collectible =
+    collector.inventory
+        |> Dict.update
+            collectible.name
+            (\maybeCurrentQuantity ->
+                Just <| (Maybe.withDefault 0 maybeCurrentQuantity) + collectible.quantity
+            )
+        |> updateCollectorInventory collector
+
+
+updateCollectorInventory : CollectorComponentData -> Inventory -> CollectorComponentData
+updateCollectorInventory collector newInventory =
+    { collector | inventory = newInventory }
+
+
+setCollectorComponent : Components -> CollectorComponentData -> Components
+setCollectorComponent components collectorData =
+    Dict.insert
+        "collector"
+        (CollectorComponent collectorData)
+        components
 
 
 
@@ -826,28 +887,55 @@ hasRigidComponent actor =
 
 {-
 
-   AiComponent
+   ControlComponent
 
 -}
 
 
-type AiComponentData
-    = WalkAroundAi WalkAroundAiData
-    | GravityAi
-
-
-type alias WalkAroundAiData =
-    { previousDirection : Direction
+type alias ControlComponentData =
+    { settings : ControlSettings
+    , control : ControlType
     }
 
 
-getAiComponent : Actor -> Maybe AiComponentData
-getAiComponent actor =
-    Dict.get "ai" actor.components
+type alias ControlSettings =
+    { pushStrength : Int
+    , walkOverStrength : Int
+    }
+
+
+type ControlType
+    = InputControl
+    | WalkAroundAiControl WalkAroundAiControlData
+    | GravityAiControl
+
+
+type alias WalkAroundAiControlData =
+    { previousDirection : Direction
+    , nextDirectionOffsets : List Int
+    }
+
+
+updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent inputControllerDirection controlData actor level =
+    if isActorMoving actor |> not then
+        getControlDirection inputControllerDirection controlData actor level
+            |> Maybe.map
+                (\( direction, actor ) ->
+                    handleDirection direction actor level
+                )
+            |> Maybe.withDefault level
+    else
+        level
+
+
+getControlComponent : Actor -> Maybe ControlComponentData
+getControlComponent actor =
+    Dict.get "control" actor.components
         |> Maybe.andThen
             (\component ->
                 case component of
-                    AiComponent data ->
+                    ControlComponent data ->
                         Just data
 
                     _ ->
@@ -855,128 +943,212 @@ getAiComponent actor =
             )
 
 
-updateAiComponent : AiComponentData -> Actor -> Level -> Level
-updateAiComponent ai actor level =
-    case ai of
-        WalkAroundAi data ->
-            updateWalkAroundAi data actor level
-
-        GravityAi ->
-            updateGravityAi actor level
+getPushStrength : Actor -> Int
+getPushStrength actor =
+    getControlComponent actor
+        |> Maybe.map (\data -> data.settings.pushStrength)
+        |> Maybe.withDefault 0
 
 
-updateWalkAroundAi : WalkAroundAiData -> Actor -> Level -> Level
-updateWalkAroundAi ai actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 3 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 4 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 5 )
-                , ( transformData, getDirectionFromID <| (getIDFromDirection ai.previousDirection) - 6 )
-                ]
+getWalkOverStrength : Actor -> Int
+getWalkOverStrength actor =
+    getControlComponent actor
+        |> Maybe.map (\data -> data.settings.walkOverStrength)
+        |> Maybe.withDefault 0
+
+
+getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
+getControlDirection inputControllerDirection controlData actor level =
+    case ( controlData.control, inputControllerDirection ) of
+        ( InputControl, Just direction ) ->
+            Just ( direction, actor )
+
+        ( InputControl, Nothing ) ->
+            Nothing
+
+        ( WalkAroundAiControl aiData, _ ) ->
+            getWalkAroundAiDirection controlData aiData actor level
+
+        ( GravityAiControl, _ ) ->
+            getGravityAiDirection controlData actor level
+
+
+getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
+getWalkAroundAiDirection controlData aiData actor level =
+    aiData.nextDirectionOffsets
+        |> List.map
+            (\directionOffset ->
+                getDirectionFromID <| (getIDFromDirection aiData.previousDirection) - directionOffset
             )
         |> List.Extra.find
-            (\( transformData, direction ) ->
-                isEmpty
-                    (addPosition transformData.position (getOffsetFromDirection direction))
-                    level
+            (\direction ->
+                canGoInDirection actor direction level
             )
-        |> Maybe.andThen
-            (\( transformData, direction ) ->
-                Dict.insert
-                    "ai"
-                    (AiComponent <|
-                        WalkAroundAi
-                            { ai | previousDirection = direction }
+        |> Maybe.map
+            (\direction ->
+                ( direction
+                , Dict.insert
+                    "control"
+                    (ControlComponent
+                        { controlData
+                            | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                        }
                     )
                     actor.components
                     |> updateComponents actor
-                    |> (\actor ->
-                            startMovingTowards
-                                actor
-                                transformData
-                                (addPosition transformData.position <| getOffsetFromDirection direction)
-                                level
-                       )
-                    |> Just
+                )
             )
-        |> Maybe.withDefault level
 
 
-updateGravityAi : Actor -> Level -> Level
-updateGravityAi actor level =
-    getTransformComponent actor
-        |> Maybe.Extra.toList
-        |> List.filter isNotMoving
-        -- Check for possible actions
-        |> List.concatMap
-            (\transformData ->
-                [ ( transformData
-                  , Data.Common.Down
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down) ]
+getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
+getGravityAiDirection controlData actor level =
+    getPosition actor
+        |> Maybe.map
+            (\position ->
+                [ ( Data.Common.Down
+                  , [ \() -> canGoInDirection actor Data.Common.Down level ]
                   )
-                , ( transformData
-                  , Data.Common.Left
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Left)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Left)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                , ( Data.Common.Left
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Left, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Left level
                     ]
                   )
-                , ( transformData
-                  , Data.Common.Right
-                  , [ isEmpty <| addPosition transformData.position (getOffsetFromDirection Data.Common.Right)
-                    , isEmpty <|
-                        addPositions
-                            [ transformData.position
-                            , (getOffsetFromDirection Data.Common.Right)
-                            , (getOffsetFromDirection Data.Common.Down)
-                            ]
-                    , isCircleAt <| addPosition transformData.position (getOffsetFromDirection Data.Common.Down)
+                , ( Data.Common.Right
+                  , [ \() ->
+                        isEmpty
+                            (addPositions [ position, getOffsetFromDirection Data.Common.Right, getOffsetFromDirection Data.Common.Down ])
+                            level
+                    , \() -> isCircleAt (addPositions [ position, getOffsetFromDirection Data.Common.Down ]) level
+                    , \() -> canGoInDirection actor Data.Common.Right level
                     ]
                   )
                 ]
             )
+        |> Maybe.Extra.toList
+        |> List.concat
         |> List.Extra.find
-            (\( transformData, _, predicates ) ->
-                List.all
-                    (\predicate ->
-                        predicate level
-                    )
-                    predicates
+            (\( _, predicates ) ->
+                lazyAll predicates
             )
-        |> Maybe.andThen
-            (\( transformData, direction, _ ) ->
-                Just <|
-                    startMovingTowards actor
-                        transformData
-                        (addPosition transformData.position <| getOffsetFromDirection direction)
-                        level
+        |> Maybe.map
+            (\( direction, _ ) ->
+                ( direction, actor )
             )
-        |> Maybe.withDefault
-            level
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
 isAllowedToBePushedByAi direction actor =
-    getAiComponent actor
-        |> Maybe.andThen
-            (\ai ->
-                case ai of
-                    WalkAroundAi data ->
-                        Just False
+    getControlComponent actor
+        |> Maybe.map
+            (\controlData ->
+                case controlData.control of
+                    InputControl ->
+                        False
 
-                    GravityAi ->
-                        Just <| direction /= Data.Common.Up
+                    WalkAroundAiControl data ->
+                        False
+
+                    GravityAiControl ->
+                        direction /= Data.Common.Up
             )
         |> Maybe.withDefault True
+
+
+handleDirection : Direction -> Actor -> Level -> Level
+handleDirection direction actor level =
+    getTransformComponent actor
+        |> Maybe.map
+            (\transformData ->
+                case getActorsThatAffectNeighborPosition actor direction level of
+                    -- No one there
+                    [] ->
+                        startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
+
+                    -- Only one actor
+                    [ otherActor ] ->
+                        if canBeWalkedOver actor otherActor then
+                            startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ]) level
+                        else if canPush actor otherActor direction level then
+                            getTransformComponent otherActor
+                                |> Maybe.map
+                                    (\otherTransformData ->
+                                        startMovingTowards otherActor otherTransformData (addPositions [ otherTransformData.position, getOffsetFromDirection direction ]) level
+                                            |> startMovingTowards actor transformData (addPositions [ transformData.position, getOffsetFromDirection direction ])
+                                    )
+                                |> Maybe.withDefault level
+                        else
+                            level
+
+                    -- Multiple actors. There is no implementation for that scenario
+                    _ ->
+                        level
+            )
+        |> Maybe.withDefault level
+
+
+canGoInDirection : Actor -> Direction -> Level -> Bool
+canGoInDirection actor direction level =
+    case getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there
+        [] ->
+            True
+
+        -- Only one actor
+        [ otherActor ] ->
+            lazyAny
+                [ \() -> canBeWalkedOver actor otherActor
+                , \() -> canPush actor otherActor direction level
+                ]
+
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            False
+
+
+canPush : Actor -> Actor -> Direction -> Level -> Bool
+canPush pushingActor toBePushedActor direction level =
+    lazyAll
+        [ \() -> hasRigidComponent pushingActor
+        , \() -> hasRigidComponent toBePushedActor
+        , \() -> isActorMoving toBePushedActor |> not
+        , \() -> isAllowedToBePushedByAi direction toBePushedActor
+        , \() -> isDestinationEmpty toBePushedActor direction level
+        , \() -> hasEnoughPushStrength pushingActor toBePushedActor
+        ]
+
+
+canBeWalkedOver : Actor -> Actor -> Bool
+canBeWalkedOver initiatingActor destinationActor =
+    lazyAll
+        [ \() -> hasRigidComponent destinationActor |> not
+        , \() -> hasEnoughWalkOverStrength initiatingActor destinationActor
+        ]
+
+
+hasEnoughPushStrength : Actor -> Actor -> Bool
+hasEnoughPushStrength initiatingActor destinationActor =
+    (getPushStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
+hasEnoughWalkOverStrength : Actor -> Actor -> Bool
+hasEnoughWalkOverStrength initiatingActor destinationActor =
+    (getWalkOverStrength initiatingActor) > (getPhysicsStrength destinationActor)
+
+
+lazyAll : List (() -> Bool) -> Bool
+lazyAll =
+    List.all
+        (\p -> p ())
+
+
+lazyAny : List (() -> Bool) -> Bool
+lazyAny =
+    List.any
+        (\p -> p ())
 
 
 
@@ -1119,28 +1291,46 @@ willTriggerBy triggerStrength actor =
 
 
 {-
-   }
 
-      DamageComponent
+   LifetimeComponent
+
+-}
+
+
+type alias LifetimeComponentData =
+    { remainingTicks : Int
+    }
+
+
+updateLifetimeComponent : LifetimeComponentData -> Actor -> Level -> Level
+updateLifetimeComponent lifetimeData actor level =
+    if lifetimeData.remainingTicks > 0 then
+        Dict.insert
+            "lifetime"
+            (LifetimeComponent { lifetimeData | remainingTicks = lifetimeData.remainingTicks - 1 })
+            actor.components
+            |> updateComponents actor
+            |> updateActor level.actors
+            |> updateActors level
+    else
+        removeActor actor level
+
+
+
+{-
+
+   DamageComponent
 
 -}
 
 
 type alias DamageComponentData =
-    { remainingTicks : Int
-    , damageStrength : Int
+    { damageStrength : Int
     }
 
 
 updateDamageComponent : DamageComponentData -> Actor -> Level -> Level
-updateDamageComponent damageData actor level =
-    level
-        |> tryDoDamage actor damageData
-        |> removeExplosionIfEnded actor damageData
-
-
-tryDoDamage : Actor -> DamageComponentData -> Level -> Level
-tryDoDamage damageDealingActor damageData level =
+updateDamageComponent damageData damageDealingActor level =
     getTransformComponent damageDealingActor
         |> Maybe.Extra.toList
         |> List.concatMap
@@ -1167,18 +1357,138 @@ tryDoDamage damageDealingActor damageData level =
             level
 
 
-removeExplosionIfEnded : Actor -> DamageComponentData -> Level -> Level
-removeExplosionIfEnded actor damageData level =
-    if damageData.remainingTicks > 0 then
-        Dict.insert
-            "damage"
-            (DamageComponent { damageData | remainingTicks = damageData.remainingTicks - 1 })
-            actor.components
-            |> updateComponents actor
-            |> updateActor level.actors
-            |> updateActors level
+
+{-
+
+   SpawnComponent
+
+-}
+
+
+type alias SpawnComponentData =
+    { entityName : String
+    , position : Position
+    , delayTicks : Int
+    , repeat : SpawnRepeat
+    }
+
+
+type alias SpawnRepeat =
+    { times : SpawnRepeatTimes
+    , delayTicks : Int
+    }
+
+
+type SpawnRepeatTimes
+    = RepeatNever
+    | RepeatForever
+    | RepeatTimes Int
+
+
+spawnNeverRepeat : SpawnRepeat
+spawnNeverRepeat =
+    { times = RepeatNever
+    , delayTicks = 0
+    }
+
+
+updateSpawnComponent : SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponent data actor level =
+    if data.delayTicks > 0 then
+        spawnDecrementDelayTicks data
+            |> setSpawnComponentData actor level
+            |> Tuple.second
     else
-        removeActor actor level
+        spawnActor data level
+            |> updateSpawnComponentAfterSpawn data actor
+
+
+setSpawnComponentData : Actor -> Level -> SpawnComponentData -> ( Actor, Level )
+setSpawnComponentData actor level data =
+    data
+        |> SpawnComponent
+        |> (\component ->
+                Dict.insert "spawn" component actor.components
+           )
+        |> updateComponents actor
+        |> (\actor ->
+                ( actor
+                , updateActor level.actors actor
+                    |> updateActors level
+                )
+           )
+
+
+spawnActor : SpawnComponentData -> Level -> Level
+spawnActor data level =
+    if getActorsThatAffect data.position level |> List.isEmpty then
+        Dict.get
+            data.entityName
+            level.entities
+            |> Maybe.map
+                (\entity ->
+                    addActor
+                        (Dict.insert
+                            "transform"
+                            (TransformComponent { position = data.position, movingState = NotMoving })
+                            entity
+                        )
+                        level
+                )
+            |> Maybe.withDefault level
+    else
+        level
+
+
+updateSpawnComponentAfterSpawn : SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponentAfterSpawn data actor level =
+    case data.repeat.times of
+        RepeatNever ->
+            removeSpawnComponent actor level
+
+        RepeatForever ->
+            spawnResetDelayTicks data
+                |> setSpawnComponentData actor level
+                |> Tuple.second
+
+        RepeatTimes count ->
+            if count > 0 then
+                RepeatTimes (count - 1)
+                    |> flip spawnUpdateRepeatTimes data.repeat
+                    |> flip spawnUpdateRepeat data
+                    |> spawnResetDelayTicks
+                    |> setSpawnComponentData actor level
+                    |> Tuple.second
+            else
+                removeSpawnComponent actor level
+
+
+removeSpawnComponent : Actor -> Level -> Level
+removeSpawnComponent actor level =
+    Dict.remove "spawn" actor.components
+        |> updateComponents actor
+        |> updateActor level.actors
+        |> updateActors level
+
+
+spawnUpdateRepeatTimes : SpawnRepeatTimes -> SpawnRepeat -> SpawnRepeat
+spawnUpdateRepeatTimes times repeat =
+    { repeat | times = times }
+
+
+spawnUpdateRepeat : SpawnRepeat -> SpawnComponentData -> SpawnComponentData
+spawnUpdateRepeat repeat data =
+    { data | repeat = repeat }
+
+
+spawnDecrementDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnDecrementDelayTicks data =
+    { data | delayTicks = data.delayTicks - 1 }
+
+
+spawnResetDelayTicks : SpawnComponentData -> SpawnComponentData
+spawnResetDelayTicks data =
+    { data | delayTicks = data.repeat.delayTicks }
 
 
 
@@ -1279,10 +1589,19 @@ updateDownSmash actor level downSmashData =
 -}
 
 
-type alias RenderComponentData =
+type RenderComponentData
+    = PixelRenderComponent PixelRenderComponentData
+    | ImageRenderComponent ImageRenderComponentData
+
+
+type alias PixelRenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
     }
+
+
+type alias ImageRenderComponentData =
+    { name : String }
 
 
 getRenderComponent : Actor -> Maybe RenderComponentData
@@ -1333,30 +1652,13 @@ addActor components level =
            )
         -- Add actor to the index
         |> (\( level, actor ) ->
-                getPositionFromComponents components
+                getPosition actor
                     |> Maybe.andThen
                         (\position ->
                             Just <| ( addActorToIndex position actor.id level, actor )
                         )
                     |> Maybe.withDefault
                         ( level, actor )
-           )
-        -- Update total diamonds if needed
-        |> (\( level, actor ) ->
-                [ actor ]
-                    |> List.filter
-                        (\actor ->
-                            hasDiamondComponent actor
-                        )
-                    |> List.foldr
-                        (\actor level ->
-                            incrementTotalDiamonds level.diamonds
-                                |> (flip updateDiamonds) level
-                        )
-                        level
-                    |> (\level ->
-                            ( level, actor )
-                       )
            )
         -- Update view if needed
         |> (\( level, actor ) ->
@@ -1398,8 +1700,9 @@ addExplosion x y level =
     addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = NotMoving } )
-            , ( "render", RenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
-            , ( "damage", DamageComponent { remainingTicks = 8, damageStrength = 80 } )
+            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
+            , ( "lifetime", LifetimeComponent { remainingTicks = 8 } )
+            , ( "damage", DamageComponent { damageStrength = 80 } )
             ]
         )
         level
@@ -1514,7 +1817,16 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
-        |> JDP.optional "backgroundColor" colorDecoder (Color.white)
+        |> JDP.optional "images" imagesDecoder Dict.empty
+        |> JDP.optional "background" renderDataDecoder defaultBackground
+
+
+defaultBackground : RenderComponentData
+defaultBackground =
+    PixelRenderComponent
+        { colors = [ Color.white ]
+        , ticksPerColor = 1
+        }
 
 
 entitiesDecoder : Decoder Entities
@@ -1537,32 +1849,29 @@ componentDecoder =
         |> Decode.andThen
             (\theType ->
                 (case theType of
-                    "ai" ->
-                        Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+                    "control" ->
+                        Decode.map ControlComponent <| Decode.field "data" controlDataDecoder
 
                     "camera" ->
                         Decode.map CameraComponent <| Decode.field "data" cameraDataDecoder
 
-                    "can-squash" ->
-                        Decode.succeed CanSquashComponent
+                    "lifetime" ->
+                        Decode.map LifetimeComponent <| Decode.field "data" lifetimeDataDecoder
 
                     "damage" ->
                         Decode.map DamageComponent <| Decode.field "data" damageDataDecoder
 
-                    "diamond" ->
-                        Decode.succeed DiamondComponent
+                    "collectible" ->
+                        Decode.map CollectibleComponent <| Decode.field "data" collectibleDecoder
 
-                    "diamond-collector" ->
-                        Decode.succeed DiamondCollectorComponent
+                    "collector" ->
+                        Decode.map CollectorComponent <| Decode.field "data" collectorDecoder
 
                     "explodable" ->
                         Decode.succeed ExplodableComponent
 
                     "physics" ->
                         Decode.map PhysicsComponent <| Decode.field "data" physicsDataDecoder
-
-                    "player-input" ->
-                        Decode.succeed PlayerInputComponent
 
                     "render" ->
                         Decode.map RenderComponent <| Decode.field "data" renderDataDecoder
@@ -1576,8 +1885,8 @@ componentDecoder =
                     "smash-down" ->
                         Decode.succeed <| DownSmashComponent { movingDownState = NotMovingDown }
 
-                    "squashable" ->
-                        Decode.succeed SquashableComponent
+                    "spawn" ->
+                        Decode.map SpawnComponent <| Decode.field "data" spawnDataDecoder
 
                     _ ->
                         Decode.fail <|
@@ -1594,9 +1903,90 @@ componentDecoder =
 
 renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
-    JDP.decode RenderComponentData
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "pixel" ->
+                        Decode.map PixelRenderComponent <| Decode.field "data" renderPixelDataDecoder
+
+                    "image" ->
+                        Decode.map ImageRenderComponent <| Decode.field "data" renderImageDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode render, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+renderPixelDataDecoder : Decoder PixelRenderComponentData
+renderPixelDataDecoder =
+    JDP.decode PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
+
+
+renderImageDataDecoder : Decoder ImageRenderComponentData
+renderImageDataDecoder =
+    JDP.decode ImageRenderComponentData
+        |> JDP.required "name" Decode.string
+
+
+spawnDataDecoder : Decoder SpawnComponentData
+spawnDataDecoder =
+    JDP.decode SpawnComponentData
+        |> JDP.required "entityName" Decode.string
+        |> JDP.required "position" positionDecoder
+        |> JDP.optional "delayTicks" Decode.int 0
+        |> JDP.optional "repeat" spawnRepeatDecoder spawnNeverRepeat
+
+
+spawnRepeatDecoder : Decoder SpawnRepeat
+spawnRepeatDecoder =
+    JDP.decode SpawnRepeat
+        |> JDP.required "times" spawnRepeatTimesDecoder
+        |> JDP.required "delayTicks" Decode.int
+
+
+spawnRepeatTimesDecoder : Decoder SpawnRepeatTimes
+spawnRepeatTimesDecoder =
+    Decode.oneOf
+        [ Decode.string
+            |> Decode.andThen
+                (\times ->
+                    case times of
+                        "forever" ->
+                            Decode.succeed RepeatForever
+
+                        "never" ->
+                            Decode.succeed RepeatNever
+
+                        other ->
+                            case String.toInt other of
+                                Ok timesInt ->
+                                    Decode.succeed <| RepeatTimes timesInt
+
+                                Err error ->
+                                    Decode.fail <|
+                                        "Trying to decode spawn repeat times, but the times "
+                                            ++ other
+                                            ++ " should be something that can be parsed to an int."
+                )
+        , Decode.int
+            |> Decode.andThen
+                (\times ->
+                    Decode.succeed <| RepeatTimes times
+                )
+        ]
+
+
+positionDecoder : Decoder Position
+positionDecoder =
+    JDP.decode Position
+        |> JDP.required "x" Decode.int
+        |> JDP.required "y" Decode.int
 
 
 cameraDataDecoder : Decoder CameraComponentData
@@ -1612,10 +2002,15 @@ physicsDataDecoder =
         |> JDP.required "shape" physicsShapeDecoder
 
 
+lifetimeDataDecoder : Decoder LifetimeComponentData
+lifetimeDataDecoder =
+    JDP.decode LifetimeComponentData
+        |> JDP.required "remainingTicks" Decode.int
+
+
 damageDataDecoder : Decoder DamageComponentData
 damageDataDecoder =
     JDP.decode DamageComponentData
-        |> JDP.required "remainingTicks" Decode.int
         |> JDP.required "damageStrength" Decode.int
 
 
@@ -1623,6 +2018,25 @@ triggerExplodableDataDecoder : Decoder TriggerExplodableComponentData
 triggerExplodableDataDecoder =
     JDP.decode TriggerExplodableComponentData
         |> JDP.required "triggerStrength" Decode.int
+
+
+collectibleDecoder : Decoder CollectibleComponentData
+collectibleDecoder =
+    JDP.decode CollectibleComponentData
+        |> JDP.required "name" Decode.string
+        |> JDP.optional "quantity" Decode.int 1
+
+
+collectorDecoder : Decoder CollectorComponentData
+collectorDecoder =
+    JDP.decode CollectorComponentData
+        |> JDP.required "interestedIn" (Decode.list Decode.string)
+        |> JDP.optional "inventory" inventoryDecoder Dict.empty
+
+
+inventoryDecoder : Decoder Inventory
+inventoryDecoder =
+    Decode.dict Decode.int
 
 
 physicsShapeDecoder : Decoder Shape
@@ -1645,23 +2059,80 @@ physicsShapeDecoder =
             )
 
 
-aiDataDecoder : Decoder AiComponentData
-aiDataDecoder =
+controlDataDecoder : Decoder ControlComponentData
+controlDataDecoder =
+    JDP.decode ControlComponentData
+        |> JDP.optional "settings" controlSettingsDecoder emptyControlSettings
+        |> JDP.required "control" controlTypeDecoder
+
+
+controlSettingsDecoder : Decoder ControlSettings
+controlSettingsDecoder =
+    JDP.decode ControlSettings
+        |> JDP.optional "pushStrength" Decode.int emptyControlSettings.pushStrength
+        |> JDP.optional "walkOverStrength" Decode.int emptyControlSettings.walkOverStrength
+
+
+emptyControlSettings : ControlSettings
+emptyControlSettings =
+    { pushStrength = 0
+    , walkOverStrength = 0
+    }
+
+
+controlTypeDecoder : Decoder ControlType
+controlTypeDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
-                    "walkaround" ->
-                        Decode.succeed <| WalkAroundAi { previousDirection = Data.Common.Left }
+                    "input" ->
+                        Decode.succeed InputControl
 
-                    "gravity" ->
-                        Decode.succeed GravityAi
+                    "walkAroundAi" ->
+                        Decode.map WalkAroundAiControl <| Decode.field "data" walkAroundAiDataDecoder
+
+                    "gravityAi" ->
+                        Decode.succeed GravityAiControl
 
                     _ ->
                         Decode.fail <|
-                            "Trying to decode AI, but the type "
+                            "Trying to decode control components control type, but the type "
                                 ++ theType
                                 ++ " is not supported."
+            )
+
+
+walkAroundAiDataDecoder : Decoder WalkAroundAiControlData
+walkAroundAiDataDecoder =
+    JDP.decode WalkAroundAiControlData
+        |> JDP.optional "previousDirection" directionDecoder Data.Common.Left
+        |> JDP.required "nextDirectionOffsets" (Decode.list Decode.int)
+
+
+directionDecoder : Decoder Direction
+directionDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\direction ->
+                case direction of
+                    "left" ->
+                        Decode.succeed Data.Common.Left
+
+                    "up" ->
+                        Decode.succeed Data.Common.Up
+
+                    "right" ->
+                        Decode.succeed Data.Common.Right
+
+                    "down" ->
+                        Decode.succeed Data.Common.Down
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode direction, but the direction "
+                                ++ direction
+                                ++ " is not supported. Supported directions are: left, up, right, down."
             )
 
 
@@ -1687,3 +2158,14 @@ signsDecoder =
 sceneDecoder : Decoder Scene
 sceneDecoder =
     Decode.list Decode.string
+
+
+imagesDecoder : Decoder Images
+imagesDecoder =
+    Decode.dict Decode.string
+
+
+emptyImage : Canvas.Canvas
+emptyImage =
+    Canvas.Size 32 32
+        |> Canvas.initialize

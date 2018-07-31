@@ -3,7 +3,9 @@
 require('./static/style.css');
 const Elm = require('./elm/Main.elm');
 const level001 = require('./static/level-001');
+const levelImage = require('./static/level-images');
 const levelPacman = require('./static/level-pacman');
+const levelTank = require('./static/level-tank');
 
 
 document.getElementById('textarea-level').value =
@@ -13,9 +15,17 @@ document.getElementById('level-001')
   .addEventListener('click', function () {
     document.getElementById('textarea-level').value = JSON.stringify(level001, null, 2);
   });
+document.getElementById('level-image')
+  .addEventListener('click', function () {
+    document.getElementById('textarea-level').value = JSON.stringify(levelImage, null, 2);
+  });
 document.getElementById('level-pacman')
   .addEventListener('click', function () {
     document.getElementById('textarea-level').value = JSON.stringify(levelPacman, null, 2);
+  });
+document.getElementById('level-tank')
+  .addEventListener('click', function () {
+    document.getElementById('textarea-level').value = JSON.stringify(levelTank, null, 2);
   });
 
 document.getElementById('submit-level')
