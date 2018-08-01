@@ -76,7 +76,7 @@
     "dirt": [
       {"type": "render", "data": {"type": "image", "data": {"name": "dirt"}}},
       {"type": "collectible", "data": {"name": "dirt"}},
-      {"type": "physics", "data": {"strength": 30, "shape": "square"}},
+      {"type": "physics", "data": {"strength": 30, "shape": "square"}}
     ],
     "wall": [
       {"type": "render", "data": {"type": "image", "data": {"name": "wall"}}},
