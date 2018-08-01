@@ -3,7 +3,7 @@ module InputController
         ( Model
         , Msg
         , KeyStatus(..)
-        , Keys
+        , KeyStatuses
         , init
         , update
         , subscriptions
@@ -18,12 +18,12 @@ import Data.Common exposing (Direction)
 
 
 type alias Model =
-    { keys : Keys
+    { keys : KeyStatuses
     , counter : Int
     }
 
 
-type alias Keys =
+type alias KeyStatuses =
     Dict Keyboard.KeyCode KeyStatus
 
 
@@ -37,6 +37,17 @@ type Msg
     = KeyPressed Keyboard.KeyCode
     | KeyDown Keyboard.KeyCode
     | KeyUp Keyboard.KeyCode
+
+
+type Keys
+    = LeftKey
+    | UpKey
+    | RightKey
+    | DownKey
+    | SubmitKey
+    | CancelKey
+    | StartKey
+    | SelectKey
 
 
 leftArrow : Int
@@ -204,7 +215,7 @@ incrementCounter model =
     { model | counter = model.counter + 1 }
 
 
-getCounter : Keyboard.KeyCode -> Keys -> Maybe Int
+getCounter : Keyboard.KeyCode -> KeyStatuses -> Maybe Int
 getCounter keyCode keys =
     Dict.get keyCode keys
         |> Maybe.andThen
@@ -221,7 +232,7 @@ getCounter keyCode keys =
             )
 
 
-updateKey : Keyboard.KeyCode -> KeyStatus -> Keys -> Keys
+updateKey : Keyboard.KeyCode -> KeyStatus -> KeyStatuses -> KeyStatuses
 updateKey keyCode status keys =
     -- Do not store keys we do not care about
     if Dict.member keyCode keyCodeToDirection then

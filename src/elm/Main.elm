@@ -28,7 +28,13 @@ type alias Model =
     , currentTick : Tick
     , inputController : InputController.Model
     , timeBuffer : Int
+    , state : GameState
     }
+
+
+type GameState
+    = MainMenu
+    | PlayLevel Level
 
 
 main : Program Json.Decode.Value Model Msg
@@ -76,6 +82,7 @@ init flags =
         , gameSpeed = Just 41
         , currentTick = 0
         , timeBuffer = 0
+        , gameState = MainMenu
         }
             ! [ Cmd.map ActorMsg levelCmd
               ]
