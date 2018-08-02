@@ -145,7 +145,7 @@ view { currentTick, level, debug, gameState, width, height } =
         []
         [ (case gameState of
             MainMenu ->
-                CanvasRenderer.renderText width height (Text.stringToLetters "bier")
+                CanvasRenderer.renderText width height (Text.stringToLetters "abcde")
 
             PlayLevel level ->
                 CanvasRenderer.renderLevel currentTick level

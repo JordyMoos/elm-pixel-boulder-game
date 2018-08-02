@@ -238,6 +238,30 @@ dictionary =
         , "ooo"
         ]
       )
+    , ( ' '
+      , [ " "
+        , " "
+        , " "
+        , " "
+        , " "
+        ]
+      )
+    , ( '.'
+      , [ " "
+        , " "
+        , " "
+        , " "
+        , "o"
+        ]
+      )
+    , ( ','
+      , [ "  "
+        , "  "
+        , "  "
+        , " o"
+        , "o "
+        ]
+      )
     ]
         |> List.map designToLetter
         |> Dict.fromList
@@ -279,8 +303,9 @@ getPositions design =
 
 stringToLetters : String -> Letters
 stringToLetters string =
-    List.map
-        (flip Dict.get dictionary)
-        (String.toList string)
+    string
+        |> String.toLower
+        |> String.toList
+        |> List.map (flip Dict.get dictionary)
         |> Maybe.Extra.values
         |> List.reverse
