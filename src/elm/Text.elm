@@ -91,3 +91,4 @@ stringToLetters string =
         (flip Dict.get dictionary)
         (String.toList string)
         |> Maybe.Extra.values
+        |> List.reverse
