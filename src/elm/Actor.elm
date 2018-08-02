@@ -39,7 +39,7 @@ module Actor
         )
 
 import Dict exposing (Dict)
-import Data.Common exposing (Position, Direction, Tick)
+import Data.Common exposing (Position, Direction, Tick, addPosition, addPositions)
 import Color exposing (Color)
 import Maybe.Extra
 import List.Extra
@@ -1749,22 +1749,6 @@ getOffsetFromDirection direction =
 
         Data.Common.Down ->
             { x = 0, y = 1 }
-
-
-addPositions : List Position -> Position
-addPositions =
-    List.foldr
-        (\position acc ->
-            addPosition position acc
-        )
-        { x = 0, y = 0 }
-
-
-addPosition : Position -> Position -> Position
-addPosition pos1 pos2 =
-    { x = pos1.x + pos2.x
-    , y = pos1.y + pos2.y
-    }
 
 
 

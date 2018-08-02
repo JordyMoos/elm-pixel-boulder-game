@@ -3,7 +3,7 @@ module CanvasRenderer exposing (renderLevel, renderText)
 import Canvas
 import Actor exposing (Level)
 import Html exposing (Html)
-import Data.Common exposing (Tick, Position)
+import Data.Common exposing (Tick, Position, addPosition, addPositions)
 import Color exposing (Color)
 import Canvas.Point
 import Maybe.Extra
@@ -287,4 +287,28 @@ asPixel viewPosition position color =
 renderText : Int -> Int -> Text.Letters -> Html msg
 renderText width height letters =
     Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
+        |> Canvas.batch (renderLine width height letters)
         |> Canvas.toHtml []
+
+
+renderLine : Int -> Int -> Text.Letters -> List Canvas.DrawOp
+renderLine width height letters =
+    letters
+        |> List.foldr
+            (\letter ( xOffset, ops ) ->
+                ( xOffset + letter.width + 1
+                , letter.positions
+                    |> List.map (addPosition { x = xOffset, y = 0 })
+                    |> List.concatMap
+                        (\position ->
+                            [ Canvas.FillStyle Color.red
+                            , Canvas.FillRect
+                                (Canvas.Point.fromInts ( position.x * pixelSize, position.y * pixelSize ))
+                                (Canvas.Size pixelSize pixelSize)
+                            ]
+                        )
+                    |> List.append ops
+                )
+            )
+            ( 0, [] )
+        |> Tuple.second
