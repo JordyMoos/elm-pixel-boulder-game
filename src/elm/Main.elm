@@ -17,6 +17,7 @@ import Json.Decode
 import Canvas
 import Task
 import AnimationFrame
+import Text
 
 
 type alias Model =
@@ -28,7 +29,7 @@ type alias Model =
     , currentTick : Tick
     , inputController : InputController.Model
     , timeBuffer : Int
-    , state : GameState
+    , gameState : GameState
     }
 
 
@@ -139,15 +140,15 @@ updateTimeBuffer time gameSpeed model =
 
 
 view : Model -> Html Msg
-view { currentTick, level, debug, gameState } =
+view { currentTick, level, debug, gameState, width, height } =
     div
         []
         [ (case gameState of
             MainMenu ->
-                renderMenu
+                CanvasRenderer.renderText width height (Text.stringToLetters "bier")
 
             PlayLevel level ->
-                CanvasRenderer.view currentTick level
+                CanvasRenderer.renderLevel currentTick level
           )
         , if debug then
             debugView

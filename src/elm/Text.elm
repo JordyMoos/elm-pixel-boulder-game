@@ -8,12 +8,12 @@ import Maybe.Extra
 
 type alias Letter =
     { width : Int
-    , positions : Design
+    , positions : List Position
     }
 
 
 type alias Design =
-    List Position
+    List String
 
 
 type alias Letters =
@@ -65,20 +65,23 @@ getWidth design =
     design
         |> List.map String.length
         |> List.maximum
+        |> Maybe.withDefault 0
 
 
 getPositions : Design -> List Position
 getPositions design =
-    List.indexedMap
-        (\y line ->
-            List.indexedMap
-                (\x symbol ->
-                    [ symbol ]
-                        |> List.filter ((==) ' ' >> not)
-                        |> List.map (always { x = x, y = y })
-                )
+    design
+        |> List.indexedMap
+            (\y line ->
                 (String.toList line)
-        )
+                    |> List.indexedMap
+                        (\x symbol ->
+                            [ symbol ]
+                                |> List.filter ((==) ' ' >> not)
+                                |> List.map (always { x = x, y = y })
+                        )
+                    |> List.concat
+            )
         |> List.concat
 
 

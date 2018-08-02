@@ -1,4 +1,4 @@
-module CanvasRenderer exposing (view)
+module CanvasRenderer exposing (renderLevel, renderText)
 
 import Canvas
 import Actor exposing (Level)
@@ -9,6 +9,7 @@ import Canvas.Point
 import Maybe.Extra
 import List.Extra
 import Dict exposing (Dict)
+import Text
 
 
 pixelSize : Int
@@ -16,8 +17,8 @@ pixelSize =
     32
 
 
-view : Tick -> Level -> Html msg
-view currentTick level =
+renderLevel : Tick -> Level -> Html msg
+renderLevel currentTick level =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
         |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
         |> Canvas.batch (drawBackground currentTick level.images level.background level.view.width level.view.height)
@@ -281,3 +282,9 @@ asPixel viewPosition position color =
         (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
+
+
+renderText : Int -> Int -> Text.Letters -> Html msg
+renderText width height letters =
+    Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
+        |> Canvas.toHtml []
