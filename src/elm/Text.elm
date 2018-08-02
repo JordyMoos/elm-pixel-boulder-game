@@ -166,6 +166,78 @@ dictionary =
         , "o o"
         ]
       )
+    , ( 's'
+      , [ " oo"
+        , "o  "
+        , " oo"
+        , "  o"
+        , "oo "
+        ]
+      )
+    , ( 't'
+      , [ "ooo"
+        , " o "
+        , " o "
+        , " o "
+        , " o "
+        ]
+      )
+    , ( 'u'
+      , [ "o o"
+        , "o o"
+        , "o o"
+        , "o o"
+        , "ooo"
+        ]
+      )
+    , ( 'v'
+      , [ "o o"
+        , "o o"
+        , "o o"
+        , "o o"
+        , " o "
+        ]
+      )
+    , ( 'w'
+      , [ "o   o"
+        , "o o o"
+        , "o o o"
+        , "oo oo"
+        , "o   o"
+        ]
+      )
+    , ( 'w'
+      , [ "o   o"
+        , "o o o"
+        , "o o o"
+        , "oo oo"
+        , "o   o"
+        ]
+      )
+    , ( 'x'
+      , [ "o   o"
+        , " o o "
+        , "  o  "
+        , " o o "
+        , "o   o"
+        ]
+      )
+    , ( 'y'
+      , [ "o   o"
+        , " o o "
+        , "  o  "
+        , "  o  "
+        , "  o  "
+        ]
+      )
+    , ( 'z'
+      , [ "ooo"
+        , "  o"
+        , " o "
+        , "o  "
+        , "ooo"
+        ]
+      )
     ]
         |> List.map designToLetter
         |> Dict.fromList
