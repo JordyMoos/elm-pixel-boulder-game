@@ -111,18 +111,23 @@ update msg model =
         AnimationFrameUpdate time ->
             case model.gameSpeed of
                 Just gameSpeed ->
-                    List.foldr
-                        (\_ model ->
-                            { model
-                                | inputController = InputController.resetWasPressed model.inputController
-                                , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                                , currentTick = model.currentTick + 1
-                            }
-                        )
-                        model
-                        (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
-                        |> updateTimeBuffer (round time) gameSpeed
-                        |> flip (!) []
+                    case model.gameState of
+                        MainMenu ->
+                            model ! []
+
+                        PlayLevel level ->
+                            List.foldr
+                                (\_ model ->
+                                    { model
+                                        | inputController = InputController.resetWasPressed model.inputController
+                                        , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+                                        , currentTick = model.currentTick + 1
+                                    }
+                                )
+                                model
+                                (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                                |> updateTimeBuffer (round time) gameSpeed
+                                |> flip (!) []
 
                 Nothing ->
                     model ! []
@@ -134,15 +139,26 @@ updateTimeBuffer time gameSpeed model =
 
 
 view : Model -> Html Msg
-view { currentTick, level, debug } =
+view { currentTick, level, debug, gameState } =
     div
         []
-        [ CanvasRenderer.view currentTick level
+        [ (case gameState of
+            MainMenu ->
+                renderMenu
+
+            PlayLevel level ->
+                CanvasRenderer.view currentTick level
+          )
         , if debug then
             debugView
           else
             text ""
         ]
+
+
+renderMenu : Html Msg
+renderMenu =
+    div [] []
 
 
 debugView : Html Msg
