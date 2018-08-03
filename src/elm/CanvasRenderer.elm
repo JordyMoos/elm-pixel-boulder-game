@@ -289,7 +289,7 @@ asPixel viewPosition position color =
 
    menu:
        items:
-           [ { text, msg, [length] } ]
+           [ { key, text, width } ]
        selected: Int (determines the y offset and color of the selected + msg to spawn on input)
                    Not sure if we spawn messages btw. We just do something in update if A is pressed
 
@@ -297,6 +297,10 @@ asPixel viewPosition position color =
 
 
 -}
+
+
+type ListSelector a
+    = Select a (List a)
 
 
 renderText : Int -> Int -> List Text.Letters -> Html msg
