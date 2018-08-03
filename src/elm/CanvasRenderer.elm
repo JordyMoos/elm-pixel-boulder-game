@@ -284,21 +284,46 @@ asPixel viewPosition position color =
     ]
 
 
-renderText : Int -> Int -> Text.Letters -> Html msg
-renderText width height letters =
+
+{-
+
+   menu:
+       items:
+           [ { text, msg, [length] } ]
+       selected: Int (determines the y offset and color of the selected + msg to spawn on input)
+                   Not sure if we spawn messages btw. We just do something in update if A is pressed
+
+
+
+
+-}
+
+
+renderText : Int -> Int -> List Text.Letters -> Html msg
+renderText width height lines =
     Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
-        |> Canvas.batch (renderLine width height letters)
+        |> Canvas.batch (renderLines width height lines)
         |> Canvas.toHtml []
 
 
-renderLine : Int -> Int -> Text.Letters -> List Canvas.DrawOp
-renderLine width height letters =
+renderLines : Int -> Int -> List Text.Letters -> List Canvas.DrawOp
+renderLines width height lines =
+    lines
+        |> List.indexedMap
+            (\index line ->
+                renderLine width height (index * (Text.letterHeight + 1)) line
+            )
+        |> List.concat
+
+
+renderLine : Int -> Int -> Int -> Text.Letters -> List Canvas.DrawOp
+renderLine width height yOffset letters =
     letters
         |> List.foldr
             (\letter ( xOffset, ops ) ->
                 ( xOffset + letter.width + 1
                 , letter.positions
-                    |> List.map (addPosition { x = xOffset, y = 0 })
+                    |> List.map (addPosition { x = xOffset, y = yOffset })
                     |> List.concatMap
                         (\position ->
                             [ Canvas.FillStyle Color.red

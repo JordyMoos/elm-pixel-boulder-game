@@ -1,9 +1,14 @@
-module Text exposing (Letter, Letters, stringToLetters)
+module Text exposing (Letter, Letters, stringToLetters, letterHeight)
 
 import Color exposing (Color)
 import Dict exposing (Dict)
 import Data.Common exposing (Position)
 import Maybe.Extra
+
+
+letterHeight : Int
+letterHeight =
+    5
 
 
 type alias Letter =
