@@ -299,6 +299,16 @@ asPixel viewPosition position color =
 -}
 
 
+type alias Menu =
+    { items :
+        List
+            { key : String
+            , text : Text.Letters
+            , width : Int
+            }
+    }
+
+
 type ListSelector a
     = Select a (List a)
 
