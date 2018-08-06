@@ -18,6 +18,7 @@ import Canvas
 import Task
 import AnimationFrame
 import Text
+import GameState.MainMenu
 
 
 type alias Model =
@@ -29,12 +30,12 @@ type alias Model =
     , currentTick : Tick
     , inputController : InputController.Model
     , timeBuffer : Int
-    , gameState : GameState
+    , state : State
     }
 
 
-type GameState
-    = MainMenu
+type State
+    = MainMenu GameState.MainMenu.Model
     | PlayLevel Level
 
 

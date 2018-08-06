@@ -2,6 +2,7 @@ module InputController
     exposing
         ( Model
         , Msg
+        , Key(..)
         , KeyStatus(..)
         , KeyStatuses
         , init
@@ -9,6 +10,7 @@ module InputController
         , subscriptions
         , getCurrentDirection
         , resetWasPressed
+        , getOrderedPressedKeys
         )
 
 import Keyboard
@@ -39,7 +41,21 @@ type Msg
     | KeyUp Keyboard.KeyCode
 
 
-type Keys
+keyMap : Dict Int Key
+keyMap =
+    Dict.fromList
+        [ ( leftArrow, LeftKey )
+        , ( upArrow, UpKey )
+        , ( rightArrow, RightKey )
+        , ( downArrow, DownKey )
+        , ( submitKey, SubmitKey )
+        , ( cancelKey, CancelKey )
+        , ( startKey, StartKey )
+        , ( cancelKey, CancelKey )
+        ]
+
+
+type Key
     = LeftKey
     | UpKey
     | RightKey
@@ -248,3 +264,28 @@ subscriptions model =
         , Keyboard.downs KeyDown
         , Keyboard.ups KeyUp
         ]
+
+
+getOrderedPressedKeys : Model -> List Key
+getOrderedPressedKeys model =
+    model.keys
+        |> Dict.toList
+        |> List.sortBy
+            (\( key, status ) ->
+                case status of
+                    NotPressed ->
+                        0
+
+                    WasPressed tick ->
+                        tick
+
+                    IsPressed tick ->
+                        tick
+            )
+        |> List.filter
+            (\( key, status ) ->
+                status /= NotPressed
+            )
+        |> List.map Tuple.first
+        |> List.map (flip Dict.get keyMap)
+        |> Maybe.Extra.values
