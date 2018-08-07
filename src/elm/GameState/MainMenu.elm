@@ -33,17 +33,17 @@ init config =
         { items =
             { before = []
             , selected =
-                { key = "level-001"
+                { key = "001"
                 , text = Text.stringToLetters "Pixel"
                 }
             , after =
-                [ { key = "level-images"
+                [ { key = "images"
                   , text = Text.stringToLetters "Images"
                   }
-                , { key = "level-pacman"
+                , { key = "pacman"
                   , text = Text.stringToLetters "Pac-Man"
                   }
-                , { key = "level-tank"
+                , { key = "tank"
                   , text = Text.stringToLetters "Tank"
                   }
                 ]

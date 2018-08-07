@@ -6,6 +6,7 @@ import Actor
 import Canvas
 import Dict
 import Task
+import Html exposing (Html, div, text)
 
 
 type alias Model =
@@ -43,6 +44,11 @@ update msg model =
 
         LoadImageResponse name (Err error) ->
             Failed <| "Error loading image" ++ (toString error)
+
+
+view : Model -> Html Msg
+view model =
+    div [] [ text "Loading assets..." ]
 
 
 asAction : Model -> Action

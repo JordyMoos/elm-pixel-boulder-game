@@ -40,6 +40,7 @@ type GameState
     | LoadingLevel GameState.LoadingLevel.Model
     | LoadingAssets GameState.LoadingAssets.Model
     | PlayingLevel GameState.PlayingLevel.Model
+    | Error String
 
 
 main : Program Json.Decode.Value Model Msg
@@ -53,12 +54,11 @@ main =
 
 
 type Msg
-    = InputControllerMsg InputController.Msg
-    | ActorMsg Actor.Msg
-    | GameSpeed (Maybe Int)
-    | AnimationFrameUpdate Time.Time
+    = GameSpeed (Maybe Int)
+    | InputControllerMsg InputController.Msg
     | LoadingLevelMsg GameState.LoadingLevel.Msg
     | LoadingAssetsMsg GameState.LoadingAssets.Msg
+    | AnimationFrameUpdate Time.Time
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -82,30 +82,60 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        GameSpeed gameSpeed ->
+    case ( msg, model.gameState ) of
+        ( GameSpeed gameSpeed, _ ) ->
             { model | gameSpeed = gameSpeed } ! []
 
-        InputControllerMsg subMsg ->
+        ( InputControllerMsg subMsg, _ ) ->
             { model
                 | inputController =
                     InputController.update subMsg model.inputController
             }
                 ! []
 
-        AnimationFrameUpdate time ->
+        ( LoadingLevelMsg subMsg, LoadingLevel subModel ) ->
+            case GameState.LoadingLevel.update subMsg subModel of
+                GameState.LoadingLevel.Stay newModel ->
+                    { model | gameState = LoadingLevel newModel }
+
+                GameState.LoadingLevel.Failed error ->
+                    { model | gameState = Error error }
+
+                GameState.LoadingLevel.Success levelConfig ->
+                    if Dict.toList levelConfig.images |> List.isEmpty then
+                        gotoPlayLevel model.config levelConfig Dict.empty
+                    else
+                        gotoLoadAssets model.config levelConfig
+
+        ( LoadingAssetsMsg subMsg, LoadingAssets subModel ) ->
+            case GameState.LoadingAssets.update subMsg subModel of
+                GameState.LoadingAssets.Stay newModel ->
+                    { model | gameState = LoadingAssets newModel }
+
+                GameState.LoadingAssets.Failed error ->
+                    { model | gameState = Error error }
+
+                GameState.LoadingAssets.Success levelConfig images ->
+                    gotoPlayLevel levelConfig images
+
+        ( AnimationFrameUpdate time, _ ) ->
             updateGameState model.gameState time
 
+        ( _, _ ) ->
+            model ! []
 
 
---
---        ActorMsg subMsg ->
---            { model
---                | level =
---                    Actor.update subMsg model.level
---            }
---                ! []
---
+gotoPlayLevel : Actor.LevelConfig -> Actor.CanvasImages -> Model -> Model
+gotoPlayLevel levelConfig images model =
+    model
+
+
+gotoLoadAssets : Actor.LevelConfig -> Model
+gotoLoadAssets levelConfig model =
+    model
+
+
+
 --        AnimationFrameUpdate time ->
 --            case model.gameSpeed of
 --                Just gameSpeed ->
@@ -146,13 +176,16 @@ updateGameState time model =
                 GameState.MainMenu.LoadLevel name ->
                     let
                         ( newModel, newCmd ) =
-                            GameState.LoadingLevel.init name
+                            GameState.LoadingLevel.init model.config name
                     in
                         newModel
                             |> LoadingLevel
                             |> setGameState model
                             |> setInputModel (InputController.resetWasPressed model.inputModel)
                             |> flip (!) [ newCmd ]
+
+        _ ->
+            model ! []
 
 
 setGameState : Model -> GameState -> Model
@@ -181,8 +214,14 @@ view model =
             LoadingLevel subModel ->
                 GameState.LoadingLevel.view subModel
 
+            LoadingAssets subModel ->
+                GameState.LoadingAssets.view subModel
+
             PlayingLevel subModel ->
                 GameState.PlayingLevel.view subModel
+
+            Error error ->
+                text <| "ERROR: " ++ error
           )
         , if model.debug then
             debugView

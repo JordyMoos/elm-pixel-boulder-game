@@ -3,6 +3,7 @@ module Actor
         ( ActorId
         , Actor
         , Level
+        , Scene
         , CanvasImages
           -- Initialization
         , LevelConfig
@@ -10,6 +11,7 @@ module Actor
         , init
         , Msg
         , update
+        , defaultBackground
           -- Actor
         , getActorById
         , getActorsByPosition
@@ -123,12 +125,9 @@ type alias LevelConfig =
 
 
 type alias Level =
-    { entities : Entities
-    , signs : Signs
-    , images : CanvasImages
+    { nextActorId : Int
     , actors : Actors
     , positionIndex : PositionIndex
-    , nextActorId : Int
     , view : View
     , background : RenderComponentData
     }

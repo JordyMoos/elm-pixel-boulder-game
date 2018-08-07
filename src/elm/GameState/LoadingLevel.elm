@@ -4,6 +4,7 @@ import Data.Config exposing (Config)
 import Http
 import Actor
 import RemoteData
+import Html exposing (Html, div, text)
 
 
 type alias Model =
@@ -47,6 +48,11 @@ update msg model =
 
                 RemoteData.Success levelConfig ->
                     Success levelConfig
+
+
+view : Model -> Html Msg
+view model =
+    div [] [ text "Loading level..." ]
 
 
 downloadLevel : String -> Cmd Msg
