@@ -9,6 +9,7 @@ import List.Extra
 import Dict exposing (Dict)
 import Maybe.Extra
 import Data.Common exposing (Tick, Position)
+import Data.Config exposing (Config)
 import InputController
 import Actor exposing (Level)
 import UpdateLoop
@@ -18,11 +19,13 @@ import Task
 import AnimationFrame
 import Text
 import GameState.MainMenu
+import GameState.LoadingLevel
+import GameState.LoadingAssets
+import GameState.PlayingLevel
 
 
 type alias Model =
-    { width : Int
-    , height : Int
+    { config : Config
     , debug : Bool
     , gameSpeed : Maybe Int
     , currentTick : Tick
@@ -35,6 +38,7 @@ type alias Model =
 type GameState
     = MainMenu GameState.MainMenu.Model
     | LoadingLevel GameState.LoadingLevel.Model
+    | LoadingAssets GameState.LoadingAssets.Model
     | PlayingLevel GameState.PlayingLevel.Model
 
 
@@ -53,25 +57,25 @@ type Msg
     | ActorMsg Actor.Msg
     | GameSpeed (Maybe Int)
     | AnimationFrameUpdate Time.Time
+    | LoadingLevelMsg GameState.LoadingLevel.Msg
+    | LoadingAssetsMsg GameState.LoadingAssets.Msg
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
 init flags =
     let
-        width =
-            12
-
-        height =
-            12
+        config =
+            { width = 12
+            , height = 12
+            }
     in
-        { width = width
-        , height = height
+        { config = config
         , inputModel = InputController.init
         , debug = True
         , gameSpeed = Just 41
         , currentTick = 0
         , timeBuffer = 0
-        , gameState = MainMenu <| GameState.MainMenu.init width height
+        , gameState = MainMenu <| GameState.MainMenu.init config
         }
             ! []
 
@@ -167,22 +171,20 @@ updateTimeBuffer time gameSpeed model =
 
 
 view : Model -> Html Msg
-view { currentTick, level, debug, gameState, width, height } =
+view model =
     div
         []
-        [ (case gameState of
-            MainMenu ->
-                CanvasRenderer.renderText
-                    width
-                    height
-                    [ Text.stringToLetters "abcd"
-                    , Text.stringToLetters "efgh"
-                    ]
+        [ (case model.gameState of
+            MainMenu subModel ->
+                GameState.MainMenu.view model.currentTick subModel
 
-            PlayLevel level ->
-                CanvasRenderer.renderLevel currentTick level
+            LoadingLevel subModel ->
+                GameState.LoadingLevel.view subModel
+
+            PlayingLevel subModel ->
+                GameState.PlayingLevel.view subModel
           )
-        , if debug then
+        , if model.debug then
             debugView
           else
             text ""
