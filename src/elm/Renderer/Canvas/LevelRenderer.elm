@@ -1,4 +1,4 @@
-module CanvasRenderer exposing (renderLevel, renderText)
+module Renderer.Canvas.LevelRenderer exposing (renderLevel)
 
 import Canvas
 import Actor exposing (Level)
@@ -10,11 +10,7 @@ import Maybe.Extra
 import List.Extra
 import Dict exposing (Dict)
 import Text
-
-
-pixelSize : Int
-pixelSize =
-    32
+import Renderer.Canvas.Common exposing (pixelSize)
 
 
 renderLevel : Tick -> Level -> Html msg
@@ -282,72 +278,3 @@ asPixel viewPosition position color =
         (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
         (Canvas.Size pixelSize pixelSize)
     ]
-
-
-
-{-
-
-   menu:
-       items:
-           [ { key, text, width } ]
-       selected: Int (determines the y offset and color of the selected + msg to spawn on input)
-                   Not sure if we spawn messages btw. We just do something in update if A is pressed
-
-
-
-
--}
-
-
-type alias Menu =
-    { items :
-        List
-            { key : String
-            , text : Text.Letters
-            , width : Int
-            }
-    }
-
-
-type ListSelector a
-    = Select a (List a)
-
-
-renderText : Int -> Int -> List Text.Letters -> Html msg
-renderText width height lines =
-    Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
-        |> Canvas.batch (renderLines width height lines)
-        |> Canvas.toHtml []
-
-
-renderLines : Int -> Int -> List Text.Letters -> List Canvas.DrawOp
-renderLines width height lines =
-    lines
-        |> List.indexedMap
-            (\index line ->
-                renderLine width height (index * (Text.letterHeight + 1)) line
-            )
-        |> List.concat
-
-
-renderLine : Int -> Int -> Int -> Text.Letters -> List Canvas.DrawOp
-renderLine width height yOffset letters =
-    letters
-        |> List.foldr
-            (\letter ( xOffset, ops ) ->
-                ( xOffset + letter.width + 1
-                , letter.positions
-                    |> List.map (addPosition { x = xOffset, y = yOffset })
-                    |> List.concatMap
-                        (\position ->
-                            [ Canvas.FillStyle Color.red
-                            , Canvas.FillRect
-                                (Canvas.Point.fromInts ( position.x * pixelSize, position.y * pixelSize ))
-                                (Canvas.Size pixelSize pixelSize)
-                            ]
-                        )
-                    |> List.append ops
-                )
-            )
-            ( 0, [] )
-        |> Tuple.second

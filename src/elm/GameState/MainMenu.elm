@@ -1,12 +1,25 @@
-module GameState.MainMenu exposing (..)
+module GameState.MainMenu
+    exposing
+        ( Model
+        , Action
+        , init
+        , updateTick
+        , view
+        )
 
 import Text
 import Data.Menu as Menu
 import InputController
+import Html exposing (Html, div)
 
 
 type alias Model =
     { menu : Menu.Menu }
+
+
+type Action
+    = Stay Model
+    | LoadLevel String
 
 
 init : Model
@@ -15,12 +28,18 @@ init =
         { items =
             { before = []
             , selected =
-                { key = "start"
-                , text = Text.stringToLetters "start"
+                { key = "level-001"
+                , text = Text.stringToLetters "Pixel"
                 }
             , after =
-                [ { key = "about"
-                  , text = Text.stringToLetters "about"
+                [ { key = "level-images"
+                  , text = Text.stringToLetters "Images"
+                  }
+                , { key = "level-pacman"
+                  , text = Text.stringToLetters "Pac-Man"
+                  }
+                , { key = "level-tank"
+                  , text = Text.stringToLetters "Tank"
                   }
                 ]
             }
@@ -28,21 +47,31 @@ init =
     }
 
 
-updateTick : Model -> InputController.Model -> Model
-updateTick model inputModel =
+updateTick : InputController.Model -> Model -> Action
+updateTick inputModel model =
     case InputController.getOrderedPressedKeys inputModel |> List.head of
+        Just InputController.UpKey ->
+            Menu.moveMenuUp model.menu
+                |> setMenu model
+                |> Stay
+
         Just InputController.DownKey ->
-            moveMenuDown model
+            Menu.moveMenuDown model.menu
+                |> setMenu model
+                |> Stay
+
+        Just InputController.SubmitKey ->
+            LoadLevel model.menu.selected.key
 
         _ ->
-            model
+            Stay model
 
 
+view : Model -> Html msg
+view model =
+    Html.div [] []
 
-moveMenuDown : Model -> Model
-moveMenuDown model =
-    case model.menu.items.after of
-        [] ->
-            model
 
-        next :: others ->
+setMenu : Model -> Menu.Menu -> Model
+setMenu model menu =
+    { model | menu = menu }
