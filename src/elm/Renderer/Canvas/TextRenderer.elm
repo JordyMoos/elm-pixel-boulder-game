@@ -1,4 +1,4 @@
-module Renderer.Canvas.Text exposing (renderText)
+module Renderer.Canvas.TextRenderer exposing (renderText)
 
 import Canvas
 import Canvas.Point

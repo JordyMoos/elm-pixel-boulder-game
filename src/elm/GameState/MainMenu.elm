@@ -1,7 +1,7 @@
 module GameState.MainMenu
     exposing
         ( Model
-        , Action
+        , Action(..)
         , init
         , updateTick
         , view
@@ -11,10 +11,14 @@ import Text
 import Data.Menu as Menu
 import InputController
 import Html exposing (Html, div)
+import Renderer.Canvas.TextRenderer as TextRenderer
 
 
 type alias Model =
-    { menu : Menu.Menu }
+    { menu : Menu.Menu
+    , width : Int
+    , height : Int
+    }
 
 
 type Action
@@ -22,8 +26,8 @@ type Action
     | LoadLevel String
 
 
-init : Model
-init =
+init : Int -> Int -> Model
+init width height =
     { menu =
         { items =
             { before = []
@@ -44,6 +48,8 @@ init =
                 ]
             }
         }
+    , width = width
+    , height = height
     }
 
 
@@ -69,7 +75,11 @@ updateTick inputModel model =
 
 view : Model -> Html msg
 view model =
-    Html.div [] []
+    TextRenderer.renderText
+        model.width
+        model.height
+        [ model.menu.items.selected
+        ]
 
 
 setMenu : Model -> Menu.Menu -> Model

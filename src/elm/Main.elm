@@ -12,7 +12,6 @@ import Data.Common exposing (Tick, Position)
 import InputController
 import Actor exposing (Level)
 import UpdateLoop
-import CanvasRenderer
 import Json.Decode
 import Canvas
 import Task
@@ -22,21 +21,21 @@ import GameState.MainMenu
 
 
 type alias Model =
-    { level : Level
-    , width : Int
+    { width : Int
     , height : Int
     , debug : Bool
     , gameSpeed : Maybe Int
     , currentTick : Tick
     , inputController : InputController.Model
     , timeBuffer : Int
-    , state : State
+    , gameState : GameState
     }
 
 
-type State
+type GameState
     = MainMenu GameState.MainMenu.Model
-    | PlayLevel Level
+    | LoadingLevel GameState.LoadingLevel.Model
+    | PlayingLevel GameState.PlayingLevel.Model
 
 
 main : Program Json.Decode.Value Model Msg
@@ -64,35 +63,25 @@ init flags =
 
         height =
             12
-
-        levelConfig =
-            case Json.Decode.decodeValue Actor.levelConfigDecoder flags of
-                Ok levelConfig ->
-                    levelConfig
-
-                Err error ->
-                    Debug.crash error
-
-        ( level, levelCmd ) =
-            Actor.init levelConfig width height
     in
-        { level = level
-        , width = width
+        { width = width
         , height = height
-        , inputController = InputController.init
+        , inputModel = InputController.init
         , debug = True
         , gameSpeed = Just 41
         , currentTick = 0
         , timeBuffer = 0
-        , gameState = MainMenu
+        , gameState = MainMenu <| GameState.MainMenu.init width height
         }
-            ! [ Cmd.map ActorMsg levelCmd
-              ]
+            ! []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GameSpeed gameSpeed ->
+            { model | gameSpeed = gameSpeed } ! []
+
         InputControllerMsg subMsg ->
             { model
                 | inputController =
@@ -100,39 +89,76 @@ update msg model =
             }
                 ! []
 
-        ActorMsg subMsg ->
-            { model
-                | level =
-                    Actor.update subMsg model.level
-            }
-                ! []
-
-        GameSpeed gameSpeed ->
-            { model | gameSpeed = gameSpeed } ! []
-
         AnimationFrameUpdate time ->
-            case model.gameSpeed of
-                Just gameSpeed ->
-                    case model.gameState of
-                        MainMenu ->
-                            model ! []
+            updateGameState model.gameState time
 
-                        PlayLevel level ->
-                            List.foldr
-                                (\_ model ->
-                                    { model
-                                        | inputController = InputController.resetWasPressed model.inputController
-                                        , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
-                                        , currentTick = model.currentTick + 1
-                                    }
-                                )
-                                model
-                                (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
-                                |> updateTimeBuffer (round time) gameSpeed
-                                |> flip (!) []
 
-                Nothing ->
-                    model ! []
+
+--
+--        ActorMsg subMsg ->
+--            { model
+--                | level =
+--                    Actor.update subMsg model.level
+--            }
+--                ! []
+--
+--        AnimationFrameUpdate time ->
+--            case model.gameSpeed of
+--                Just gameSpeed ->
+--                    case model.gameState of
+--                        MainMenu ->
+--                            model ! []
+--
+--                        PlayLevel level ->
+--                            List.foldr
+--                                (\_ model ->
+--                                    { model
+--                                        | inputController = InputController.resetWasPressed model.inputController
+--                                        , level = UpdateLoop.update (InputController.getCurrentDirection model.inputController) model.level
+--                                        , currentTick = model.currentTick + 1
+--                                    }
+--                                )
+--                                model
+--                                (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+--                                |> updateTimeBuffer (round time) gameSpeed
+--                                |> flip (!) []
+--
+--                Nothing ->
+--                    model ! []
+
+
+updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
+updateGameState time model =
+    case model.gameState of
+        MainMenu stateModel ->
+            case GameState.MainMenu.updateTick model.inputModel stateModel of
+                GameState.MainMenu.Stay newModel ->
+                    newModel
+                        |> MainMenu
+                        |> setGameState model
+                        |> setInputModel (InputController.resetWasPressed model.inputModel)
+                        |> flip (!) []
+
+                GameState.MainMenu.LoadLevel name ->
+                    let
+                        ( newModel, newCmd ) =
+                            GameState.LoadingLevel.init name
+                    in
+                        newModel
+                            |> LoadingLevel
+                            |> setGameState model
+                            |> setInputModel (InputController.resetWasPressed model.inputModel)
+                            |> flip (!) [ newCmd ]
+
+
+setGameState : Model -> GameState -> Model
+setGameState model gameState =
+    { model | gameState = gameState }
+
+
+setInputModel : InputController.Model -> Model -> Model
+setInputModel inputModel model =
+    { model | inputModel = inputModel }
 
 
 updateTimeBuffer : Int -> Int -> Model -> Model
