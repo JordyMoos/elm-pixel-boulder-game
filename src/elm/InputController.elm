@@ -251,7 +251,7 @@ getCounter keyCode keys =
 updateKey : Keyboard.KeyCode -> KeyStatus -> KeyStatuses -> KeyStatuses
 updateKey keyCode status keys =
     -- Do not store keys we do not care about
-    if Dict.member keyCode keyCodeToDirection then
+    if Dict.member keyCode keys then
         Dict.insert keyCode status keys
     else
         keys

@@ -188,6 +188,9 @@ updateGameState time model =
                 )
                 (model ! [])
                 (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                |> (\( newModel, newCmd ) ->
+                        ( updateTimeBuffer (round time) gameSpeed newModel, newCmd )
+                   )
 
         Nothing ->
             model ! []
