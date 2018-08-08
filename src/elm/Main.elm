@@ -26,12 +26,12 @@ import GameState.PlayingLevel
 
 type alias Model =
     { config : Config
-    , debug : Bool
+    , inputController : InputController.Model
+    , gameState : GameState
     , gameSpeed : Maybe Int
     , currentTick : Tick
-    , inputController : InputController.Model
     , timeBuffer : Int
-    , gameState : GameState
+    , debug : Bool
     }
 
 
@@ -71,11 +71,11 @@ init flags =
     in
         { config = config
         , inputModel = InputController.init
-        , debug = True
+        , gameState = MainMenu <| GameState.MainMenu.init config
         , gameSpeed = Just 41
         , currentTick = 0
         , timeBuffer = 0
-        , gameState = MainMenu <| GameState.MainMenu.init config
+        , debug = True
         }
             ! []
 
@@ -103,9 +103,9 @@ update msg model =
 
                 GameState.LoadingLevel.Success levelConfig ->
                     if Dict.toList levelConfig.images |> List.isEmpty then
-                        gotoPlayLevel model.config levelConfig Dict.empty
+                        gotoPlayingLevel model.config levelConfig Dict.empty
                     else
-                        gotoLoadAssets model.config levelConfig
+                        gotoLoadingAssets model.config levelConfig
 
         ( LoadingAssetsMsg subMsg, LoadingAssets subModel ) ->
             case GameState.LoadingAssets.update subMsg subModel of
@@ -116,7 +116,7 @@ update msg model =
                     { model | gameState = Error error }
 
                 GameState.LoadingAssets.Success levelConfig images ->
-                    gotoPlayLevel levelConfig images
+                    gotoPlayingLevel levelConfig images
 
         ( AnimationFrameUpdate time, _ ) ->
             updateGameState model.gameState time
@@ -125,14 +125,19 @@ update msg model =
             model ! []
 
 
-gotoPlayLevel : Actor.LevelConfig -> Actor.CanvasImages -> Model -> Model
-gotoPlayLevel levelConfig images model =
-    model
+gotoPlayingLevel : Actor.LevelConfig -> Actor.CanvasImages -> Model -> ( Model, Cmd Msg )
+gotoPlayingLevel levelConfig images model =
+    GameState.PlayingLevel.init model.config levelConfig images
+        |> PlayingLevel
+        |> setGameState model
+        |> flip (!) Cmd.none
 
 
-gotoLoadAssets : Actor.LevelConfig -> Model
-gotoLoadAssets levelConfig model =
-    model
+gotoLoadingAssets : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
+gotoLoadingAssets levelConfig model =
+    case GameState.LoadingAssets.init model.config levelConfig of
+        ( subModel, subCmd ) ->
+            ( setGameState model subModel, Cmd.map LoadingAssets subCmd )
 
 
 updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
