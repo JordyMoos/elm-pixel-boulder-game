@@ -131,7 +131,7 @@ dictionary =
         , "o   o"
         ]
       )
-    , ( 'm'
+    , ( 'n'
       , [ "o   o"
         , "oo  o"
         , "o o o"
