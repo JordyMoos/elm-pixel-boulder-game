@@ -12,6 +12,7 @@ module Actor
         , Msg
         , update
         , defaultBackground
+        , addActor
           -- Actor
         , getActorById
         , getActorsByPosition
