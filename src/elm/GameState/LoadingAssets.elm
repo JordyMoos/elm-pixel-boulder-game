@@ -69,7 +69,7 @@ downloaded model =
     dictLength model.images
 
 
-dictLength : Dict.Dict a b -> Int
+dictLength : Dict.Dict comparable a -> Int
 dictLength dict =
     dict
         |> Dict.toList

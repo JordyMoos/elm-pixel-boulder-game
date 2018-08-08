@@ -66,7 +66,7 @@ updateTick inputModel model =
                 |> Stay
 
         Just InputController.SubmitKey ->
-            LoadLevel model.menu.selected.key
+            LoadLevel model.menu.items.selected.key
 
         _ ->
             Stay model
@@ -77,7 +77,7 @@ view model =
     TextRenderer.renderText
         model.config.width
         model.config.height
-        [ model.menu.items.selected
+        [ model.menu.items.selected.text
         ]
 
 

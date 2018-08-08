@@ -12,7 +12,6 @@ import Data.Common exposing (Tick, Position)
 import Data.Config exposing (Config)
 import InputController
 import Actor exposing (Level)
-import UpdateLoop
 import Json.Decode
 import Canvas
 import Task
@@ -26,7 +25,7 @@ import GameState.PlayingLevel
 
 type alias Model =
     { config : Config
-    , inputController : InputController.Model
+    , inputModel : InputController.Model
     , gameState : GameState
     , gameSpeed : Maybe Int
     , currentTick : Tick
@@ -88,38 +87,38 @@ update msg model =
 
         ( InputControllerMsg subMsg, _ ) ->
             { model
-                | inputController =
-                    InputController.update subMsg model.inputController
+                | inputModel =
+                    InputController.update subMsg model.inputModel
             }
                 ! []
 
         ( LoadingLevelMsg subMsg, LoadingLevel subModel ) ->
             case GameState.LoadingLevel.update subMsg subModel of
                 GameState.LoadingLevel.Stay newModel ->
-                    { model | gameState = LoadingLevel newModel }
+                    { model | gameState = LoadingLevel newModel } ! []
 
                 GameState.LoadingLevel.Failed error ->
-                    { model | gameState = Error error }
+                    { model | gameState = Error error } ! []
 
                 GameState.LoadingLevel.Success levelConfig ->
                     if Dict.toList levelConfig.images |> List.isEmpty then
-                        gotoPlayingLevel model.config levelConfig Dict.empty
+                        gotoPlayingLevel levelConfig Dict.empty model
                     else
-                        gotoLoadingAssets model.config levelConfig
+                        gotoLoadingAssets levelConfig model
 
         ( LoadingAssetsMsg subMsg, LoadingAssets subModel ) ->
             case GameState.LoadingAssets.update subMsg subModel of
                 GameState.LoadingAssets.Stay newModel ->
-                    { model | gameState = LoadingAssets newModel }
+                    { model | gameState = LoadingAssets newModel } ! []
 
                 GameState.LoadingAssets.Failed error ->
-                    { model | gameState = Error error }
+                    { model | gameState = Error error } ! []
 
                 GameState.LoadingAssets.Success levelConfig images ->
-                    gotoPlayingLevel levelConfig images
+                    gotoPlayingLevel levelConfig images model
 
         ( AnimationFrameUpdate time, _ ) ->
-            updateGameState model.gameState time
+            updateGameState time model
 
         ( _, _ ) ->
             model ! []
@@ -130,63 +129,68 @@ gotoPlayingLevel levelConfig images model =
     GameState.PlayingLevel.init model.config levelConfig images
         |> PlayingLevel
         |> setGameState model
-        |> flip (!) Cmd.none
+        |> flip (!) []
 
 
 gotoLoadingAssets : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
 gotoLoadingAssets levelConfig model =
     case GameState.LoadingAssets.init model.config levelConfig of
         ( subModel, subCmd ) ->
-            ( setGameState model subModel, Cmd.map LoadingAssets subCmd )
+            ( setGameState model (LoadingAssets subModel), Cmd.map LoadingAssetsMsg subCmd )
 
 
 updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
 updateGameState time model =
-    List.foldr
-        (\_ ( model, cmd ) ->
-            case model.gameState of
-                MainMenu stateModel ->
-                    case GameState.MainMenu.updateTick model.inputModel stateModel of
-                        GameState.MainMenu.Stay newModel ->
-                            newModel
-                                |> MainMenu
-                                |> setGameState model
-                                |> setInputModel (InputController.resetWasPressed model.inputModel)
-                                |> flip (!) [ cmd ]
+    case model.gameSpeed of
+        Just gameSpeed ->
+            List.foldr
+                (\_ ( model, cmd ) ->
+                    case model.gameState of
+                        MainMenu stateModel ->
+                            case GameState.MainMenu.updateTick model.inputModel stateModel of
+                                GameState.MainMenu.Stay newModel ->
+                                    newModel
+                                        |> MainMenu
+                                        |> setGameState model
+                                        |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> flip (!) [ cmd ]
 
-                        GameState.MainMenu.LoadLevel name ->
-                            let
-                                ( newModel, newCmd ) =
-                                    GameState.LoadingLevel.init model.config name
-                            in
-                                newModel
-                                    |> LoadingLevel
-                                    |> setGameState model
-                                    |> setInputModel (InputController.resetWasPressed model.inputModel)
-                                    |> flip (!) [ cmd, newCmd ]
+                                GameState.MainMenu.LoadLevel name ->
+                                    let
+                                        ( newModel, newCmd ) =
+                                            GameState.LoadingLevel.init model.config name
+                                    in
+                                        newModel
+                                            |> LoadingLevel
+                                            |> setGameState model
+                                            |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                            |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
 
-                PlayingLevel stateModel ->
-                    case GameState.PlayingLevel.updateTick model.inputModel stateModel of
-                        GameState.PlayingLevel.Stay newModel ->
-                            newModel
-                                |> PlayingLevel
-                                |> setGameState model
-                                |> setInputModel (InputController.resetWasPressed model.inputModel)
-                                |> flip (!) [ cmd ]
+                        PlayingLevel stateModel ->
+                            case GameState.PlayingLevel.updateTick model.currentTick model.inputModel stateModel of
+                                GameState.PlayingLevel.Stay newModel ->
+                                    newModel
+                                        |> PlayingLevel
+                                        |> setGameState model
+                                        |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> flip (!) [ cmd ]
 
-                        GameState.PlayingLevel.GotoMainMenu ->
-                            GameState.MainMenu.init model.config
-                                |> MainMenu
-                                |> setGameState model
-                                |> setInputModel (InputController.resetWasPressed model.inputModel)
-                                |> flip (!) [ cmd ]
+                                GameState.PlayingLevel.GotoMainMenu ->
+                                    GameState.MainMenu.init model.config
+                                        |> MainMenu
+                                        |> setGameState model
+                                        |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> flip (!) [ cmd ]
 
-                -- Other states do not have updateTick
-                _ ->
-                    ( model, cmd )
-        )
-        (model ! [])
-        (List.repeat ((model.timeBuffer + (round time)) // model.gameSpeed ()))
+                        -- Other states do not have updateTick
+                        _ ->
+                            ( model, cmd )
+                )
+                (model ! [])
+                (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+
+        Nothing ->
+            model ! []
 
 
 setGameState : Model -> GameState -> Model
@@ -210,13 +214,13 @@ view model =
         []
         [ (case model.gameState of
             MainMenu subModel ->
-                GameState.MainMenu.view model.currentTick subModel
+                GameState.MainMenu.view subModel
 
             LoadingLevel subModel ->
-                GameState.LoadingLevel.view subModel
+                GameState.LoadingLevel.view subModel |> Html.map LoadingLevelMsg
 
             LoadingAssets subModel ->
-                GameState.LoadingAssets.view subModel
+                GameState.LoadingAssets.view subModel |> Html.map LoadingAssetsMsg
 
             PlayingLevel subModel ->
                 GameState.PlayingLevel.view model.currentTick subModel
@@ -264,7 +268,7 @@ subscriptions model =
                     []
     in
         List.append
-            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputController)
+            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputModel)
             ]
             gameSpeedSub
             |> Sub.batch

@@ -28,6 +28,7 @@ init : Config -> String -> ( Model, Cmd Msg )
 init config name =
     { config = config
     , name = name
+    , levelConfig = RemoteData.Loading
     }
         ! [ downloadLevel name ]
 
@@ -60,4 +61,5 @@ downloadLevel name =
     Http.get
         ("./level-" ++ name ++ ".json")
         Actor.levelConfigDecoder
-        |> Http.send DownloadLevelResponse
+        |> RemoteData.sendRequest
+        |> Cmd.map DownloadLevelResponse

@@ -47,12 +47,13 @@ updateTick currentTick inputModel model =
             updateLevel
                 (InputController.getCurrentDirection inputModel)
                 model.level
+                model.levelConfig
                 |> setLevel model
                 |> Stay
 
 
-updateLevel : Maybe Direction -> Actor.Level -> Actor.Level
-updateLevel maybeDirection level =
+updateLevel : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
+updateLevel maybeDirection level levelConfig =
     List.foldr
         (\y level ->
             List.foldr
@@ -96,7 +97,7 @@ updateLevel maybeDirection level =
                                                                                 Actor.updateTriggerExplodableComponent triggerData actor level
 
                                                                             Actor.SpawnComponent spawnData ->
-                                                                                Actor.updateSpawnComponent spawnData actor level
+                                                                                Actor.updateSpawnComponent levelConfig.entities spawnData actor level
 
                                                                             _ ->
                                                                                 level

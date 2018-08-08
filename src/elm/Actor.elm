@@ -8,9 +8,6 @@ module Actor
           -- Initialization
         , LevelConfig
         , levelConfigDecoder
-        , init
-        , Msg
-        , update
         , defaultBackground
         , addActor
           -- Actor
@@ -149,136 +146,6 @@ type Component
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
     | SpawnComponent SpawnComponentData
-
-
-type Msg
-    = ImageLoaded String (Result Canvas.Error Canvas.Canvas)
-
-
-update : Msg -> Level -> Level
-update msg level =
-    case msg of
-        ImageLoaded name (Ok canvas) ->
-            { level | images = Dict.insert name canvas level.images }
-
-        ImageLoaded name (Err error) ->
-            let
-                _ =
-                    Debug.log "Error loading image" (toString error)
-            in
-                level
-
-
-
-{-
-
-   Initialization
-
--}
-
-
-init : LevelConfig -> Int -> Int -> ( Level, Cmd Msg )
-init config width height =
-    emptyLevel width height
-        |> setBackground config.background
-        |> setEntities config.entities
-        |> setSigns config.signs
-        |> setActors config.scene
-        |> setImages config.images
-        |> addImageCommands config.images
-
-
-addImageCommands : Images -> Level -> ( Level, Cmd Msg )
-addImageCommands images level =
-    ( level
-    , Dict.toList images
-        |> List.map
-            (\( name, src ) ->
-                Task.attempt (ImageLoaded name) (Canvas.loadImage src)
-            )
-        |> Cmd.batch
-    )
-
-
-emptyLevel : Int -> Int -> Level
-emptyLevel width height =
-    { entities = Dict.fromList []
-    , signs = Dict.fromList []
-    , images = Dict.fromList []
-    , actors = Dict.fromList []
-    , positionIndex = Dict.fromList []
-    , nextActorId = 1
-    , view =
-        { position = { x = 0, y = 0 }
-        , width = width
-        , height = height
-        }
-    , background = defaultBackground
-    }
-
-
-setBackground : RenderComponentData -> Level -> Level
-setBackground background level =
-    { level | background = background }
-
-
-setEntities : Entities -> Level -> Level
-setEntities entities level =
-    { level | entities = entities }
-
-
-setSigns : Signs -> Level -> Level
-setSigns signs level =
-    { level | signs = signs }
-
-
-setImages : Images -> Level -> Level
-setImages images level =
-    { level
-        | images =
-            Dict.map
-                (\name src ->
-                    emptyImage
-                )
-                images
-    }
-
-
-setActors : Scene -> Level -> Level
-setActors scene level =
-    List.indexedMap
-        (,)
-        scene
-        |> List.foldr
-            (\( y, line ) level ->
-                List.indexedMap
-                    (,)
-                    (String.toList line)
-                    |> List.foldr
-                        (\( x, char ) level ->
-                            Dict.get
-                                (String.fromChar char)
-                                level.signs
-                                |> Maybe.andThen
-                                    (\entityName ->
-                                        Dict.get entityName level.entities
-                                    )
-                                |> Maybe.andThen
-                                    (\entity ->
-                                        addActor
-                                            (Dict.insert
-                                                "transform"
-                                                (TransformComponent { position = { x = x, y = y }, movingState = NotMoving })
-                                                entity
-                                            )
-                                            level
-                                            |> Just
-                                    )
-                                |> Maybe.withDefault level
-                        )
-                        level
-            )
-            level
 
 
 
@@ -1392,14 +1259,14 @@ spawnNeverRepeat =
     }
 
 
-updateSpawnComponent : SpawnComponentData -> Actor -> Level -> Level
-updateSpawnComponent data actor level =
+updateSpawnComponent : Entities -> SpawnComponentData -> Actor -> Level -> Level
+updateSpawnComponent entities data actor level =
     if data.delayTicks > 0 then
         spawnDecrementDelayTicks data
             |> setSpawnComponentData actor level
             |> Tuple.second
     else
-        spawnActor data level
+        spawnActor entities data level
             |> updateSpawnComponentAfterSpawn data actor
 
 
@@ -1419,12 +1286,12 @@ setSpawnComponentData actor level data =
            )
 
 
-spawnActor : SpawnComponentData -> Level -> Level
-spawnActor data level =
+spawnActor : Entities -> SpawnComponentData -> Level -> Level
+spawnActor entities data level =
     if getActorsThatAffect data.position level |> List.isEmpty then
         Dict.get
             data.entityName
-            level.entities
+            entities
             |> Maybe.map
                 (\entity ->
                     addActor

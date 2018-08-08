@@ -8,8 +8,8 @@ import Dict
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
 initLevel config levelConfig =
     emptyLevel config.width config.height
-        |> setBackground config.background
-        |> setActors config.scene
+        |> setBackground levelConfig.background
+        |> setActors levelConfig
 
 
 emptyLevel : Int -> Int -> Actor.Level
@@ -31,11 +31,11 @@ setBackground background level =
     { level | background = background }
 
 
-setActors : Actor.Scene -> Actor.Level -> Actor.Level
-setActors scene level =
+setActors : Actor.LevelConfig -> Actor.Level -> Actor.Level
+setActors levelConfig level =
     List.indexedMap
         (,)
-        scene
+        levelConfig.scene
         |> List.foldr
             (\( y, line ) level ->
                 List.indexedMap
@@ -45,17 +45,17 @@ setActors scene level =
                         (\( x, char ) level ->
                             Dict.get
                                 (String.fromChar char)
-                                level.signs
+                                levelConfig.signs
                                 |> Maybe.andThen
                                     (\entityName ->
-                                        Dict.get entityName level.entities
+                                        Dict.get entityName levelConfig.entities
                                     )
                                 |> Maybe.andThen
                                     (\entity ->
                                         Actor.addActor
                                             (Dict.insert
                                                 "transform"
-                                                (Actor.TransformComponent { position = { x = x, y = y }, movingState = NotMoving })
+                                                (Actor.TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving })
                                                 entity
                                             )
                                             level
