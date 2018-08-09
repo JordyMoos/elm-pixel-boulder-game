@@ -13,25 +13,29 @@ type alias XOffset =
     Int
 
 
-renderText : Int -> Int -> List ( XOffset, Text.Letters ) -> Html msg
+type alias YOffset =
+    Int
+
+
+renderText : Int -> Int -> List ( XOffset, YOffset, Color, Text.Letters ) -> Html msg
 renderText width height lines =
     Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
         |> Canvas.batch (renderLines width height lines)
         |> Canvas.toHtml []
 
 
-renderLines : Int -> Int -> List ( XOffset, Text.Letters ) -> List Canvas.DrawOp
+renderLines : Int -> Int -> List ( XOffset, YOffset, Color, Text.Letters ) -> List Canvas.DrawOp
 renderLines width height lines =
     lines
         |> List.indexedMap
-            (\index ( xOffset, line ) ->
-                renderLine width height (index * (Text.letterHeight + 1)) xOffset line
+            (\index ( xOffset, yOffset, color, line ) ->
+                renderLine width height yOffset xOffset color line
             )
         |> List.concat
 
 
-renderLine : Int -> Int -> Int -> XOffset -> Text.Letters -> List Canvas.DrawOp
-renderLine width height yOffset xOffset letters =
+renderLine : Int -> Int -> XOffset -> YOffset -> Color -> Text.Letters -> List Canvas.DrawOp
+renderLine width height xOffset yOffset color letters =
     letters
         |> List.foldr
             (\letter ( xOffset, ops ) ->
@@ -40,7 +44,7 @@ renderLine width height yOffset xOffset letters =
                     |> List.map (addPosition { x = xOffset, y = yOffset })
                     |> List.concatMap
                         (\position ->
-                            [ Canvas.FillStyle Color.red
+                            [ Canvas.FillStyle color
                             , Canvas.FillRect
                                 (Canvas.Point.fromInts ( position.x * pixelSize, position.y * pixelSize ))
                                 (Canvas.Size pixelSize pixelSize)

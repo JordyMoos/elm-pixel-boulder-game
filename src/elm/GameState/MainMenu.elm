@@ -13,6 +13,9 @@ import Data.Config exposing (Config)
 import InputController
 import Html exposing (Html, div)
 import Renderer.Canvas.TextRenderer as TextRenderer
+import List.Extra
+import Maybe.Extra
+import Color
 
 
 type alias Model =
@@ -92,8 +95,12 @@ view model =
     TextRenderer.renderText
         model.config.width
         model.config.height
-        [ ( getXOffset model model.menu.items.selected.text, model.menu.items.selected.text )
-        ]
+        (Maybe.Extra.values
+            [ List.Extra.last model.menu.items.before |> Maybe.map (\item -> ( 0, -3, Color.red, item.text ))
+            , Just ( getXOffset model model.menu.items.selected.text, 3, Color.blue, model.menu.items.selected.text )
+            , List.head model.menu.items.after |> Maybe.map (\item -> ( 0, 9, Color.red, item.text ))
+            ]
+        )
 
 
 getXOffset : Model -> Text.Letters -> Int
