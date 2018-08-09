@@ -9,25 +9,29 @@ import Text
 import Renderer.Canvas.Common exposing (pixelSize)
 
 
-renderText : Int -> Int -> List Text.Letters -> Html msg
+type alias XOffset =
+    Int
+
+
+renderText : Int -> Int -> List ( XOffset, Text.Letters ) -> Html msg
 renderText width height lines =
     Canvas.initialize (Canvas.Size (width * pixelSize) (height * pixelSize))
         |> Canvas.batch (renderLines width height lines)
         |> Canvas.toHtml []
 
 
-renderLines : Int -> Int -> List Text.Letters -> List Canvas.DrawOp
+renderLines : Int -> Int -> List ( XOffset, Text.Letters ) -> List Canvas.DrawOp
 renderLines width height lines =
     lines
         |> List.indexedMap
-            (\index line ->
-                renderLine width height (index * (Text.letterHeight + 1)) line
+            (\index ( xOffset, line ) ->
+                renderLine width height (index * (Text.letterHeight + 1)) xOffset line
             )
         |> List.concat
 
 
-renderLine : Int -> Int -> Int -> Text.Letters -> List Canvas.DrawOp
-renderLine width height yOffset letters =
+renderLine : Int -> Int -> Int -> XOffset -> Text.Letters -> List Canvas.DrawOp
+renderLine width height yOffset xOffset letters =
     letters
         |> List.foldr
             (\letter ( xOffset, ops ) ->
@@ -45,5 +49,5 @@ renderLine width height yOffset letters =
                     |> List.append ops
                 )
             )
-            ( 0, [] )
+            ( xOffset, [] )
         |> Tuple.second

@@ -18,6 +18,7 @@ import Renderer.Canvas.TextRenderer as TextRenderer
 type alias Model =
     { config : Config
     , menu : Menu.Menu
+    , tick : Int
     }
 
 
@@ -49,6 +50,7 @@ init config =
                 ]
             }
         }
+    , tick = 0
     }
 
 
@@ -58,18 +60,31 @@ updateTick inputModel model =
         Just InputController.UpKey ->
             Menu.moveMenuUp model.menu
                 |> setMenu model
+                |> resetTick
                 |> Stay
 
         Just InputController.DownKey ->
             Menu.moveMenuDown model.menu
                 |> setMenu model
+                |> resetTick
                 |> Stay
 
         Just InputController.SubmitKey ->
             LoadLevel model.menu.items.selected.key
 
         _ ->
-            Stay model
+            increaseTick model
+                |> Stay
+
+
+increaseTick : Model -> Model
+increaseTick model =
+    { model | tick = model.tick + 1 }
+
+
+resetTick : Model -> Model
+resetTick model =
+    { model | tick = 0 }
 
 
 view : Model -> Html msg
@@ -77,8 +92,47 @@ view model =
     TextRenderer.renderText
         model.config.width
         model.config.height
-        [ model.menu.items.selected.text
+        [ ( getXOffset model model.menu.items.selected.text, model.menu.items.selected.text )
         ]
+
+
+getXOffset : Model -> Text.Letters -> Int
+getXOffset model letters =
+    let
+        lineLength =
+            getLineLength letters
+
+        beforeLength =
+            3
+
+        afterLength =
+            1
+
+        totalLength =
+            beforeLength + lineLength + afterLength
+
+        minOffset =
+            0
+
+        maxOffset =
+            max 0 (lineLength - model.config.width)
+
+        tickSpeedCorrection =
+            model.tick // 4
+
+        offset =
+            (tickSpeedCorrection % totalLength) - beforeLength
+    in
+        clamp minOffset maxOffset offset
+            |> negate
+
+
+getLineLength : Text.Letters -> Int
+getLineLength letters =
+    letters
+        |> List.map .width
+        |> List.sum
+        |> (+) (List.length letters)
 
 
 setMenu : Model -> Menu.Menu -> Model
