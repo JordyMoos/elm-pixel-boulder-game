@@ -21,10 +21,12 @@ import GameState.MainMenu
 import GameState.LoadingLevel
 import GameState.LoadingAssets
 import GameState.PlayingLevel
+import Actor.Decoder
 
 
 type alias Model =
     { config : Config
+    , flags : Json.Decode.Value
     , inputModel : InputController.Model
     , gameState : GameState
     , gameSpeed : Maybe Int
@@ -69,6 +71,7 @@ init flags =
             }
     in
         { config = config
+        , flags = flags
         , inputModel = InputController.init
         , gameState = MainMenu <| GameState.MainMenu.init config
         , gameSpeed = Just 41
@@ -167,6 +170,22 @@ updateGameState time model =
                                             |> setInputModel (InputController.resetWasPressed model.inputModel)
                                             |> increaseCurrentTick
                                             |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+
+                                GameState.MainMenu.LoadFlags ->
+                                    case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
+                                        Err error ->
+                                            Error error
+                                                |> setGameState model
+                                                |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                                |> increaseCurrentTick
+                                                |> flip (!) [ cmd ]
+
+                                        Ok levelConfig ->
+                                            -- Need to update the ACC here..
+                                            if Dict.toList levelConfig.images |> List.isEmpty then
+                                                gotoPlayingLevel levelConfig Dict.empty model
+                                            else
+                                                gotoLoadingAssets levelConfig model
 
                         PlayingLevel stateModel ->
                             case GameState.PlayingLevel.updateTick model.currentTick model.inputModel stateModel of

@@ -29,6 +29,7 @@ type alias Model =
 type Action
     = Stay Model
     | LoadLevel String
+    | LoadFlags
 
 
 init : Config -> Model
@@ -38,11 +39,14 @@ init config =
         { items =
             { before = []
             , selected =
-                { key = "001"
-                , text = Text.stringToLetters "Pixel"
+                { key = "flags"
+                , text = Text.stringToLetters "Json"
                 }
             , after =
-                [ { key = "images"
+                [ { key = "001"
+                  , text = Text.stringToLetters "Pixel"
+                  }
+                , { key = "images"
                   , text = Text.stringToLetters "Images"
                   }
                 , { key = "pacman"
@@ -82,7 +86,12 @@ updateTick inputModel model =
                     |> Stay
 
             Just InputController.SubmitKey ->
-                LoadLevel model.menu.items.selected.key
+                case model.menu.items.selected.key of
+                    "flags" ->
+                        LoadFlags
+
+                    levelName ->
+                        LoadLevel levelName
 
             _ ->
                 increaseTick model
