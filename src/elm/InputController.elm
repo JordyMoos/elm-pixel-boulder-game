@@ -16,7 +16,7 @@ module InputController
 import Keyboard
 import Dict exposing (Dict)
 import Maybe.Extra
-import Data.Common exposing (Direction)
+import Data.Direction as Direction exposing (Direction)
 
 
 type alias Model =
@@ -118,10 +118,10 @@ selectKey =
 keyCodeToDirection : Dict Keyboard.KeyCode Direction
 keyCodeToDirection =
     Dict.fromList
-        [ ( leftArrow, Data.Common.Left )
-        , ( upArrow, Data.Common.Up )
-        , ( rightArrow, Data.Common.Right )
-        , ( downArrow, Data.Common.Down )
+        [ ( leftArrow, Direction.Left )
+        , ( upArrow, Direction.Up )
+        , ( rightArrow, Direction.Right )
+        , ( downArrow, Direction.Down )
         ]
 
 

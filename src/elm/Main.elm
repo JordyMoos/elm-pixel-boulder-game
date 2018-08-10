@@ -8,10 +8,10 @@ import Char
 import List.Extra
 import Dict exposing (Dict)
 import Maybe.Extra
-import Data.Common exposing (Tick, Position)
+import Data.Position exposing (Position)
 import Data.Config exposing (Config)
 import InputController
-import Actor exposing (Level)
+import Actor.Actor as Actor exposing (Level)
 import Json.Decode
 import Canvas
 import Task
@@ -28,7 +28,7 @@ type alias Model =
     , inputModel : InputController.Model
     , gameState : GameState
     , gameSpeed : Maybe Int
-    , currentTick : Tick
+    , currentTick : Int
     , timeBuffer : Int
     , debug : Bool
     }

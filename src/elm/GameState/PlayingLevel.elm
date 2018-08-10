@@ -1,13 +1,22 @@
 module GameState.PlayingLevel exposing (..)
 
 import Data.Config exposing (Config)
-import Data.Common exposing (Tick, Direction)
-import Actor
+import Data.Direction as Direction exposing (Direction)
+import Actor.Actor as Actor
+import Actor.Common as Common
 import Dict
 import LevelInitializer
 import InputController
 import Renderer.Canvas.LevelRenderer as LevelRenderer
 import Html exposing (Html)
+import Actor.CollectorComponent as Collector
+import Actor.ControlComponent as Control
+import Actor.CameraComponent as Camera
+import Actor.DownSmashComponent as DownSmash
+import Actor.LifetimeComponent as Lifetime
+import Actor.DamageComponent as Damage
+import Actor.TriggerExplodableComponent as TriggerExplodable
+import Actor.SpawnComponent as Spawn
 
 
 updateBorder : Int
@@ -37,7 +46,7 @@ init config levelConfig images =
     }
 
 
-updateTick : Tick -> InputController.Model -> Model -> Action
+updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
     case InputController.getOrderedPressedKeys inputModel |> List.head of
         Just InputController.StartKey ->
@@ -58,46 +67,46 @@ updateLevel maybeDirection level levelConfig =
         (\y level ->
             List.foldr
                 (\x level ->
-                    Actor.getActorIdsByXY x y level
+                    Common.getActorIdsByXY x y level
                         |> List.foldr
                             (\actorId level ->
-                                Actor.getActorById actorId level
+                                Common.getActorById actorId level
                                     |> Maybe.andThen
                                         (\actor ->
                                             Dict.foldr
                                                 (\_ component level ->
-                                                    Actor.getActorById actorId level
+                                                    Common.getActorById actorId level
                                                         |> Maybe.andThen
                                                             (\actor ->
                                                                 let
                                                                     updatedLevel =
                                                                         case component of
                                                                             Actor.TransformComponent transformData ->
-                                                                                Actor.updateTransformComponent transformData actor level
+                                                                                Common.updateTransformComponent transformData actor level
 
                                                                             Actor.CollectorComponent data ->
-                                                                                Actor.updateCollectorComponent data actor level
+                                                                                Collector.updateCollectorComponent data actor level
 
                                                                             Actor.ControlComponent control ->
-                                                                                Actor.updateControlComponent maybeDirection control actor level
+                                                                                Control.updateControlComponent maybeDirection control actor level
 
                                                                             Actor.CameraComponent camera ->
-                                                                                Actor.updateCameraComponent camera actor level
+                                                                                Camera.updateCameraComponent camera actor level
 
                                                                             Actor.DownSmashComponent downSmash ->
-                                                                                Actor.updateDownSmashComponent downSmash actor level
+                                                                                DownSmash.updateDownSmashComponent downSmash actor level
 
                                                                             Actor.LifetimeComponent lifetimeData ->
-                                                                                Actor.updateLifetimeComponent lifetimeData actor level
+                                                                                Lifetime.updateLifetimeComponent lifetimeData actor level
 
                                                                             Actor.DamageComponent damageData ->
-                                                                                Actor.updateDamageComponent damageData actor level
+                                                                                Damage.updateDamageComponent damageData actor level
 
                                                                             Actor.TriggerExplodableComponent triggerData ->
-                                                                                Actor.updateTriggerExplodableComponent triggerData actor level
+                                                                                TriggerExplodable.updateTriggerExplodableComponent triggerData actor level
 
                                                                             Actor.SpawnComponent spawnData ->
-                                                                                Actor.updateSpawnComponent levelConfig.entities spawnData actor level
+                                                                                Spawn.updateSpawnComponent levelConfig.entities spawnData actor level
 
                                                                             _ ->
                                                                                 level
@@ -126,6 +135,6 @@ setLevel model level =
     { model | level = level }
 
 
-view : Tick -> Model -> Html msg
+view : Int -> Model -> Html msg
 view currentTick model =
     LevelRenderer.renderLevel currentTick model.level model.images

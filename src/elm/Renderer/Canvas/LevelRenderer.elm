@@ -1,9 +1,11 @@
 module Renderer.Canvas.LevelRenderer exposing (renderLevel)
 
 import Canvas
-import Actor exposing (Level)
+import Actor.Actor as Actor exposing (Level)
+import Actor.Common as Common
+import Actor.RenderComponent as Render
 import Html exposing (Html)
-import Data.Common exposing (Tick, Position, addPosition, addPositions)
+import Data.Position as Position exposing (Position)
 import Color exposing (Color)
 import Canvas.Point
 import Maybe.Extra
@@ -13,7 +15,7 @@ import Text
 import Renderer.Canvas.Common exposing (pixelSize)
 
 
-renderLevel : Tick -> Level -> Actor.CanvasImages -> Html msg
+renderLevel : Int -> Level -> Actor.CanvasImages -> Html msg
 renderLevel currentTick level images =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
         |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
@@ -42,7 +44,7 @@ renderLevel currentTick level images =
         |> Canvas.toHtml []
 
 
-drawBackground : Tick -> Actor.CanvasImages -> Actor.RenderComponentData -> Int -> Int -> List Canvas.DrawOp
+drawBackground : Int -> Actor.CanvasImages -> Actor.RenderComponentData -> Int -> Int -> List Canvas.DrawOp
 drawBackground tick images backgroundData width height =
     case backgroundData of
         Actor.PixelRenderComponent data ->
@@ -65,10 +67,10 @@ drawBackground tick images backgroundData width height =
 
 getImage : Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
 getImage viewPosition position level images acc =
-    Actor.getActorsThatAffect position level
+    Common.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
-                Actor.getRenderComponent actor
+                Render.getRenderComponent actor
                     |> Maybe.andThen
                         (\renderData ->
                             case renderData of
@@ -86,7 +88,7 @@ getImage viewPosition position level images acc =
                         )
                     |> Maybe.andThen
                         (\image ->
-                            Actor.getTransformComponent actor
+                            Common.getTransformComponent actor
                                 |> Maybe.andThen
                                     (\transformData ->
                                         if transformData.position == position then
@@ -153,19 +155,19 @@ getImageOp image transformData viewPosition ( backOps, frontOps ) =
                 )
 
 
-getDrawOps : Tick -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getDrawOps : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
 getDrawOps tick viewPosition position level images acc =
     acc
         |> (getPixel tick viewPosition position level)
         |> (getImage viewPosition position level images)
 
 
-getPixel : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getPixel : Int -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
 getPixel tick viewPosition position level ( backOps, frontOps ) =
-    Actor.getActorsThatAffect position level
+    Common.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
-                (Actor.getRenderComponent actor
+                (Render.getRenderComponent actor
                     |> Maybe.andThen
                         (\renderData ->
                             case renderData of
@@ -177,7 +179,7 @@ getPixel tick viewPosition position level ( backOps, frontOps ) =
                         )
                     |> Maybe.andThen
                         (\renderData ->
-                            Actor.getTransformComponent actor
+                            Common.getTransformComponent actor
                                 |> Maybe.andThen
                                     (\transformData ->
                                         if transformData.position == position then
@@ -221,7 +223,7 @@ getPixel tick viewPosition position level ( backOps, frontOps ) =
         |> Maybe.withDefault ( backOps, frontOps )
 
 
-getColor : Tick -> Actor.PixelRenderComponentData -> Color
+getColor : Int -> Actor.PixelRenderComponentData -> Color
 getColor tick renderData =
     round ((toFloat tick) / (toFloat (max renderData.ticksPerColor 1)))
         % (max 1 <| List.length renderData.colors)

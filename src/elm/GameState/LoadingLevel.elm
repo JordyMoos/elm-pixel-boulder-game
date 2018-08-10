@@ -2,7 +2,8 @@ module GameState.LoadingLevel exposing (..)
 
 import Data.Config exposing (Config)
 import Http
-import Actor
+import Actor.Actor as Actor
+import Actor.Decoder
 import RemoteData
 import Html exposing (Html, div, text)
 
@@ -60,6 +61,6 @@ downloadLevel : String -> Cmd Msg
 downloadLevel name =
     Http.get
         ("./level-" ++ name ++ ".json")
-        Actor.levelConfigDecoder
+        Actor.Decoder.levelConfigDecoder
         |> RemoteData.sendRequest
         |> Cmd.map DownloadLevelResponse

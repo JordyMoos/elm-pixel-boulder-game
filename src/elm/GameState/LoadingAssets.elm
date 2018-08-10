@@ -2,7 +2,7 @@ module GameState.LoadingAssets exposing (..)
 
 import Data.Config exposing (Config)
 import Http
-import Actor
+import Actor.Actor as Actor
 import Canvas
 import Dict
 import Task
