@@ -3,6 +3,8 @@ module Actor.Common
         ( updateComponents
         , updateActor
         , updateActors
+        , updateView
+        , updateViewPosition
           -- Remove
         , removeActorWithMaybePosition
         , removeActorWithPosition
@@ -43,6 +45,7 @@ import Actor.Actor as Actor
         , Actors
         , Components
         , Level
+        , View
         , PositionIndex
           -- For TransformComponent
         , Component(TransformComponent)
@@ -85,6 +88,16 @@ updateActors level actors =
 updatePositionIndex : Level -> PositionIndex -> Level
 updatePositionIndex level positionIndex =
     { level | positionIndex = positionIndex }
+
+
+updateView : View -> Level -> Level
+updateView view level =
+    { level | view = view }
+
+
+updateViewPosition : Position -> View -> View
+updateViewPosition position view =
+    { view | position = position }
 
 
 
@@ -180,30 +193,29 @@ addActor components level =
                     |> Maybe.withDefault
                         ( level, actor )
            )
-        -- @todo have solution for this
         -- Update view if needed
-        --        |> (\( level, actor ) ->
-        --                getCameraComponent actor
-        --                    |> Maybe.andThen
-        --                        (\camera ->
-        --                            getTransformComponent actor
-        --                        )
-        --                    |> Maybe.andThen
-        --                        (\transform ->
-        --                            updateViewPosition
-        --                                { x = transform.position.x - (round ((toFloat level.view.width) / 2))
-        --                                , y = transform.position.y - (round ((toFloat level.view.height) / 2))
-        --                                }
-        --                                level.view
-        --                                |> (flip updateView) level
-        --                                |> Just
-        --                        )
-        --                    |> Maybe.andThen
-        --                        (\level ->
-        --                            Just ( level, actor )
-        --                        )
-        --                    |> Maybe.withDefault ( level, actor )
-        --           )
+        |> (\( level, actor ) ->
+                getCameraComponent actor
+                    |> Maybe.andThen
+                        (\camera ->
+                            getTransformComponent actor
+                        )
+                    |> Maybe.andThen
+                        (\transform ->
+                            updateViewPosition
+                                { x = transform.position.x - (round ((toFloat level.view.width) / 2))
+                                , y = transform.position.y - (round ((toFloat level.view.height) / 2))
+                                }
+                                level.view
+                                |> (flip updateView) level
+                                |> Just
+                        )
+                    |> Maybe.andThen
+                        (\level ->
+                            Just ( level, actor )
+                        )
+                    |> Maybe.withDefault ( level, actor )
+           )
         -- Add actor to the actors
         |> (\( level, actor ) ->
                 updateActor level.actors actor
@@ -233,6 +245,20 @@ addActorToIndex position actorId level =
         )
         level.positionIndex
         |> updatePositionIndex level
+
+
+getCameraComponent : Actor -> Maybe Actor.CameraComponentData
+getCameraComponent actor =
+    Dict.get "camera" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    Actor.CameraComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
 
 
 

@@ -129,10 +129,10 @@ getXOffset model letters =
             getLineLength letters
 
         beforeLength =
-            3
+            2
 
         afterLength =
-            1
+            0
 
         totalLength =
             beforeLength + lineLength + afterLength

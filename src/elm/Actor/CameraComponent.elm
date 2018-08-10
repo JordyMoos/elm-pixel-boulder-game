@@ -50,7 +50,7 @@ updateCameraComponent camera actor level =
                             , y = y
                         }
                 in
-                    Just { level | view = updateViewPosition newViewPosition view }
+                    Just { level | view = Common.updateViewPosition newViewPosition view }
             )
         |> Maybe.withDefault level
 
@@ -67,13 +67,3 @@ getCameraComponent actor =
                     _ ->
                         Nothing
             )
-
-
-updateView : View -> Level -> Level
-updateView view level =
-    { level | view = view }
-
-
-updateViewPosition : Position -> View -> View
-updateViewPosition position view =
-    { view | position = position }
