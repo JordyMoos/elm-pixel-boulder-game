@@ -2,7 +2,7 @@ module Text exposing (Letter, Letters, stringToLetters, letterHeight)
 
 import Color exposing (Color)
 import Dict exposing (Dict)
-import Data.Common exposing (Position)
+import Data.Position as Position exposing (Position)
 import Maybe.Extra
 
 

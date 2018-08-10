@@ -1,7 +1,9 @@
 module LevelInitializer exposing (initLevel)
 
 import Data.Config exposing (Config)
-import Actor
+import Actor.Actor as Actor
+import Actor.Common as Common
+import Actor.Decoder
 import Dict
 
 
@@ -22,7 +24,7 @@ emptyLevel width height =
         , width = width
         , height = height
         }
-    , background = Actor.defaultBackground
+    , background = Actor.Decoder.defaultBackground
     }
 
 
@@ -52,7 +54,7 @@ setActors levelConfig level =
                                     )
                                 |> Maybe.andThen
                                     (\entity ->
-                                        Actor.addActor
+                                        Common.addActor
                                             (Dict.insert
                                                 "transform"
                                                 (Actor.TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving })

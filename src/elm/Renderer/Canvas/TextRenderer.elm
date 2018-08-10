@@ -4,7 +4,7 @@ import Canvas
 import Canvas.Point
 import Html exposing (Html)
 import Color exposing (Color)
-import Data.Common exposing (Tick, Position, addPosition, addPositions)
+import Data.Position as Position exposing (Position)
 import Text
 import Renderer.Canvas.Common exposing (pixelSize)
 
@@ -41,7 +41,7 @@ renderLine width height xOffset yOffset color letters =
             (\letter ( xOffset, ops ) ->
                 ( xOffset + letter.width + 1
                 , letter.positions
-                    |> List.map (addPosition { x = xOffset, y = yOffset })
+                    |> List.map (Position.addPosition { x = xOffset, y = yOffset })
                     |> List.concatMap
                         (\position ->
                             [ Canvas.FillStyle color
