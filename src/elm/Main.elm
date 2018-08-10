@@ -272,7 +272,7 @@ debugView : Html Msg
 debugView =
     div
         []
-        [ text "Hint: Use the Arrow Keys"
+        [ text "Hint: Use 'Arrow Keys' to move and 'A' to Submit"
         , br [] []
         , text "GameTick speed:"
         , br [] []
