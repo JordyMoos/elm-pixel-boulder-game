@@ -32,6 +32,7 @@ type alias Model =
     , gameSpeed : Maybe Int
     , currentTick : Int
     , timeBuffer : Int
+    , maxUpdatesPerView : Int
     , debug : Bool
     }
 
@@ -77,6 +78,7 @@ init flags =
         , gameSpeed = Just 41
         , currentTick = 0
         , timeBuffer = 0
+        , maxUpdatesPerView = 4
         , debug = True
         }
             ! []
@@ -210,7 +212,7 @@ updateGameState time model =
                             ( model, cmd )
                 )
                 (model ! [])
-                (List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                (List.take model.maxUpdatesPerView <| List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
                         ( updateTimeBuffer (round time) gameSpeed newModel, newCmd )
                    )
