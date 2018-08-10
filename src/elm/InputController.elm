@@ -2,13 +2,15 @@ module InputController
     exposing
         ( Model
         , Msg
+        , Key(..)
         , KeyStatus(..)
-        , Keys
+        , KeyStatuses
         , init
         , update
         , subscriptions
         , getCurrentDirection
         , resetWasPressed
+        , getOrderedPressedKeys
         )
 
 import Keyboard
@@ -18,12 +20,12 @@ import Data.Common exposing (Direction)
 
 
 type alias Model =
-    { keys : Keys
+    { keys : KeyStatuses
     , counter : Int
     }
 
 
-type alias Keys =
+type alias KeyStatuses =
     Dict Keyboard.KeyCode KeyStatus
 
 
@@ -37,6 +39,31 @@ type Msg
     = KeyPressed Keyboard.KeyCode
     | KeyDown Keyboard.KeyCode
     | KeyUp Keyboard.KeyCode
+
+
+keyMap : Dict Int Key
+keyMap =
+    Dict.fromList
+        [ ( leftArrow, LeftKey )
+        , ( upArrow, UpKey )
+        , ( rightArrow, RightKey )
+        , ( downArrow, DownKey )
+        , ( submitKey, SubmitKey )
+        , ( cancelKey, CancelKey )
+        , ( startKey, StartKey )
+        , ( cancelKey, CancelKey )
+        ]
+
+
+type Key
+    = LeftKey
+    | UpKey
+    | RightKey
+    | DownKey
+    | SubmitKey
+    | CancelKey
+    | StartKey
+    | SelectKey
 
 
 leftArrow : Int
@@ -204,7 +231,7 @@ incrementCounter model =
     { model | counter = model.counter + 1 }
 
 
-getCounter : Keyboard.KeyCode -> Keys -> Maybe Int
+getCounter : Keyboard.KeyCode -> KeyStatuses -> Maybe Int
 getCounter keyCode keys =
     Dict.get keyCode keys
         |> Maybe.andThen
@@ -221,10 +248,10 @@ getCounter keyCode keys =
             )
 
 
-updateKey : Keyboard.KeyCode -> KeyStatus -> Keys -> Keys
+updateKey : Keyboard.KeyCode -> KeyStatus -> KeyStatuses -> KeyStatuses
 updateKey keyCode status keys =
     -- Do not store keys we do not care about
-    if Dict.member keyCode keyCodeToDirection then
+    if Dict.member keyCode keys then
         Dict.insert keyCode status keys
     else
         keys
@@ -237,3 +264,28 @@ subscriptions model =
         , Keyboard.downs KeyDown
         , Keyboard.ups KeyUp
         ]
+
+
+getOrderedPressedKeys : Model -> List Key
+getOrderedPressedKeys model =
+    model.keys
+        |> Dict.toList
+        |> List.sortBy
+            (\( key, status ) ->
+                case status of
+                    NotPressed ->
+                        0
+
+                    WasPressed tick ->
+                        tick
+
+                    IsPressed tick ->
+                        tick
+            )
+        |> List.filter
+            (\( key, status ) ->
+                status /= NotPressed
+            )
+        |> List.map Tuple.first
+        |> List.map (flip Dict.get keyMap)
+        |> Maybe.Extra.values

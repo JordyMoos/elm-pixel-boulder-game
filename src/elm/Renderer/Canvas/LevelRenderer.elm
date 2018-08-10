@@ -1,33 +1,30 @@
-module CanvasRenderer exposing (view)
+module Renderer.Canvas.LevelRenderer exposing (renderLevel)
 
 import Canvas
 import Actor exposing (Level)
 import Html exposing (Html)
-import Data.Common exposing (Tick, Position)
+import Data.Common exposing (Tick, Position, addPosition, addPositions)
 import Color exposing (Color)
 import Canvas.Point
 import Maybe.Extra
 import List.Extra
 import Dict exposing (Dict)
+import Text
+import Renderer.Canvas.Common exposing (pixelSize)
 
 
-pixelSize : Int
-pixelSize =
-    32
-
-
-view : Tick -> Level -> Html msg
-view currentTick level =
+renderLevel : Tick -> Level -> Actor.CanvasImages -> Html msg
+renderLevel currentTick level images =
     Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
         |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
-        |> Canvas.batch (drawBackground currentTick level.images level.background level.view.width level.view.height)
+        |> Canvas.batch (drawBackground currentTick images level.background level.view.width level.view.height)
         |> (\canvas ->
                 List.foldr
                     (\y acc ->
                         List.range level.view.position.x (level.view.position.x + level.view.height - 1)
                             |> List.foldr
                                 (\x acc ->
-                                    getDrawOps currentTick level.view.position { x = x, y = y } level acc
+                                    getDrawOps currentTick level.view.position { x = x, y = y } level images acc
                                 )
                                 acc
                     )
@@ -66,8 +63,8 @@ drawBackground tick images backgroundData width height =
                 |> Maybe.withDefault []
 
 
-getImage : Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImage viewPosition position level acc =
+getImage : Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImage viewPosition position level images acc =
     Actor.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
@@ -85,7 +82,7 @@ getImage viewPosition position level acc =
                         (\imageData ->
                             Dict.get
                                 imageData.name
-                                level.images
+                                images
                         )
                     |> Maybe.andThen
                         (\image ->
@@ -156,11 +153,11 @@ getImageOp image transformData viewPosition ( backOps, frontOps ) =
                 )
 
 
-getDrawOps : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getDrawOps tick viewPosition position level acc =
+getDrawOps : Tick -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getDrawOps tick viewPosition position level images acc =
     acc
         |> (getPixel tick viewPosition position level)
-        |> (getImage viewPosition position level)
+        |> (getImage viewPosition position level images)
 
 
 getPixel : Tick -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
