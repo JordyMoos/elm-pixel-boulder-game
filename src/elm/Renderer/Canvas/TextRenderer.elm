@@ -29,7 +29,7 @@ renderLines width height lines =
     lines
         |> List.indexedMap
             (\index ( xOffset, yOffset, color, line ) ->
-                renderLine width height yOffset xOffset color line
+                renderLine width height xOffset yOffset color line
             )
         |> List.concat
 

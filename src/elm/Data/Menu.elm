@@ -60,12 +60,12 @@ moveMenuUp menu =
 
 moveItemsUp : Items -> Items
 moveItemsUp items =
-    case items.before of
+    case List.reverse items.before of
         [] ->
             items
 
         next :: others ->
-            { before = others
+            { before = List.reverse others
             , selected = next
             , after = items.selected :: items.after
             }
