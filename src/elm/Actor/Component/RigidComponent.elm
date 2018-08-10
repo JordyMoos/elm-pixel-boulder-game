@@ -1,4 +1,4 @@
-module Actor.RigidComponent exposing (hasRigidComponent)
+module Actor.Component.RigidComponent exposing (hasRigidComponent)
 
 import Actor.Actor as Actor exposing (Actor)
 import Dict

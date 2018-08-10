@@ -1,4 +1,4 @@
-module Actor.CollectorComponent exposing (updateCollectorComponent)
+module Actor.Component.CollectorComponent exposing (updateCollectorComponent)
 
 import Actor.Actor as Actor
     exposing
@@ -10,7 +10,7 @@ import Actor.Actor as Actor
         )
 import Actor.Common as Common
 import Maybe.Extra
-import Actor.CollectibleComponent as CollectibleComponent
+import Actor.Component.CollectibleComponent as CollectibleComponent
 import Dict
 
 

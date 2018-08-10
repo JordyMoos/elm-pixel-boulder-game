@@ -1,4 +1,4 @@
-module Actor.ControlComponent exposing (updateControlComponent, getControlComponent)
+module Actor.Component.ControlComponent exposing (updateControlComponent, getControlComponent)
 
 import Actor.Actor as Actor
     exposing
@@ -13,8 +13,8 @@ import Actor.Actor as Actor
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Actor.Common as Common
-import Actor.PhysicsComponent as Physics
-import Actor.RigidComponent as Rigid
+import Actor.Component.PhysicsComponent as Physics
+import Actor.Component.RigidComponent as Rigid
 import Util
 import Dict
 import List.Extra

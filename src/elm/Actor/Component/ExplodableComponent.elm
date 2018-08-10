@@ -1,4 +1,4 @@
-module Actor.ExplodableComponent exposing (hasExplodableComponent)
+module Actor.Component.ExplodableComponent exposing (hasExplodableComponent)
 
 import Actor.Actor as Actor exposing (Actor)
 import Dict

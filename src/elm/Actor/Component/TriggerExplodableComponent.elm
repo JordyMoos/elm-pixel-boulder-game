@@ -1,4 +1,4 @@
-module Actor.TriggerExplodableComponent exposing (updateTriggerExplodableComponent)
+module Actor.Component.TriggerExplodableComponent exposing (updateTriggerExplodableComponent)
 
 import Actor.Actor as Actor exposing (Actor, Level, TriggerExplodableComponentData)
 import Actor.Common as Common
@@ -6,8 +6,8 @@ import Maybe.Extra
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
 import Actor.Cheats as Cheats
-import Actor.ExplodableComponent as Explodable
-import Actor.PhysicsComponent as Physics
+import Actor.Component.ExplodableComponent as Explodable
+import Actor.Component.PhysicsComponent as Physics
 
 
 updateTriggerExplodableComponent : TriggerExplodableComponentData -> Actor -> Level -> Level

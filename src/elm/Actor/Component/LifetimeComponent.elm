@@ -1,4 +1,4 @@
-module Actor.LifetimeComponent exposing (updateLifetimeComponent)
+module Actor.Component.LifetimeComponent exposing (updateLifetimeComponent)
 
 import Actor.Actor as Actor
     exposing

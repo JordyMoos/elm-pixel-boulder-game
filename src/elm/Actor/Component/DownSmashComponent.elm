@@ -1,4 +1,4 @@
-module Actor.DownSmashComponent exposing (updateDownSmashComponent)
+module Actor.Component.DownSmashComponent exposing (updateDownSmashComponent)
 
 import Actor.Actor as Actor
     exposing
@@ -9,7 +9,7 @@ import Actor.Actor as Actor
         , MovingDownState(..)
         )
 import Actor.Common as Common
-import Actor.ExplodableComponent as Explodable
+import Actor.Component.ExplodableComponent as Explodable
 import Actor.Cheats as Cheats
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)

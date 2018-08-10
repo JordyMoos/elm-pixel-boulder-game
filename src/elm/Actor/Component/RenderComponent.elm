@@ -1,4 +1,4 @@
-module Actor.RenderComponent exposing (getRenderComponent)
+module Actor.Component.RenderComponent exposing (getRenderComponent)
 
 import Actor.Actor as Actor
     exposing

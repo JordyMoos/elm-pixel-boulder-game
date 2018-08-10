@@ -3,7 +3,7 @@ module Renderer.Canvas.LevelRenderer exposing (renderLevel)
 import Canvas
 import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
-import Actor.RenderComponent as Render
+import Actor.Component.RenderComponent as Render
 import Html exposing (Html)
 import Data.Position as Position exposing (Position)
 import Color exposing (Color)

@@ -9,14 +9,14 @@ import LevelInitializer
 import InputController
 import Renderer.Canvas.LevelRenderer as LevelRenderer
 import Html exposing (Html)
-import Actor.CollectorComponent as Collector
-import Actor.ControlComponent as Control
-import Actor.CameraComponent as Camera
-import Actor.DownSmashComponent as DownSmash
-import Actor.LifetimeComponent as Lifetime
-import Actor.DamageComponent as Damage
-import Actor.TriggerExplodableComponent as TriggerExplodable
-import Actor.SpawnComponent as Spawn
+import Actor.Component.CollectorComponent as Collector
+import Actor.Component.ControlComponent as Control
+import Actor.Component.CameraComponent as Camera
+import Actor.Component.DownSmashComponent as DownSmash
+import Actor.Component.LifetimeComponent as Lifetime
+import Actor.Component.DamageComponent as Damage
+import Actor.Component.TriggerExplodableComponent as TriggerExplodable
+import Actor.Component.SpawnComponent as Spawn
 
 
 updateBorder : Int

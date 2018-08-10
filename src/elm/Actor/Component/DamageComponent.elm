@@ -1,8 +1,8 @@
-module Actor.DamageComponent exposing (updateDamageComponent)
+module Actor.Component.DamageComponent exposing (updateDamageComponent)
 
 import Actor.Actor as Actor exposing (Actor, Level, DamageComponentData)
 import Actor.Common as Common
-import Actor.PhysicsComponent as Physics
+import Actor.Component.PhysicsComponent as Physics
 import Maybe.Extra
 
 

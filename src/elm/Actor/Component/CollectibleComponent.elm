@@ -1,4 +1,4 @@
-module Actor.CollectibleComponent exposing (getCollectibleComponent, hasCollectibleComponent)
+module Actor.Component.CollectibleComponent exposing (getCollectibleComponent, hasCollectibleComponent)
 
 import Actor.Actor as Actor
     exposing

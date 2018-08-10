@@ -1,4 +1,4 @@
-module Actor.SpawnComponent exposing (updateSpawnComponent)
+module Actor.Component.SpawnComponent exposing (updateSpawnComponent)
 
 import Actor.Actor as Actor
     exposing

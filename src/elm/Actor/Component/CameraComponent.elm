@@ -1,4 +1,4 @@
-module Actor.CameraComponent exposing (updateCameraComponent, getCameraComponent)
+module Actor.Component.CameraComponent exposing (updateCameraComponent, getCameraComponent)
 
 import Actor.Actor as Actor
     exposing

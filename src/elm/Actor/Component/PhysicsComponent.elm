@@ -1,4 +1,4 @@
-module Actor.PhysicsComponent
+module Actor.Component.PhysicsComponent
     exposing
         ( getPhysicsComponent
         , getStrength
