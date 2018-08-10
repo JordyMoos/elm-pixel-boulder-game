@@ -153,6 +153,7 @@ updateGameState time model =
                                         |> MainMenu
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> increaseCurrentTick
                                         |> flip (!) [ cmd ]
 
                                 GameState.MainMenu.LoadLevel name ->
@@ -164,6 +165,7 @@ updateGameState time model =
                                             |> LoadingLevel
                                             |> setGameState model
                                             |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                            |> increaseCurrentTick
                                             |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
 
                         PlayingLevel stateModel ->
@@ -173,6 +175,7 @@ updateGameState time model =
                                         |> PlayingLevel
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> increaseCurrentTick
                                         |> flip (!) [ cmd ]
 
                                 GameState.PlayingLevel.GotoMainMenu ->
@@ -180,6 +183,7 @@ updateGameState time model =
                                         |> MainMenu
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
+                                        |> increaseCurrentTick
                                         |> flip (!) [ cmd ]
 
                         -- Other states do not have updateTick
@@ -209,6 +213,11 @@ setInputModel inputModel model =
 updateTimeBuffer : Int -> Int -> Model -> Model
 updateTimeBuffer time gameSpeed model =
     { model | timeBuffer = (model.timeBuffer + time) % gameSpeed }
+
+
+increaseCurrentTick : Model -> Model
+increaseCurrentTick model =
+    { model | currentTick = model.currentTick + 1 }
 
 
 view : Model -> Html Msg
