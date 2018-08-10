@@ -22,6 +22,7 @@ type alias Model =
     { config : Config
     , menu : Menu.Menu
     , tick : Int
+    , delay : Int
     }
 
 
@@ -54,30 +55,38 @@ init config =
             }
         }
     , tick = 0
+    , delay = 0
     }
 
 
 updateTick : InputController.Model -> Model -> Action
 updateTick inputModel model =
-    case InputController.getOrderedPressedKeys inputModel |> List.head of
-        Just InputController.UpKey ->
-            Menu.moveMenuUp model.menu
-                |> setMenu model
-                |> resetTick
-                |> Stay
+    if model.delay > 0 then
+        model
+            |> decreaseDelay
+            |> Stay
+    else
+        case InputController.getOrderedPressedKeys inputModel |> List.head of
+            Just InputController.UpKey ->
+                Menu.moveMenuUp model.menu
+                    |> setMenu model
+                    |> resetTick
+                    |> setDelay
+                    |> Stay
 
-        Just InputController.DownKey ->
-            Menu.moveMenuDown model.menu
-                |> setMenu model
-                |> resetTick
-                |> Stay
+            Just InputController.DownKey ->
+                Menu.moveMenuDown model.menu
+                    |> setMenu model
+                    |> resetTick
+                    |> setDelay
+                    |> Stay
 
-        Just InputController.SubmitKey ->
-            LoadLevel model.menu.items.selected.key
+            Just InputController.SubmitKey ->
+                LoadLevel model.menu.items.selected.key
 
-        _ ->
-            increaseTick model
-                |> Stay
+            _ ->
+                increaseTick model
+                    |> Stay
 
 
 increaseTick : Model -> Model
@@ -88,6 +97,16 @@ increaseTick model =
 resetTick : Model -> Model
 resetTick model =
     { model | tick = 0 }
+
+
+decreaseDelay : Model -> Model
+decreaseDelay model =
+    { model | delay = model.delay - 1 }
+
+
+setDelay : Model -> Model
+setDelay model =
+    { model | delay = 4 }
 
 
 view : Model -> Html msg
