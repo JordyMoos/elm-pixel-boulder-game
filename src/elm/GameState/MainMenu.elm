@@ -20,9 +20,15 @@ import Color
 
 type alias Model =
     { config : Config
-    , menu : Menu.Menu
+    , menu : Menu.Menu Item
     , tick : Int
     , delay : Int
+    }
+
+
+type alias Item =
+    { key : String
+    , text : Text.Letters
     }
 
 
@@ -170,6 +176,6 @@ getLineLength letters =
         |> (+) (List.length letters)
 
 
-setMenu : Model -> Menu.Menu -> Model
+setMenu : Model -> Menu.Menu Item -> Model
 setMenu model menu =
     { model | menu = menu }

@@ -3,7 +3,6 @@ module Data.Menu
         ( Menu
         , ListSelector
         , Items
-        , Item
         , moveMenuDown
         , moveMenuUp
         )
@@ -18,28 +17,22 @@ type alias ListSelector a =
     }
 
 
-type alias Menu =
-    { items : Items
+type alias Menu a =
+    { items : ListSelector a
     }
 
 
-type alias Items =
-    ListSelector Item
+type alias Items a =
+    ListSelector a
 
 
-type alias Item =
-    { key : String
-    , text : Text.Letters
-    }
-
-
-moveMenuDown : Menu -> Menu
+moveMenuDown : Menu a -> Menu a
 moveMenuDown menu =
     moveItemsDown menu.items
         |> setItems menu
 
 
-moveItemsDown : Items -> Items
+moveItemsDown : Items a -> Items a
 moveItemsDown items =
     case items.after of
         [] ->
@@ -52,13 +45,13 @@ moveItemsDown items =
             }
 
 
-moveMenuUp : Menu -> Menu
+moveMenuUp : Menu a -> Menu a
 moveMenuUp menu =
     moveItemsUp menu.items
         |> setItems menu
 
 
-moveItemsUp : Items -> Items
+moveItemsUp : Items a -> Items a
 moveItemsUp items =
     case List.reverse items.before of
         [] ->
@@ -71,6 +64,6 @@ moveItemsUp items =
             }
 
 
-setItems : Menu -> Items -> Menu
+setItems : Menu a -> Items a -> Menu a
 setItems menu items =
     { menu | items = items }
