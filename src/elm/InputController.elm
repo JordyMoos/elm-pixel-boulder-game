@@ -51,7 +51,8 @@ keyMap =
         , ( submitKey, SubmitKey )
         , ( cancelKey, CancelKey )
         , ( startKey, StartKey )
-        , ( cancelKey, CancelKey )
+        , ( escKey, StartKey )
+        , ( selectKey, SelectKey )
         ]
 
 
@@ -133,9 +134,10 @@ init =
             , ( upArrow, NotPressed )
             , ( rightArrow, NotPressed )
             , ( downArrow, NotPressed )
-            , ( escKey, NotPressed )
-            , ( selectKey, NotPressed )
             , ( submitKey, NotPressed )
+            , ( cancelKey, NotPressed )
+            , ( startKey, NotPressed )
+            , ( escKey, NotPressed )
             , ( selectKey, NotPressed )
             ]
     , counter = 0

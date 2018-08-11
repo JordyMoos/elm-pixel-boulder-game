@@ -1,4 +1,12 @@
-module GameState.PlayingLevel exposing (..)
+module GameState.PlayingLevel.Playing
+    exposing
+        ( Model
+        , Action(..)
+        , init
+        , resume
+        , updateTick
+        , view
+        )
 
 import Data.Config exposing (Config)
 import Data.Direction as Direction exposing (Direction)
@@ -34,7 +42,7 @@ type alias Model =
 
 type Action
     = Stay Model
-    | GotoMainMenu
+    | GotoPauseMenu Actor.Level
 
 
 init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
@@ -46,19 +54,32 @@ init config levelConfig images =
     }
 
 
+resume : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.Level -> Model
+resume config levelConfig images level =
+    { config = config
+    , levelConfig = levelConfig
+    , images = images
+    , level = level
+    }
+
+
 updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
-    case InputController.getOrderedPressedKeys inputModel |> List.head of
-        Just InputController.StartKey ->
-            GotoMainMenu
+    let
+        _ =
+            Debug.log "keys" (toString <| InputController.getOrderedPressedKeys inputModel)
+    in
+        case InputController.getOrderedPressedKeys inputModel |> List.head of
+            Just InputController.StartKey ->
+                GotoPauseMenu model.level
 
-        _ ->
-            updateLevel
-                (InputController.getCurrentDirection inputModel)
-                model.level
-                model.levelConfig
-                |> setLevel model
-                |> Stay
+            _ ->
+                updateLevel
+                    (InputController.getCurrentDirection inputModel)
+                    model.level
+                    model.levelConfig
+                    |> setLevel model
+                    |> Stay
 
 
 updateLevel : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
