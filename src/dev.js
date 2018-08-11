@@ -2,18 +2,18 @@
 
 require('./static/style.css');
 const Elm = require('./elm/Main.elm');
-const level001 = require('./static/level-001');
+const levelPixel = require('./static/level-pixel');
 const levelImage = require('./static/level-images');
 const levelPacman = require('./static/level-pacman');
 const levelTank = require('./static/level-tank');
 
 
 document.getElementById('textarea-level').value =
-  localStorage.getItem('advanced-level') || JSON.stringify(level001, null, 2);
+  localStorage.getItem('advanced-level') || JSON.stringify(levelPixel, null, 2);
 
-document.getElementById('level-001')
+document.getElementById('level-pixel')
   .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(level001, null, 2);
+    document.getElementById('textarea-level').value = JSON.stringify(levelPixel, null, 2);
   });
 document.getElementById('level-image')
   .addEventListener('click', function () {
