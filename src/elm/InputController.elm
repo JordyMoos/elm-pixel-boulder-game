@@ -212,20 +212,14 @@ handleIsPressed keyCode model =
 
 handleWasPressed : Keyboard.KeyCode -> Model -> Model
 handleWasPressed keyCode model =
-    model
-        -- In case we did not have a counter on the key
-        |> incrementCounter
-        |> (\model ->
-                { model
-                    | keys =
-                        updateKey keyCode
-                            (getCounter keyCode model.keys
-                                |> Maybe.withDefault model.counter
-                                |> WasPressed
-                            )
-                            model.keys
-                }
-           )
+    case Dict.get keyCode model.keys of
+        Just (IsPressed counter) ->
+            { model
+                | keys = updateKey keyCode (WasPressed counter) model.keys
+            }
+
+        _ ->
+            model
 
 
 incrementCounter : Model -> Model
