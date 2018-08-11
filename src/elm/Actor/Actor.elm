@@ -51,6 +51,8 @@ module Actor.Actor
         , RenderComponentData(..)
         , PixelRenderComponentData
         , ImageRenderComponentData
+          -- TagComponent
+        , TagComponentData
         )
 
 import Dict exposing (Dict)
@@ -150,6 +152,7 @@ type Component
     | DamageComponent DamageComponentData
     | TriggerExplodableComponent TriggerExplodableComponentData
     | SpawnComponent SpawnComponentData
+    | TagComponent TagComponentData
 
 
 
@@ -381,3 +384,16 @@ type alias PixelRenderComponentData =
 
 type alias ImageRenderComponentData =
     { name : String }
+
+
+
+{-
+
+   TagComponent
+
+-}
+
+
+type alias TagComponentData =
+    { name : String
+    }

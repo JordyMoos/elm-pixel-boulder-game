@@ -30,6 +30,7 @@ import Actor.Actor as Actor
         , ControlSettings
         , ControlType(..)
         , WalkAroundAiControlData
+        , TagComponentData
         )
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
@@ -123,6 +124,9 @@ componentDecoder =
                     "spawn" ->
                         Decode.map SpawnComponent <| Decode.field "data" spawnDataDecoder
 
+                    "tag" ->
+                        Decode.map TagComponent <| Decode.field "data" tagDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -166,6 +170,12 @@ renderPixelDataDecoder =
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
+        |> JDP.required "name" Decode.string
+
+
+tagDataDecoder : Decoder TagComponentData
+tagDataDecoder =
+    JDP.decode TagComponentData
         |> JDP.required "name" Decode.string
 
 

@@ -35,6 +35,8 @@ module Actor.Common
         , isNotMovingAt
         , isMovingDown
         , startMovingTowards
+          -- TagComponent
+        , getTagComponent
         )
 
 import Data.Position exposing (Position)
@@ -48,10 +50,12 @@ import Actor.Actor as Actor
         , View
         , PositionIndex
           -- For TransformComponent
-        , Component(TransformComponent)
+        , Component(TransformComponent, TagComponent)
         , TransformComponentData
         , MovingState(..)
         , MovingTowardsData
+          -- For TagComponent
+        , TagComponentData
         )
 import Dict
 import List.Extra
@@ -532,3 +536,25 @@ startMovingTowards actor transformData newPosition level =
         |> updateComponents actor
         |> updateActor level.actors
         |> updateActors level
+
+
+
+{-
+
+   TagComponent
+
+-}
+
+
+getTagComponent : Actor -> Maybe TagComponentData
+getTagComponent actor =
+    Dict.get "tag" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    TagComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
