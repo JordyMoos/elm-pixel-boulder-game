@@ -35,7 +35,7 @@ updateDownSmashComponent downSmashData actor level =
                                 (\downActor level ->
                                     level
                                         |> Cheats.addBigExplosion (Position.addPosition position <| Position.getOffsetFromDirection Direction.Down)
-                                        |> Common.removeActorWithPosition (Position.addPosition position <| Position.getOffsetFromDirection Direction.Down) downActor.id
+                                        |> Common.removeActor downActor
                                 )
                                 level
 

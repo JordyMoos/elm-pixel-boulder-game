@@ -6,9 +6,6 @@ module Actor.Common
         , updateView
         , updateViewPosition
           -- Remove
-        , removeActorWithMaybePosition
-        , removeActorWithPosition
-        , removeActorFromIndex
         , removeActor
           -- Add
         , addActor
@@ -56,6 +53,12 @@ import Actor.Actor as Actor
         , MovingTowardsData
           -- For TagComponent
         , TagComponentData
+          -- For EventManager
+        , Event
+        , Events
+        , Subscriber
+        , Subscribers
+        , EventManager
         )
 import Dict
 import List.Extra
@@ -112,25 +115,26 @@ updateViewPosition position view =
 -}
 
 
-removeActorWithMaybePosition : Maybe Position -> ActorId -> Level -> Level
-removeActorWithMaybePosition maybePosition actorId level =
-    case maybePosition of
-        Just position ->
-            removeActorWithPosition position actorId level
-
-        Nothing ->
-            removeActorFromDict actorId level
-
-
-removeActorWithPosition : Position -> ActorId -> Level -> Level
-removeActorWithPosition position actorId level =
+removeActor : Actor -> Level -> Level
+removeActor actor level =
     level
-        |> removeActorFromIndex position actorId
-        |> removeActorFromDict actorId
+        |> removeActorFromIndex actor level
+        |> removeActorFromDict actor.id
 
 
-removeActorFromIndex : Position -> ActorId -> Level -> Level
-removeActorFromIndex position actorId level =
+removeActorFromIndex : Actor -> Level -> Level
+removeActorFromIndex actor level =
+    getTransformComponent actor
+        |> Maybe.map .position
+        |> Maybe.map
+            (\position ->
+                removeActorFromIndexByPosition position actor.id level
+            )
+        |> Maybe.withDefault level
+
+
+removeActorFromIndexByPosition : Position -> ActorId -> Level -> Level
+removeActorFromIndexByPosition position actorId level =
     Dict.update
         ( position.x, position.y )
         (\maybeActorIds ->
@@ -146,20 +150,6 @@ removeActorFromIndex position actorId level =
         )
         level.positionIndex
         |> updatePositionIndex level
-
-
-removeActor : Actor -> Level -> Level
-removeActor actor level =
-    level
-        |> (\level ->
-                getPosition actor
-                    |> Maybe.andThen
-                        (\position ->
-                            Just <| removeActorFromIndex position actor.id level
-                        )
-                    |> Maybe.withDefault level
-           )
-        |> removeActorFromDict actor.id
 
 
 removeActorFromDict : ActorId -> Level -> Level
@@ -219,6 +209,17 @@ addActor components level =
                             Just ( level, actor )
                         )
                     |> Maybe.withDefault ( level, actor )
+           )
+        -- Create Event
+        |> (\( level, actor ) ->
+                ( { level
+                    | eventManager =
+                        addEvent
+                            (Actor.ActorAdded actor)
+                            level.manager
+                  }
+                , actor
+                )
            )
         -- Add actor to the actors
         |> (\( level, actor ) ->
@@ -426,7 +427,7 @@ updateTransformComponent transformData actor level =
                         |> updateComponents actor
                         |> updateActor level.actors
                         |> updateActors level
-                        |> removeActorFromIndex transformData.position actor.id
+                        |> removeActorFromIndexByPosition transformData.position actor.id
                         |> addActorToIndex towardsData.position actor.id
                         |> Just
             )
@@ -558,3 +559,26 @@ getTagComponent actor =
                     _ ->
                         Nothing
             )
+
+
+
+{-
+
+   EventManager
+
+-}
+
+
+addEvent : Event -> EventManager -> EventManager
+addEvent event manager =
+    { manager | events = event :: manager.events }
+
+
+handleEvents : EventManager -> Level -> Level
+handleEvents manager level =
+    List.foldr (handleEvent manager.subscribers) level manager.events
+
+
+handleEvent : Subscribers -> Event -> Level -> Level
+handleEvent subscribers event level =
+    level
