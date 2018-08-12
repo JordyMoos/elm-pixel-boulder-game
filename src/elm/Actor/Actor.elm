@@ -141,6 +141,7 @@ type alias Level =
     , positionIndex : PositionIndex
     , view : View
     , background : RenderComponentData
+    , events : Events
     }
 
 
@@ -436,13 +437,11 @@ type alias Subscribers =
 
 
 type alias EventManager =
-    { events : Events
-    , subscribers : Subscribers
+    { subscribers : Subscribers
     }
 
 
 emptyEventManager : EventManager
 emptyEventManager =
-    { events = []
-    , subscribers = []
+    { subscribers = []
     }

@@ -569,14 +569,14 @@ getTagComponent actor =
 -}
 
 
-addEvent : Event -> EventManager -> EventManager
-addEvent event manager =
-    { manager | events = event :: manager.events }
+addEvent : Event -> Level -> Level
+addEvent event level =
+    { level | events = event :: level.events }
 
 
 handleEvents : EventManager -> Level -> Level
 handleEvents manager level =
-    List.foldr (handleEvent manager.subscribers) level manager.events
+    List.foldr (handleEvent manager.subscribers) level level.events
 
 
 handleEvent : Subscribers -> Event -> Level -> Level
