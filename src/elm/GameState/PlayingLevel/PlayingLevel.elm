@@ -73,6 +73,17 @@ updateTick currentTick inputModel model =
                                         level
                         }
 
+                PauseMenu.Restart ->
+                    Stay
+                        { model
+                            | state =
+                                PlayingState <|
+                                    Playing.init
+                                        model.config
+                                        model.levelConfig
+                                        model.images
+                        }
+
                 PauseMenu.GotoMainMenu ->
                     GotoMainMenu
 

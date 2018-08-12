@@ -36,6 +36,7 @@ type alias Item =
 type Action
     = Stay Model
     | Resume Actor.Level
+    | Restart
     | GotoMainMenu
 
 
@@ -50,7 +51,10 @@ init config level =
                 , action = Resume level
                 }
             , after =
-                [ { text = Text.stringToLetters "Quit"
+                [ { text = Text.stringToLetters "Restart"
+                  , action = Restart
+                  }
+                , { text = Text.stringToLetters "Quit"
                   , action = GotoMainMenu
                   }
                 ]
