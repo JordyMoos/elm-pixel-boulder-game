@@ -118,7 +118,7 @@ updateViewPosition position view =
 removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
-        |> removeActorFromIndex actor level
+        |> removeActorFromIndex actor
         |> removeActorFromDict actor.id
 
 
@@ -211,16 +211,16 @@ addActor components level =
                     |> Maybe.withDefault ( level, actor )
            )
         -- Create Event
-        |> (\( level, actor ) ->
-                ( { level
-                    | eventManager =
-                        addEvent
-                            (Actor.ActorAdded actor)
-                            level.manager
-                  }
-                , actor
-                )
-           )
+        --        |> (\( level, actor ) ->
+        --                ( { level
+        --                    | eventManager =
+        --                        addEvent
+        --                            (Actor.ActorAdded actor)
+        --                            level.manager
+        --                  }
+        --                , actor
+        --                )
+        --           )
         -- Add actor to the actors
         |> (\( level, actor ) ->
                 updateActor level.actors actor

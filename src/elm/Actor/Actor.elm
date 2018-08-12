@@ -59,6 +59,7 @@ module Actor.Actor
         , Subscriber
         , Subscribers
         , EventManager
+        , emptyEventManager
         )
 
 import Dict exposing (Dict)
@@ -140,7 +141,6 @@ type alias Level =
     , positionIndex : PositionIndex
     , view : View
     , background : RenderComponentData
-    , eventManager : EventManager
     }
 
 
@@ -438,4 +438,11 @@ type alias Subscribers =
 type alias EventManager =
     { events : Events
     , subscribers : Subscribers
+    }
+
+
+emptyEventManager : EventManager
+emptyEventManager =
+    { events = []
+    , subscribers = []
     }

@@ -37,6 +37,7 @@ type alias Model =
     , levelConfig : Actor.LevelConfig
     , images : Actor.CanvasImages
     , level : Actor.Level
+    , eventManager : Actor.EventManager
     }
 
 
@@ -51,6 +52,7 @@ init config levelConfig images =
     , levelConfig = levelConfig
     , images = images
     , level = LevelInitializer.initLevel config levelConfig
+    , eventManager = Actor.emptyEventManager
     }
 
 
@@ -60,6 +62,7 @@ resume config levelConfig images level =
     , levelConfig = levelConfig
     , images = images
     , level = level
+    , eventManager = Actor.emptyEventManager
     }
 
 
