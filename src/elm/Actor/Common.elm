@@ -120,6 +120,7 @@ removeActor actor level =
     level
         |> removeActorFromIndex actor
         |> removeActorFromDict actor.id
+        |> addEvent (Actor.ActorRemoved actor)
 
 
 removeActorFromIndex : Actor -> Level -> Level
@@ -211,16 +212,13 @@ addActor components level =
                     |> Maybe.withDefault ( level, actor )
            )
         -- Create Event
-        --        |> (\( level, actor ) ->
-        --                ( { level
-        --                    | eventManager =
-        --                        addEvent
-        --                            (Actor.ActorAdded actor)
-        --                            level.manager
-        --                  }
-        --                , actor
-        --                )
-        --           )
+        |> (\( level, actor ) ->
+                ( addEvent
+                    (Actor.ActorAdded actor)
+                    level
+                , actor
+                )
+           )
         -- Add actor to the actors
         |> (\( level, actor ) ->
                 updateActor level.actors actor
@@ -582,3 +580,17 @@ handleEvents manager level =
 handleEvent : Subscribers -> Event -> Level -> Level
 handleEvent subscribers event level =
     level
+
+
+onTagDiedSubscriber : String -> String -> Event -> Level -> Actor.EventAction
+onTagDiedSubscriber tag failedText event level =
+    case event of
+        Actor.ActorRemoved actor ->
+            getTagComponent actor
+                |> Maybe.map .name
+                |> Maybe.map ((==) tag)
+                |> Maybe.map (always (Actor.LevelFailed failedText))
+                |> Maybe.withDefault (Actor.LevelContinue level)
+
+        _ ->
+            Actor.LevelContinue level

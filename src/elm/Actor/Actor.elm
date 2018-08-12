@@ -56,6 +56,7 @@ module Actor.Actor
           -- EventManager
         , Event(..)
         , Events
+        , EventAction(..)
         , Subscriber
         , Subscribers
         , EventManager
@@ -424,12 +425,18 @@ type Event
 --    | InventoryUpdated Inventory
 
 
+type EventAction
+    = LevelContinue Level
+    | LevelFailed String
+    | LevelCompleted
+
+
 type alias Events =
     List Event
 
 
 type alias Subscriber =
-    Event -> Level -> Level
+    Event -> Level -> EventAction
 
 
 type alias Subscribers =

@@ -44,6 +44,8 @@ type alias Model =
 type Action
     = Stay Model
     | GotoPauseMenu Actor.Level
+    | Failed String
+    | Completed
 
 
 init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
@@ -68,21 +70,17 @@ resume config levelConfig images level =
 
 updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
-    let
-        _ =
-            Debug.log "keys" (toString <| InputController.getOrderedPressedKeys inputModel)
-    in
-        case InputController.getOrderedPressedKeys inputModel |> List.head of
-            Just InputController.StartKey ->
-                GotoPauseMenu model.level
+    case InputController.getOrderedPressedKeys inputModel |> List.head of
+        Just InputController.StartKey ->
+            GotoPauseMenu model.level
 
-            _ ->
-                updateLevel
-                    (InputController.getCurrentDirection inputModel)
-                    model.level
-                    model.levelConfig
-                    |> setLevel model
-                    |> Stay
+        _ ->
+            updateLevel
+                (InputController.getCurrentDirection inputModel)
+                model.level
+                model.levelConfig
+                |> setLevel model
+                |> processEvents
 
 
 updateLevel : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
@@ -152,6 +150,52 @@ updateLevel maybeDirection level levelConfig =
         )
         level
         (List.range (level.view.position.y - updateBorder) (level.view.position.y + level.view.height + updateBorder))
+
+
+processEvents : Model -> Action
+processEvents model =
+    List.foldr
+        (handleEvent model.eventManager)
+        (Actor.LevelContinue model.level)
+        model.level.events
+        |> mapEventActionToAction model
+
+
+mapEventActionToAction : Model -> Actor.EventAction -> Action
+mapEventActionToAction model eventAction =
+    case eventAction of
+        Actor.LevelContinue level ->
+            level
+                |> clearEvents
+                |> setLevel model
+                |> Stay
+
+        Actor.LevelFailed text ->
+            Failed text
+
+        Actor.LevelCompleted ->
+            Completed
+
+
+handleEvent : Actor.EventManager -> Actor.Event -> Actor.EventAction -> Actor.EventAction
+handleEvent eventManager event accumulatedAction =
+    List.foldr
+        (\subscriber action ->
+            case action of
+                Actor.LevelContinue level ->
+                    subscriber event level
+
+                -- Void events if action is already decided
+                _ ->
+                    action
+        )
+        accumulatedAction
+        eventManager.subscribers
+
+
+clearEvents : Actor.Level -> Actor.Level
+clearEvents level =
+    { level | events = [] }
 
 
 setLevel : Model -> Actor.Level -> Model
