@@ -1,9 +1,8 @@
-module GameState.PlayingLevel.Playing
+module GameState.PlayingLevel.FailedLevelAnimation
     exposing
         ( Model
         , Action(..)
         , init
-        , resume
         , updateTick
         , view
         )
@@ -26,6 +25,7 @@ import Actor.Component.DamageComponent as Damage
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Actor.Component.SpawnComponent as Spawn
 import Actor.EventManager as EventManager
+import GameState.PlayingLevel.Animation.Animation as Animation exposing (Animation)
 
 
 updateBorder : Int
@@ -38,54 +38,47 @@ type alias Model =
     , levelConfig : Actor.LevelConfig
     , images : Actor.CanvasImages
     , level : Actor.Level
-    , eventManager : Actor.EventManager
+    , animation : Animation
     }
 
 
 type Action
     = Stay Model
-    | GotoPauseMenu Actor.Level
-    | Failed Actor.Level String
-    | Completed Actor.Level
+    | GotoMainMenu
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
-init config levelConfig images =
-    { config = config
-    , levelConfig = levelConfig
-    , images = images
-    , level = LevelInitializer.initLevel config levelConfig
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
-    }
-
-
-resume : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.Level -> Model
-resume config levelConfig images level =
+init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.Level -> Model
+init config levelConfig images level =
     { config = config
     , levelConfig = levelConfig
     , images = images
     , level = level
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
+    , animation = Animation.readingDirectionInit config level
     }
 
 
 updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
-    case InputController.getOrderedPressedKeys inputModel |> List.head of
-        Just InputController.StartKey ->
-            GotoPauseMenu model.level
+    case Animation.updateTick model.animation model.level of
+        Animation.Stay animation level ->
+            model
+                |> flip setAnimation animation
+                |> flip setLevel level
+                |> (\model ->
+                        updateLevel
+                            (InputController.getCurrentDirection inputModel)
+                            model.level
+                            model.levelConfig
+                            -- We won't handle events
+                            |> clearEvents
+                            -- Prevents view movement
+                            |> setView model.level.view
+                            |> setLevel model
+                   )
+                |> Stay
 
-        _ ->
-            updateLevel
-                (InputController.getCurrentDirection inputModel)
-                model.level
-                model.levelConfig
-                |> setLevel model
-                |> processEvents
+        Animation.Finished ->
+            GotoMainMenu
 
 
 updateLevel : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
@@ -157,50 +150,19 @@ updateLevel maybeDirection level levelConfig =
         (List.range (level.view.position.y - updateBorder) (level.view.position.y + level.view.height + updateBorder))
 
 
-processEvents : Model -> Action
-processEvents model =
-    List.foldr
-        (handleEvent model.eventManager)
-        (Actor.LevelContinue model.level)
-        model.level.events
-        |> mapEventActionToAction model
-
-
-mapEventActionToAction : Model -> Actor.EventAction -> Action
-mapEventActionToAction model eventAction =
-    case eventAction of
-        Actor.LevelContinue level ->
-            level
-                |> clearEvents
-                |> setLevel model
-                |> Stay
-
-        Actor.LevelFailed text ->
-            Failed model.level text
-
-        Actor.LevelCompleted ->
-            Completed model.level
-
-
-handleEvent : Actor.EventManager -> Actor.Event -> Actor.EventAction -> Actor.EventAction
-handleEvent eventManager event accumulatedAction =
-    List.foldr
-        (\subscriber action ->
-            case action of
-                Actor.LevelContinue level ->
-                    subscriber event level
-
-                -- Void events if action is already decided
-                _ ->
-                    action
-        )
-        accumulatedAction
-        eventManager.subscribers
-
-
 clearEvents : Actor.Level -> Actor.Level
 clearEvents level =
     { level | events = [] }
+
+
+setView : Actor.View -> Actor.Level -> Actor.Level
+setView view level =
+    { level | view = view }
+
+
+setAnimation : Model -> Animation -> Model
+setAnimation model animation =
+    { model | animation = animation }
 
 
 setLevel : Model -> Actor.Level -> Model

@@ -11,6 +11,7 @@ import Data.Config exposing (Config)
 import Actor.Actor as Actor
 import GameState.PlayingLevel.Playing as Playing
 import GameState.PlayingLevel.PauseMenu as PauseMenu
+import GameState.PlayingLevel.FailedLevelAnimation as FailedLevelAnimation
 import InputController
 import Html exposing (Html)
 
@@ -26,6 +27,7 @@ type alias Model =
 type State
     = PlayingState Playing.Model
     | PauseMenuState PauseMenu.Model
+    | FailedLevelAnimationState FailedLevelAnimation.Model
 
 
 type Action
@@ -56,20 +58,20 @@ updateTick currentTick inputModel model =
                             | state = PauseMenuState <| PauseMenu.init model.config level
                         }
 
-                -- @todo fix failed screen
-                Playing.Failed error ->
+                Playing.Failed level error ->
                     Stay
                         { model
                             | state =
-                                PlayingState <|
-                                    Playing.init
+                                FailedLevelAnimationState <|
+                                    FailedLevelAnimation.init
                                         model.config
                                         model.levelConfig
                                         model.images
+                                        level
                         }
 
                 -- @todo fix completed screen
-                Playing.Completed ->
+                Playing.Completed level ->
                     GotoMainMenu
 
         PauseMenuState subModel ->
@@ -103,6 +105,14 @@ updateTick currentTick inputModel model =
                 PauseMenu.GotoMainMenu ->
                     GotoMainMenu
 
+        FailedLevelAnimationState subModel ->
+            case FailedLevelAnimation.updateTick currentTick inputModel subModel of
+                FailedLevelAnimation.Stay animationModel ->
+                    Stay { model | state = FailedLevelAnimationState animationModel }
+
+                FailedLevelAnimation.GotoMainMenu ->
+                    GotoMainMenu
+
 
 view : Int -> Model -> Html msg
 view currentTick model =
@@ -112,3 +122,6 @@ view currentTick model =
 
         PauseMenuState subModel ->
             PauseMenu.view subModel
+
+        FailedLevelAnimationState subModel ->
+            FailedLevelAnimation.view currentTick subModel
