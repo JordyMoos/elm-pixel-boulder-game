@@ -1,6 +1,7 @@
 {
   "entities": {
     "player": [
+      {"type": "tag", "data": {"name": "player"}},
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},

@@ -34,6 +34,8 @@ module Actor.Common
         , startMovingTowards
           -- TagComponent
         , getTagComponent
+          -- EventManager
+        , onTagDiedSubscriber
         )
 
 import Data.Position exposing (Position)
@@ -570,16 +572,6 @@ getTagComponent actor =
 addEvent : Event -> Level -> Level
 addEvent event level =
     { level | events = event :: level.events }
-
-
-handleEvents : EventManager -> Level -> Level
-handleEvents manager level =
-    List.foldr (handleEvent manager.subscribers) level level.events
-
-
-handleEvent : Subscribers -> Event -> Level -> Level
-handleEvent subscribers event level =
-    level
 
 
 onTagDiedSubscriber : String -> String -> Event -> Level -> Actor.EventAction

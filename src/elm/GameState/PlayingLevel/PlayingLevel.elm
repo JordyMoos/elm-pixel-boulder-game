@@ -58,7 +58,15 @@ updateTick currentTick inputModel model =
 
                 -- @todo fix failed screen
                 Playing.Failed error ->
-                    GotoMainMenu
+                    Stay
+                        { model
+                            | state =
+                                PlayingState <|
+                                    Playing.init
+                                        model.config
+                                        model.levelConfig
+                                        model.images
+                        }
 
                 -- @todo fix completed screen
                 Playing.Completed ->

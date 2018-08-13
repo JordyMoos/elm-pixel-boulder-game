@@ -54,7 +54,11 @@ init config levelConfig images =
     , levelConfig = levelConfig
     , images = images
     , level = LevelInitializer.initLevel config levelConfig
-    , eventManager = Actor.emptyEventManager
+    , eventManager =
+        { subscribers =
+            [ Common.onTagDiedSubscriber "player" "You died"
+            ]
+        }
     }
 
 
@@ -64,7 +68,11 @@ resume config levelConfig images level =
     , levelConfig = levelConfig
     , images = images
     , level = level
-    , eventManager = Actor.emptyEventManager
+    , eventManager =
+        { subscribers =
+            [ Common.onTagDiedSubscriber "player" "You died"
+            ]
+        }
     }
 
 
