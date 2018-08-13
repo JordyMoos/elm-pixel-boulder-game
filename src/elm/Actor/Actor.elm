@@ -421,10 +421,6 @@ type Event
     | ActorRemoved Actor
 
 
-
---    | InventoryUpdated Inventory
-
-
 type EventAction
     = LevelContinue Level
     | LevelFailed String

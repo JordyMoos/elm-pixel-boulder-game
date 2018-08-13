@@ -35,7 +35,7 @@ module Actor.Common
           -- TagComponent
         , getTagComponent
           -- EventManager
-        , onTagDiedSubscriber
+        , addEvent
         )
 
 import Data.Position exposing (Position)
@@ -572,17 +572,3 @@ getTagComponent actor =
 addEvent : Event -> Level -> Level
 addEvent event level =
     { level | events = event :: level.events }
-
-
-onTagDiedSubscriber : String -> String -> Event -> Level -> Actor.EventAction
-onTagDiedSubscriber tag failedText event level =
-    case event of
-        Actor.ActorRemoved actor ->
-            getTagComponent actor
-                |> Maybe.map .name
-                |> Maybe.map ((==) tag)
-                |> Maybe.map (always (Actor.LevelFailed failedText))
-                |> Maybe.withDefault (Actor.LevelContinue level)
-
-        _ ->
-            Actor.LevelContinue level

@@ -25,6 +25,7 @@ import Actor.Component.LifetimeComponent as Lifetime
 import Actor.Component.DamageComponent as Damage
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Actor.Component.SpawnComponent as Spawn
+import Actor.EventManager as EventManager
 
 
 updateBorder : Int
@@ -56,7 +57,7 @@ init config levelConfig images =
     , level = LevelInitializer.initLevel config levelConfig
     , eventManager =
         { subscribers =
-            [ Common.onTagDiedSubscriber "player" "You died"
+            [ EventManager.onTagDiedSubscriber "player" (Actor.LevelFailed "You died")
             ]
         }
     }
@@ -70,7 +71,7 @@ resume config levelConfig images level =
     , level = level
     , eventManager =
         { subscribers =
-            [ Common.onTagDiedSubscriber "player" "You died"
+            [ EventManager.onTagDiedSubscriber "player" (Actor.LevelFailed "You died")
             ]
         }
     }
