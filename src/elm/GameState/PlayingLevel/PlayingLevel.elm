@@ -56,6 +56,22 @@ updateTick currentTick inputModel model =
                             | state = PauseMenuState <| PauseMenu.init model.config level
                         }
 
+                -- @todo fix failed screen
+                Playing.Failed error ->
+                    Stay
+                        { model
+                            | state =
+                                PlayingState <|
+                                    Playing.init
+                                        model.config
+                                        model.levelConfig
+                                        model.images
+                        }
+
+                -- @todo fix completed screen
+                Playing.Completed ->
+                    GotoMainMenu
+
         PauseMenuState subModel ->
             case PauseMenu.updateTick inputModel subModel of
                 PauseMenu.Stay menuModel ->

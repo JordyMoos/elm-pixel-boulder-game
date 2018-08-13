@@ -46,7 +46,7 @@ updateCollectorComponent collectorData collectorActor level =
                     |> Common.updateComponents collectorActor
                     |> Common.updateActor level.actors
                     |> Common.updateActors level
-                    |> Common.removeActorWithPosition position actor.id
+                    |> Common.removeActor actor
             )
             level
 

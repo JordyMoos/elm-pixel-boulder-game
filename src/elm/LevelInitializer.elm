@@ -25,6 +25,7 @@ emptyLevel width height =
         , height = height
         }
     , background = Actor.Decoder.defaultBackground
+    , events = []
     }
 
 

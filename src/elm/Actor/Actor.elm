@@ -53,6 +53,14 @@ module Actor.Actor
         , ImageRenderComponentData
           -- TagComponent
         , TagComponentData
+          -- EventManager
+        , Event(..)
+        , Events
+        , EventAction(..)
+        , Subscriber
+        , Subscribers
+        , EventManager
+        , emptyEventManager
         )
 
 import Dict exposing (Dict)
@@ -125,6 +133,7 @@ type alias LevelConfig =
     , scene : Scene
     , images : Images
     , background : RenderComponentData
+    , subscribers : Subscribers
     }
 
 
@@ -134,6 +143,7 @@ type alias Level =
     , positionIndex : PositionIndex
     , view : View
     , background : RenderComponentData
+    , events : Events
     }
 
 
@@ -396,4 +406,46 @@ type alias ImageRenderComponentData =
 
 type alias TagComponentData =
     { name : String
+    }
+
+
+
+{-
+
+   EventManager
+
+-}
+
+
+type Event
+    = ActorAdded Actor
+    | ActorRemoved Actor
+
+
+type EventAction
+    = LevelContinue Level
+    | LevelFailed String
+    | LevelCompleted
+
+
+type alias Events =
+    List Event
+
+
+type alias Subscriber =
+    Event -> Level -> EventAction
+
+
+type alias Subscribers =
+    List Subscriber
+
+
+type alias EventManager =
+    { subscribers : Subscribers
+    }
+
+
+emptyEventManager : EventManager
+emptyEventManager =
+    { subscribers = []
     }

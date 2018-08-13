@@ -37,7 +37,7 @@ updateTriggerExplodableComponent triggerData actor level =
             (\( position, explodableActor ) level ->
                 level
                     |> Cheats.addBigExplosion position
-                    |> Common.removeActorWithPosition position explodableActor.id
+                    |> Common.removeActor explodableActor
             )
             level
 

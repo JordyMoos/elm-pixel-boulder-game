@@ -31,6 +31,8 @@ import Actor.Actor as Actor
         , ControlType(..)
         , WalkAroundAiControlData
         , TagComponentData
+        , Subscriber
+        , EventAction(..)
         )
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
@@ -40,6 +42,7 @@ import Canvas exposing (Canvas)
 import Color exposing (Color)
 import Color.Convert
 import Dict
+import Actor.EventManager as EventManager
 
 
 defaultCameraBorderSize : Int
@@ -55,6 +58,7 @@ levelConfigDecoder =
         |> JDP.required "scene" sceneDecoder
         |> JDP.optional "images" imagesDecoder Dict.empty
         |> JDP.optional "background" renderDataDecoder defaultBackground
+        |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
 
 
 defaultBackground : RenderComponentData
@@ -408,6 +412,55 @@ sceneDecoder =
 imagesDecoder : Decoder Images
 imagesDecoder =
     Decode.dict Decode.string
+
+
+subscriberDecoder : Decoder Subscriber
+subscriberDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "onTagDied" ->
+                        Decode.field "data" onTagDiedSubscriberDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode subscriber, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+onTagDiedSubscriberDecoder : Decoder Subscriber
+onTagDiedSubscriberDecoder =
+    JDP.decode EventManager.onTagDiedSubscriber
+        |> JDP.required "tagName" Decode.string
+        |> JDP.required "action" eventActionDecoder
+
+
+eventActionDecoder : Decoder EventAction
+eventActionDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "failed" ->
+                        Decode.map LevelFailed <| Decode.field "data" eventActionFailedDecoder
+
+                    "completed" ->
+                        Decode.succeed LevelCompleted
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode subscriber action, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+eventActionFailedDecoder : Decoder String
+eventActionFailedDecoder =
+    Decode.field "description" Decode.string
 
 
 emptyImage : Canvas
