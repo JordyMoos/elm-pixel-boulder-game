@@ -56,9 +56,7 @@ init config levelConfig images =
     , images = images
     , level = LevelInitializer.initLevel config levelConfig
     , eventManager =
-        { subscribers =
-            [ EventManager.onTagDiedSubscriber "player" (Actor.LevelFailed "You died")
-            ]
+        { subscribers = levelConfig.subscribers
         }
     }
 
@@ -70,9 +68,7 @@ resume config levelConfig images level =
     , images = images
     , level = level
     , eventManager =
-        { subscribers =
-            [ EventManager.onTagDiedSubscriber "player" (Actor.LevelFailed "You died")
-            ]
+        { subscribers = levelConfig.subscribers
         }
     }
 
