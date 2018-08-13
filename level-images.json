@@ -1,6 +1,7 @@
 {
   "entities": {
     "player": [
+      {"type": "tag", "data": {"name": "player"}},
       {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
@@ -148,5 +149,19 @@
     "#............*..........................#",
     "#.......................................#",
     "#########################################"
+  ],
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "data": {
+        "tagName": "player",
+        "action": {
+          "type": "failed",
+          "data": {
+            "description": "You died"
+          }
+        }
+      }
+    }
   ]
 }
