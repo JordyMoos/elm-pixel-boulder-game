@@ -133,6 +133,7 @@ type alias LevelConfig =
     , scene : Scene
     , images : Images
     , background : RenderComponentData
+    , subscribers : Subscribers
     }
 
 
