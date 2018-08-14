@@ -1,4 +1,4 @@
-module Util.PrimeSearch exposing (..)
+module Util.PrimeSearch exposing (Coefficients, primeSearch)
 
 import List.Extra
 import Maybe.Extra

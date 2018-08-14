@@ -16,6 +16,7 @@ import Actor.Common as Common
 import Dict
 import Color
 import List.Extra
+import Util.PrimeSearch as PrimeSearch
 
 
 type Animation
@@ -45,15 +46,18 @@ type Action
 
 readingDirectionInit : Config -> Actor.Entities -> Actor.LevelFailedData -> Level -> Animation
 readingDirectionInit config entities data level =
-    List.concatMap
-        (\y ->
-            List.map
-                (\x ->
-                    { x = x, y = y }
-                )
-                (List.range 0 <| config.width - 1)
-        )
-        (List.range 0 <| config.height - 1)
+    PrimeSearch.primeSearch
+        { a = 19
+        , b = 2931499
+        , c = 314
+        }
+        (config.width * config.height)
+        |> List.map
+            (\number ->
+                { x = (number - 1) % config.width
+                , y = (number - 1) // config.height
+                }
+            )
         |> (\positions ->
                 { positions = positions
                 , entities = entities
@@ -62,6 +66,28 @@ readingDirectionInit config entities data level =
            )
         |> AddingActors
         |> ReadingDirection
+
+
+
+{-
+   List.concatMap
+       (\y ->
+           List.map
+               (\x ->
+                   { x = x, y = y }
+               )
+               (List.range 0 <| config.width - 1)
+       )
+       (List.range 0 <| config.height - 1)
+       |> (\positions ->
+               { positions = positions
+               , entities = entities
+               , entityNames = data.entityNames
+               }
+          )
+       |> AddingActors
+       |> ReadingDirection
+-}
 
 
 updateTick : Int -> Animation -> Level -> Action
