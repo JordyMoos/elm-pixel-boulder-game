@@ -16,7 +16,6 @@ import Renderer.Canvas.TextRenderer as TextRenderer
 import List.Extra
 import Maybe.Extra
 import Color
-import Util.PrimeSearch
 
 
 type alias Model =
@@ -24,7 +23,6 @@ type alias Model =
     , menu : Menu.Menu Item
     , tick : Int
     , delay : Int
-    , primeSearch : List Int
     }
 
 
@@ -68,13 +66,6 @@ init config =
         }
     , tick = 0
     , delay = 0
-    , primeSearch =
-        Util.PrimeSearch.primeSearch
-            { a = 11
-            , b = 12
-            , c = 13
-            }
-            10
     }
 
 
