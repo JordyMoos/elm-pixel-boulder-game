@@ -70,9 +70,9 @@ init config =
     , delay = 0
     , primeSearch =
         Util.PrimeSearch.primeSearch
-            { a = 10
-            , b = 100
-            , c = 1000
+            { a = 11
+            , b = 12
+            , c = 13
             }
             10
     }

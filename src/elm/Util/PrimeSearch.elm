@@ -12,8 +12,11 @@ type alias Coefficients =
 
 
 primeSearch : Coefficients -> Int -> List Int
-primeSearch coefficients maxElements =
+primeSearch coefficients maxValue =
     let
+        maxElements =
+            maxValue + 1
+
         skipSetup =
             (coefficients.a * maxElements * maxElements)
                 + (coefficients.b * maxElements)
@@ -29,7 +32,7 @@ primeSearch coefficients maxElements =
                 skipSetup
     in
         List.foldr
-            (\i ( acc, lastValue ) ->
+            (\_ ( acc, lastValue ) ->
                 let
                     nextMember =
                         (lastValue + skip) % prime
@@ -40,8 +43,9 @@ primeSearch coefficients maxElements =
                         ( acc, nextMember )
             )
             ( [], 0 )
-            (List.range 0 (prime - 1))
+            (List.range 1 prime)
             |> Tuple.first
+            |> List.drop 1
 
 
 findLowestPrime : Int -> Int
