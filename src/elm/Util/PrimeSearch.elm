@@ -1,6 +1,47 @@
 module Util.PrimeSearch exposing (..)
 
 import List.Extra
+import Maybe.Extra
+
+
+type alias Coefficients =
+    { a : Int
+    , b : Int
+    , c : Int
+    }
+
+
+primeSearch : Coefficients -> Int -> List Int
+primeSearch coefficients maxElements =
+    let
+        skipSetup =
+            (coefficients.a * maxElements * maxElements)
+                + (coefficients.b * maxElements)
+                + coefficients.c
+
+        prime =
+            findLowestPrime maxElements
+
+        skip =
+            if skipSetup % prime == 0 then
+                skipSetup + 1
+            else
+                skipSetup
+    in
+        List.foldr
+            (\i ( acc, lastValue ) ->
+                let
+                    nextMember =
+                        (lastValue + skip) % prime
+                in
+                    if nextMember < maxElements then
+                        ( nextMember :: acc, nextMember )
+                    else
+                        ( acc, nextMember )
+            )
+            ( [], 0 )
+            (List.range 0 (prime - 1))
+            |> Tuple.first
 
 
 findLowestPrime : Int -> Int
