@@ -33,6 +33,7 @@ import Actor.Actor as Actor
         , TagComponentData
         , Subscriber
         , EventAction(..)
+        , LevelFailedData
         )
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
@@ -445,7 +446,7 @@ eventActionDecoder =
             (\theType ->
                 case theType of
                     "failed" ->
-                        Decode.map LevelFailed <| Decode.field "data" eventActionFailedDecoder
+                        Decode.map LevelFailed <| Decode.field "data" eventActionFailedDataDecoder
 
                     "completed" ->
                         Decode.succeed LevelCompleted
@@ -458,9 +459,11 @@ eventActionDecoder =
             )
 
 
-eventActionFailedDecoder : Decoder String
-eventActionFailedDecoder =
-    Decode.field "description" Decode.string
+eventActionFailedDataDecoder : Decoder LevelFailedData
+eventActionFailedDataDecoder =
+    JDP.decode LevelFailedData
+        |> JDP.required "description" Decode.string
+        |> JDP.required "entityNames" (Decode.list Decode.string)
 
 
 emptyImage : Canvas

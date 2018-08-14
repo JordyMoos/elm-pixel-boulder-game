@@ -47,19 +47,19 @@ type Action
     | GotoMainMenu
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.Level -> Model
-init config levelConfig images level =
+init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.LevelFailedData -> Actor.Level -> Model
+init config levelConfig images failedData level =
     { config = config
     , levelConfig = levelConfig
     , images = images
     , level = level
-    , animation = Animation.readingDirectionInit config level
+    , animation = Animation.readingDirectionInit config levelConfig.entities failedData level
     }
 
 
 updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
-    case Animation.updateTick model.animation model.level of
+    case Animation.updateTick currentTick model.animation model.level of
         Animation.Stay animation level ->
             model
                 |> flip setAnimation animation

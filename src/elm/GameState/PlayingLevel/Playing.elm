@@ -45,7 +45,7 @@ type alias Model =
 type Action
     = Stay Model
     | GotoPauseMenu Actor.Level
-    | Failed Actor.Level String
+    | Failed Actor.Level Actor.LevelFailedData
     | Completed Actor.Level
 
 
@@ -175,8 +175,8 @@ mapEventActionToAction model eventAction =
                 |> setLevel model
                 |> Stay
 
-        Actor.LevelFailed text ->
-            Failed model.level text
+        Actor.LevelFailed data ->
+            Failed model.level data
 
         Actor.LevelCompleted ->
             Completed model.level

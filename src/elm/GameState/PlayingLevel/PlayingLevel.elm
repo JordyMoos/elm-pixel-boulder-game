@@ -58,7 +58,7 @@ updateTick currentTick inputModel model =
                             | state = PauseMenuState <| PauseMenu.init model.config level
                         }
 
-                Playing.Failed level error ->
+                Playing.Failed level data ->
                     Stay
                         { model
                             | state =
@@ -67,6 +67,7 @@ updateTick currentTick inputModel model =
                                         model.config
                                         model.levelConfig
                                         model.images
+                                        data
                                         level
                         }
 

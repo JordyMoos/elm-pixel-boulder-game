@@ -57,6 +57,7 @@ module Actor.Actor
         , Event(..)
         , Events
         , EventAction(..)
+        , LevelFailedData
         , Subscriber
         , Subscribers
         , EventManager
@@ -424,8 +425,14 @@ type Event
 
 type EventAction
     = LevelContinue Level
-    | LevelFailed String
+    | LevelFailed LevelFailedData
     | LevelCompleted
+
+
+type alias LevelFailedData =
+    { description : String
+    , entityNames : List String
+    }
 
 
 type alias Events =

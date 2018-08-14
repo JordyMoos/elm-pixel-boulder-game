@@ -15,6 +15,7 @@ import Data.Config as Config exposing (Config)
 import Actor.Common as Common
 import Dict
 import Color
+import List.Extra
 
 
 type Animation
@@ -28,6 +29,8 @@ type ReadingDirectionData
 
 type alias AddingActorsData =
     { positions : List Position
+    , entities : Actor.Entities
+    , entityNames : List String
     }
 
 
@@ -40,8 +43,8 @@ type Action
     | Finished
 
 
-readingDirectionInit : Config -> Level -> Animation
-readingDirectionInit config level =
+readingDirectionInit : Config -> Actor.Entities -> Actor.LevelFailedData -> Level -> Animation
+readingDirectionInit config entities data level =
     List.concatMap
         (\y ->
             List.map
@@ -51,25 +54,32 @@ readingDirectionInit config level =
                 (List.range 0 <| config.width - 1)
         )
         (List.range 0 <| config.height - 1)
-        |> AddingActorsData
+        |> (\positions ->
+                { positions = positions
+                , entities = entities
+                , entityNames = data.entityNames
+                }
+           )
         |> AddingActors
         |> ReadingDirection
 
 
-updateTick : Animation -> Level -> Action
-updateTick animation level =
+updateTick : Int -> Animation -> Level -> Action
+updateTick currentTick animation level =
     case animation of
         ReadingDirection animationData ->
             case animationData of
-                AddingActors data ->
-                    case data.positions of
+                AddingActors addingActorsData ->
+                    case addingActorsData.positions of
                         [] ->
                             Stay (ReadingDirection <| Waiting <| { ticksLeft = 10 }) level
 
                         position :: otherPositions ->
                             Stay
-                                (ReadingDirection <| AddingActors <| { positions = otherPositions })
-                                (addBlock
+                                (ReadingDirection <| AddingActors <| { addingActorsData | positions = otherPositions })
+                                (addActor
+                                    currentTick
+                                    addingActorsData
                                     (Position.addPosition position level.view.position)
                                     level
                                 )
@@ -78,15 +88,25 @@ updateTick animation level =
                     Finished
 
 
-addBlock : Position -> Level -> Level
-addBlock position level =
-    Common.addActor
-        (Dict.fromList
-            [ ( "transform", Actor.TransformComponent { position = position, movingState = Actor.NotMoving } )
-            , ( "render", Actor.RenderComponent <| Actor.PixelRenderComponent { colors = [ Color.black ], ticksPerColor = 1 } )
-            , ( "damage", Actor.DamageComponent { damageStrength = 1000 } )
-            , ( "rigid", Actor.RigidComponent )
-            , ( "physics", Actor.PhysicsComponent { strength = 1000, shape = Actor.Square } )
-            ]
-        )
-        level
+addActor : Int -> AddingActorsData -> Position -> Level -> Level
+addActor currentTick addingActorsData position level =
+    getEntityName currentTick addingActorsData.entityNames
+        |> Maybe.andThen (flip Dict.get addingActorsData.entities)
+        |> Maybe.map
+            (\entity ->
+                Common.addActor
+                    (Dict.insert
+                        "transform"
+                        (Actor.TransformComponent { position = position, movingState = Actor.NotMoving })
+                        entity
+                    )
+                    level
+            )
+        |> Maybe.withDefault level
+
+
+getEntityName : Int -> List String -> Maybe String
+getEntityName currentTick entityNames =
+    List.Extra.getAt
+        (currentTick % (List.length entityNames))
+        entityNames
