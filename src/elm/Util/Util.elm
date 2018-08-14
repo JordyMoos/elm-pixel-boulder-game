@@ -1,4 +1,4 @@
-module Util exposing (lazyAll, lazyAny)
+module Util.Util exposing (lazyAll, lazyAny)
 
 
 lazyAll : List (() -> Bool) -> Bool

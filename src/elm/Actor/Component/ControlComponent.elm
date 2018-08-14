@@ -15,7 +15,7 @@ import Data.Position as Position exposing (Position)
 import Actor.Common as Common
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
-import Util
+import Util.Util as Util
 import Dict
 import List.Extra
 import Maybe.Extra
