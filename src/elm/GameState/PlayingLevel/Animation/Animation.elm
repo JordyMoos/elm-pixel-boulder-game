@@ -1,11 +1,8 @@
 module GameState.PlayingLevel.Animation.Animation
     exposing
-        ( Animation(..)
+        ( Model
         , Action(..)
-        , ReadingDirectionData(..)
-        , AddingActorsData
-        , WaitingData
-        , readingDirectionInit
+        , init
         , updateTick
         )
 

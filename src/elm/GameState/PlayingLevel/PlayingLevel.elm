@@ -12,6 +12,8 @@ import Actor.Actor as Actor
 import GameState.PlayingLevel.Playing as Playing
 import GameState.PlayingLevel.PauseMenu as PauseMenu
 import GameState.PlayingLevel.FailedLevelAnimation as FailedLevelAnimation
+import GameState.PlayingLevel.Animation.Animation as Animation
+import GameState.PlayingLevel.Animation.PseudoRandomTraversalAnimation as PseudoRandomTraversalAnimation
 import InputController
 import Html exposing (Html)
 
@@ -67,7 +69,14 @@ updateTick currentTick inputModel model =
                                         model.config
                                         model.levelConfig
                                         model.images
-                                        data
+                                        (Animation.init
+                                            (PseudoRandomTraversalAnimation.init
+                                                model.config
+                                                { a = currentTick, b = 22, c = 18 }
+                                            )
+                                            model.levelConfig.entities
+                                            data.entityNames
+                                        )
                                         level
                         }
 

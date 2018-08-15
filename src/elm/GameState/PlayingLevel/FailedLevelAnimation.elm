@@ -25,7 +25,7 @@ import Actor.Component.DamageComponent as Damage
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Actor.Component.SpawnComponent as Spawn
 import Actor.EventManager as EventManager
-import GameState.PlayingLevel.Animation.Animation as Animation exposing (Animation)
+import GameState.PlayingLevel.Animation.Animation as Animation
 
 
 updateBorder : Int
@@ -38,7 +38,7 @@ type alias Model =
     , levelConfig : Actor.LevelConfig
     , images : Actor.CanvasImages
     , level : Actor.Level
-    , animation : Animation
+    , animationModel : Animation.Model
     }
 
 
@@ -47,22 +47,22 @@ type Action
     | GotoMainMenu
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.LevelFailedData -> Actor.Level -> Model
-init config levelConfig images failedData level =
+init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Animation.Model -> Actor.Level -> Model
+init config levelConfig images animationModel level =
     { config = config
     , levelConfig = levelConfig
     , images = images
     , level = level
-    , animation = Animation.readingDirectionInit config levelConfig.entities failedData level
+    , animationModel = animationModel
     }
 
 
 updateTick : Int -> InputController.Model -> Model -> Action
 updateTick currentTick inputModel model =
-    case Animation.updateTick currentTick model.animation model.level of
-        Animation.Stay animation level ->
+    case Animation.updateTick currentTick model.animationModel model.level of
+        Animation.Stay animationModel level ->
             model
-                |> flip setAnimation animation
+                |> flip setAnimation animationModel
                 |> flip setLevel level
                 |> (\model ->
                         updateLevel
@@ -160,9 +160,9 @@ setView view level =
     { level | view = view }
 
 
-setAnimation : Model -> Animation -> Model
-setAnimation model animation =
-    { model | animation = animation }
+setAnimation : Model -> Animation.Model -> Model
+setAnimation model animationModel =
+    { model | animationModel = animationModel }
 
 
 setLevel : Model -> Actor.Level -> Model
