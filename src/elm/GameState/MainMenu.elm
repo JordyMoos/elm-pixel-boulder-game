@@ -16,19 +16,11 @@ import Renderer.Canvas.MenuRenderer as MenuRenderer
 import List.Extra
 import Maybe.Extra
 import Color
+import Menu.TextMenu as TextMenu
 
 
 type alias Model =
-    { config : Config
-    , menu : Menu.Menu Item
-    , tick : Int
-    , delay : Int
-    }
-
-
-type alias Item =
-    { text : Text.Letters
-    , action : Action
+    { textMenu : TextMenu.Model Action
     }
 
 
@@ -40,90 +32,43 @@ type Action
 
 init : Config -> Model
 init config =
-    { config = config
-    , menu =
-        { items =
-            { before = []
-            , selected =
-                { text = Text.stringToLetters "Json"
-                , action = LoadFlags
+    { textMenu =
+        TextMenu.init config
+            { items =
+                { before = []
+                , selected =
+                    { text = Text.stringToLetters "Json"
+                    , action = LoadFlags
+                    }
+                , after =
+                    [ { text = Text.stringToLetters "Pixel"
+                      , action = LoadLevel "pixel"
+                      }
+                    , { text = Text.stringToLetters "Images"
+                      , action = LoadLevel "images"
+                      }
+                    , { text = Text.stringToLetters "Pac-Man"
+                      , action = LoadLevel "pacman"
+                      }
+                    , { text = Text.stringToLetters "Tank"
+                      , action = LoadLevel "tank"
+                      }
+                    ]
                 }
-            , after =
-                [ { text = Text.stringToLetters "Pixel"
-                  , action = LoadLevel "pixel"
-                  }
-                , { text = Text.stringToLetters "Images"
-                  , action = LoadLevel "images"
-                  }
-                , { text = Text.stringToLetters "Pac-Man"
-                  , action = LoadLevel "pacman"
-                  }
-                , { text = Text.stringToLetters "Tank"
-                  , action = LoadLevel "tank"
-                  }
-                ]
             }
-        }
-    , tick = 0
-    , delay = 0
     }
 
 
 updateTick : InputController.Model -> Model -> Action
 updateTick inputModel model =
-    if model.delay > 0 then
-        model
-            |> decreaseDelay
-            |> Stay
-    else
-        case InputController.getOrderedPressedKeys inputModel |> List.head of
-            Just InputController.UpKey ->
-                Menu.moveMenuUp model.menu
-                    |> setMenu model
-                    |> resetTick
-                    |> setDelay
-                    |> Stay
+    case TextMenu.updateTick inputModel model.textMenu of
+        TextMenu.Stay textMenu ->
+            Stay { model | textMenu = textMenu }
 
-            Just InputController.DownKey ->
-                Menu.moveMenuDown model.menu
-                    |> setMenu model
-                    |> resetTick
-                    |> setDelay
-                    |> Stay
-
-            Just InputController.SubmitKey ->
-                model.menu.items.selected.action
-
-            _ ->
-                increaseTick model
-                    |> Stay
-
-
-increaseTick : Model -> Model
-increaseTick model =
-    { model | tick = model.tick + 1 }
-
-
-resetTick : Model -> Model
-resetTick model =
-    { model | tick = 0 }
-
-
-decreaseDelay : Model -> Model
-decreaseDelay model =
-    { model | delay = model.delay - 1 }
-
-
-setDelay : Model -> Model
-setDelay model =
-    { model | delay = 4 }
+        TextMenu.Invoke action ->
+            action
 
 
 view : Model -> Html msg
 view model =
-    MenuRenderer.render model.config model.tick model.menu
-
-
-setMenu : Model -> Menu.Menu Item -> Model
-setMenu model menu =
-    { model | menu = menu }
+    TextMenu.view model.textMenu
