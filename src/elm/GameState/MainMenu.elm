@@ -12,7 +12,7 @@ import Data.Menu as Menu
 import Data.Config exposing (Config)
 import InputController
 import Html exposing (Html, div)
-import Renderer.Canvas.TextRenderer as TextRenderer
+import Renderer.Canvas.MenuRenderer as MenuRenderer
 import List.Extra
 import Maybe.Extra
 import Color
@@ -121,54 +121,7 @@ setDelay model =
 
 view : Model -> Html msg
 view model =
-    TextRenderer.renderText
-        model.config.width
-        model.config.height
-        (Maybe.Extra.values
-            [ List.Extra.last model.menu.items.before |> Maybe.map (\item -> ( 0, -3, Color.red, item.text ))
-            , Just ( getXOffset model model.menu.items.selected.text, 3, Color.blue, model.menu.items.selected.text )
-            , List.head model.menu.items.after |> Maybe.map (\item -> ( 0, 9, Color.red, item.text ))
-            ]
-        )
-
-
-getXOffset : Model -> Text.Letters -> Int
-getXOffset model letters =
-    let
-        lineLength =
-            getLineLength letters
-
-        beforeLength =
-            2
-
-        afterLength =
-            0
-
-        totalLength =
-            beforeLength + lineLength + afterLength
-
-        minOffset =
-            0
-
-        maxOffset =
-            max 0 (lineLength - model.config.width)
-
-        tickSpeedCorrection =
-            model.tick // 4
-
-        offset =
-            (tickSpeedCorrection % totalLength) - beforeLength
-    in
-        clamp minOffset maxOffset offset
-            |> negate
-
-
-getLineLength : Text.Letters -> Int
-getLineLength letters =
-    letters
-        |> List.map .width
-        |> List.sum
-        |> (+) (List.length letters)
+    MenuRenderer.render model.config model.tick model.menu
 
 
 setMenu : Model -> Menu.Menu Item -> Model
