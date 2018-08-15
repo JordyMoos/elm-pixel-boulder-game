@@ -17,6 +17,7 @@ import LevelInitializer
 import InputController
 import Renderer.Canvas.LevelRenderer as LevelRenderer
 import Html exposing (Html)
+import Actor.Component.TransformComponent as Transform
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
 import Actor.Component.CameraComponent as Camera
@@ -109,7 +110,7 @@ updateLevel maybeDirection level levelConfig =
                                                                     updatedLevel =
                                                                         case component of
                                                                             Actor.TransformComponent transformData ->
-                                                                                Common.updateTransformComponent transformData actor level
+                                                                                Transform.updateTransformComponent transformData actor level
 
                                                                             Actor.CollectorComponent data ->
                                                                                 Collector.updateCollectorComponent data actor level

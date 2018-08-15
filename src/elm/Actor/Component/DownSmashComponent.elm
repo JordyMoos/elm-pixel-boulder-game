@@ -10,6 +10,7 @@ import Actor.Actor as Actor
         )
 import Actor.Common as Common
 import Actor.Component.ExplodableComponent as Explodable
+import Actor.Component.TransformComponent as Transform
 import Actor.Cheats as Cheats
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
@@ -21,7 +22,7 @@ updateDownSmashComponent downSmashData actor level =
     Common.getTransformComponent actor
         |> Maybe.andThen
             (\transformData ->
-                Just ( transformData.position, Common.isMovingDown transformData )
+                Just ( transformData.position, Transform.isMovingDown transformData )
             )
         |> Maybe.andThen
             (\( position, movingDown ) ->
