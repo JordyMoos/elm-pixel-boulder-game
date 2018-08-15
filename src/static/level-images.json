@@ -98,6 +98,12 @@
         }
       }},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+    ],
+    "failed": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
     ]
   },
   "signs": {
@@ -157,7 +163,8 @@
         "action": {
           "type": "failed",
           "data": {
-            "description": "You died"
+            "description": "You died",
+            "entityNames": ["failed"]
           }
         }
       }
