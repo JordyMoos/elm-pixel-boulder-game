@@ -19,105 +19,47 @@ import List.Extra
 import Util.PrimeSearch as PrimeSearch
 
 
-type Animation
-    = ReadingDirection ReadingDirectionData
-
-
-type ReadingDirectionData
-    = AddingActors AddingActorsData
-    | Waiting WaitingData
-
-
-type alias AddingActorsData =
+type alias Model =
     { positions : List Position
     , entities : Actor.Entities
     , entityNames : List String
     }
 
 
-type alias WaitingData =
-    { ticksLeft : Int }
-
-
 type Action
-    = Stay Animation Level
+    = Stay Model Level
     | Finished
 
 
-readingDirectionInit : Config -> Actor.Entities -> Actor.LevelFailedData -> Level -> Animation
-readingDirectionInit config entities data level =
-    PrimeSearch.primeSearch
-        { a = 19
-        , b = 2931499
-        , c = 314
-        }
-        (config.width * config.height)
-        |> List.map
-            (\number ->
-                { x = (number - 1) % config.width
-                , y = (number - 1) // config.height
-                }
-            )
-        |> (\positions ->
-                { positions = positions
-                , entities = entities
-                , entityNames = data.entityNames
-                }
-           )
-        |> AddingActors
-        |> ReadingDirection
+init : List Position -> Actor.Entities -> List String -> Model
+init positions entities entityNames =
+    { positions = positions
+    , entities = entities
+    , entityNames = entityNames
+    }
 
 
+updateTick : Int -> Model -> Level -> Action
+updateTick currentTick model level =
+    case model.positions of
+        [] ->
+            Finished
 
-{-
-   List.concatMap
-       (\y ->
-           List.map
-               (\x ->
-                   { x = x, y = y }
-               )
-               (List.range 0 <| config.width - 1)
-       )
-       (List.range 0 <| config.height - 1)
-       |> (\positions ->
-               { positions = positions
-               , entities = entities
-               , entityNames = data.entityNames
-               }
-          )
-       |> AddingActors
-       |> ReadingDirection
--}
+        position :: otherPositions ->
+            Stay
+                { model | positions = otherPositions }
+                (addActor
+                    currentTick
+                    model
+                    (Position.addPosition position level.view.position)
+                    level
+                )
 
 
-updateTick : Int -> Animation -> Level -> Action
-updateTick currentTick animation level =
-    case animation of
-        ReadingDirection animationData ->
-            case animationData of
-                AddingActors addingActorsData ->
-                    case addingActorsData.positions of
-                        [] ->
-                            Stay (ReadingDirection <| Waiting <| { ticksLeft = 10 }) level
-
-                        position :: otherPositions ->
-                            Stay
-                                (ReadingDirection <| AddingActors <| { addingActorsData | positions = otherPositions })
-                                (addActor
-                                    currentTick
-                                    addingActorsData
-                                    (Position.addPosition position level.view.position)
-                                    level
-                                )
-
-                Waiting data ->
-                    Finished
-
-
-addActor : Int -> AddingActorsData -> Position -> Level -> Level
-addActor currentTick addingActorsData position level =
-    getEntityName currentTick addingActorsData.entityNames
-        |> Maybe.andThen (flip Dict.get addingActorsData.entities)
+addActor : Int -> Model -> Position -> Level -> Level
+addActor currentTick model position level =
+    getEntityName currentTick model.entityNames
+        |> Maybe.andThen (flip Dict.get model.entities)
         |> Maybe.map
             (\entity ->
                 Common.addActor
