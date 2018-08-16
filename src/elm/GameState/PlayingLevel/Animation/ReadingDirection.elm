@@ -1,11 +1,11 @@
-module GameState.PlayingLevel.Animation.ReadingDirectionAnimation exposing (init)
+module GameState.PlayingLevel.Animation.ReadingDirection exposing (init)
 
 import Data.Config as Config exposing (Config)
 import Data.Position as Position exposing (Position)
 
 
-init : Config -> List Position
-init config =
+init : Config -> Int -> List Position
+init config currentTick =
     List.concatMap
         (\y ->
             List.map

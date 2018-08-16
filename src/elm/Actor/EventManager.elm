@@ -1,4 +1,4 @@
-module Actor.EventManager exposing (onTagDiedSubscriber)
+module Actor.EventManager exposing (onTagDiedSubscriber, clearEvents)
 
 import Actor.Actor as Actor
     exposing
@@ -21,3 +21,8 @@ onTagDiedSubscriber tag action event level =
 
         _ ->
             LevelContinue level
+
+
+clearEvents : Level -> Level
+clearEvents level =
+    { level | events = [] }

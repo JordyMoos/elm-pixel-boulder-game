@@ -3,7 +3,7 @@ module Actor.Common
         ( updateComponents
         , updateActor
         , updateActors
-        , updateView
+        , setView
         , updateViewPosition
           -- Remove
         , removeActor
@@ -99,8 +99,8 @@ updatePositionIndex level positionIndex =
     { level | positionIndex = positionIndex }
 
 
-updateView : View -> Level -> Level
-updateView view level =
+setView : View -> Level -> Level
+setView view level =
     { level | view = view }
 
 
@@ -204,7 +204,7 @@ addActor components level =
                                 , y = transform.position.y - (round ((toFloat level.view.height) / 2))
                                 }
                                 level.view
-                                |> (flip updateView) level
+                                |> (flip setView) level
                                 |> Just
                         )
                     |> Maybe.andThen
