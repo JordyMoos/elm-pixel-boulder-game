@@ -1,4 +1,4 @@
-module Actor.Component.CameraComponent exposing (updateCameraComponent, getCameraComponent)
+module Actor.Component.CameraComponent exposing (updateCameraComponent)
 
 import Actor.Actor as Actor
     exposing
@@ -53,17 +53,3 @@ updateCameraComponent camera actor level =
                     Just { level | view = Common.updateViewPosition newViewPosition view }
             )
         |> Maybe.withDefault level
-
-
-getCameraComponent : Actor -> Maybe CameraComponentData
-getCameraComponent actor =
-    Dict.get "camera" actor.components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    CameraComponent data ->
-                        Just data
-
-                    _ ->
-                        Nothing
-            )

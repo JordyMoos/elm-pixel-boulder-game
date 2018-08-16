@@ -53,10 +53,14 @@ module Actor.Actor
         , ImageRenderComponentData
           -- TagComponent
         , TagComponentData
+          -- Animation
+        , AnimationSetup
           -- EventManager
         , Event(..)
         , Events
         , EventAction(..)
+        , LevelFailedData
+        , LevelCompletedData
         , Subscriber
         , Subscribers
         , EventManager
@@ -64,6 +68,7 @@ module Actor.Actor
         )
 
 import Dict exposing (Dict)
+import Data.Config exposing (Config)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Canvas exposing (Canvas)
@@ -412,6 +417,18 @@ type alias TagComponentData =
 
 {-
 
+   Animation
+
+-}
+
+
+type alias AnimationSetup =
+    Config -> Int -> List Position
+
+
+
+{-
+
    EventManager
 
 -}
@@ -424,8 +441,22 @@ type Event
 
 type EventAction
     = LevelContinue Level
-    | LevelFailed String
-    | LevelCompleted
+    | LevelFailed LevelFailedData
+    | LevelCompleted LevelCompletedData
+
+
+type alias LevelFailedData =
+    { description : String
+    , entityNames : List String
+    , animationSetup : AnimationSetup
+    }
+
+
+type alias LevelCompletedData =
+    { description : String
+    , entityNames : List String
+    , animationSetup : AnimationSetup
+    }
 
 
 type alias Events =

@@ -33,6 +33,9 @@ import Actor.Actor as Actor
         , TagComponentData
         , Subscriber
         , EventAction(..)
+        , LevelFailedData
+        , LevelCompletedData
+        , AnimationSetup
         )
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
@@ -43,6 +46,10 @@ import Color exposing (Color)
 import Color.Convert
 import Dict
 import Actor.EventManager as EventManager
+import Util.PrimeSearch as PrimeSearch
+import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
+import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
+import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
 
 
 defaultCameraBorderSize : Int
@@ -445,10 +452,10 @@ eventActionDecoder =
             (\theType ->
                 case theType of
                     "failed" ->
-                        Decode.map LevelFailed <| Decode.field "data" eventActionFailedDecoder
+                        Decode.map LevelFailed <| Decode.field "data" eventActionFailedDataDecoder
 
                     "completed" ->
-                        Decode.succeed LevelCompleted
+                        Decode.map LevelCompleted <| Decode.field "data" eventActionCompletedDataDecoder
 
                     _ ->
                         Decode.fail <|
@@ -458,9 +465,60 @@ eventActionDecoder =
             )
 
 
-eventActionFailedDecoder : Decoder String
-eventActionFailedDecoder =
-    Decode.field "description" Decode.string
+eventActionFailedDataDecoder : Decoder LevelFailedData
+eventActionFailedDataDecoder =
+    JDP.decode LevelFailedData
+        |> JDP.required "description" Decode.string
+        |> JDP.required "entityNames" (Decode.list Decode.string)
+        |> JDP.required "animation" animationSetupDecoder
+
+
+eventActionCompletedDataDecoder : Decoder LevelCompletedData
+eventActionCompletedDataDecoder =
+    JDP.decode LevelCompletedData
+        |> JDP.required "description" Decode.string
+        |> JDP.required "entityNames" (Decode.list Decode.string)
+        |> JDP.required "animation" animationSetupDecoder
+
+
+animationSetupDecoder : Decoder AnimationSetup
+animationSetupDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "readingDirection" ->
+                        Decode.succeed ReadingDirectionAnimation.init
+
+                    "pseudoRandomTraversal" ->
+                        Decode.field "data" pseudoRandomTraversalAnimationSetupDecoder
+
+                    "currentTick" ->
+                        Decode.succeed CurrentTickAnimation.init
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode animation, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+pseudoRandomTraversalAnimationSetupDecoder : Decoder AnimationSetup
+pseudoRandomTraversalAnimationSetupDecoder =
+    Decode.field "coefficients" coefficientsDecoder
+        |> Decode.andThen
+            (\coefficients ->
+                Decode.succeed <| PseudoRandomTraversalAnimation.init coefficients
+            )
+
+
+coefficientsDecoder : Decoder PrimeSearch.Coefficients
+coefficientsDecoder =
+    JDP.decode PrimeSearch.Coefficients
+        |> JDP.required "a" Decode.int
+        |> JDP.required "b" Decode.int
+        |> JDP.required "c" Decode.int
 
 
 emptyImage : Canvas

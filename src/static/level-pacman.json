@@ -102,6 +102,12 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffbeaf", "#000000"], "ticksPerColor": 6}}},
       {"type": "collectible", "data": {"name": "candy"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "failed": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
     ]
   },
   "signs": {
@@ -162,10 +168,21 @@
         "action": {
           "type": "failed",
           "data": {
-            "description": "You died"
+            "description": "You died",
+            "entityNames": ["failed"],
+            "animation": {
+              "type": "pseudoRandomTraversal",
+              "data": {
+                "coefficients": {
+                  "a": 123,
+                  "b": 850,
+                  "c": 999
+                }
+              }
+            }
           }
         }
       }
     }
-  ]
+  ]s
 }
