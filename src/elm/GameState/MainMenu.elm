@@ -44,6 +44,9 @@ init config =
                     [ { text = Text.stringToLetters "Pixel"
                       , action = LoadLevel "pixel"
                       }
+                    , { text = Text.stringToLetters "Nes"
+                      , action = LoadLevel "nes"
+                      }
                     , { text = Text.stringToLetters "Images"
                       , action = LoadLevel "images"
                       }

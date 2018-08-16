@@ -27,7 +27,7 @@
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "image", "data": {"name": "explosive"}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -119,15 +119,13 @@
     "*": "diamond"
   },
   "images": {
-    "hero": "./images/itch.io/hero.png",
-    "diamond": "./images/itch.io/diamond.png",
-    "dirt": "./images/itch.io/dirt.png",
-    "enemy": "./images/itch.io/enemy.png",
-    "explosive": "./images/itch.io/explosive.png",
-    "rock": "./images/itch.io/rock.png",
-    "wall": "./images/itch.io/wall.png",
-    "background": "./images/itch.io/background.png",
-    "background-big": "./images/itch.io/background-big.png"
+    "hero": "./images/spriters-resource.com/hero-0.png",
+    "diamond": "./images/spriters-resource.com/diamond-0.png",
+    "dirt": "./images/spriters-resource.com/dirt.png",
+    "enemy": "./images/spriters-resource.com/enemy-a-0.png",
+    "rock": "./images/spriters-resource.com/rock-0.png",
+    "wall": "./images/spriters-resource.com/wall.png",
+    "background-big": "./images/spriters-resource.com/background-big.png"
   },
   "background": {
     "type": "image",
