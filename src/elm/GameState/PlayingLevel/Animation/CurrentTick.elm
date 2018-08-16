@@ -8,8 +8,9 @@ import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTra
 init : Config -> Int -> List Position
 init config currentTick =
     PseudoRandomTraversal.init
-        config
         { a = currentTick
         , b = (currentTick % 9999) + 1
         , c = (currentTick % 4242) + 1
         }
+        config
+        currentTick

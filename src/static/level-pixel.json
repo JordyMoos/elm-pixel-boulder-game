@@ -153,6 +153,7 @@
           "type": "failed",
           "data": {
             "description": "You died",
+            "entityNames": ["failed"],
             "animation": {
               "type": "pseudoRandomTraversal",
               "data": {
@@ -160,8 +161,7 @@
                   "a": 123,
                   "b": 850,
                   "c": 999
-                },
-                "entityNames": ["failed"]
+                }
               }
             }
           }

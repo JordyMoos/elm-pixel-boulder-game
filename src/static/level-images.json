@@ -164,7 +164,17 @@
           "type": "failed",
           "data": {
             "description": "You died",
-            "entityNames": ["failed"]
+            "entityNames": ["failed"],
+            "animation": {
+              "type": "pseudoRandomTraversal",
+              "data": {
+                "coefficients": {
+                  "a": 123,
+                  "b": 850,
+                  "c": 999
+                }
+              }
+            }
           }
         }
       }

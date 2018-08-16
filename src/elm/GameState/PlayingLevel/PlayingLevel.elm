@@ -70,8 +70,7 @@ updateTick currentTick inputModel model =
                                         model.levelConfig
                                         model.images
                                         (Animation.init
-                                            (PseudoRandomTraversal.init
-                                                { a = currentTick, b = 22, c = 18 }
+                                            (data.animationSetup
                                                 model.config
                                                 currentTick
                                             )
@@ -82,7 +81,7 @@ updateTick currentTick inputModel model =
                         }
 
                 -- @todo fix completed screen
-                Playing.Completed level ->
+                Playing.Completed level data ->
                     GotoMainMenu
 
         PauseMenuState subModel ->

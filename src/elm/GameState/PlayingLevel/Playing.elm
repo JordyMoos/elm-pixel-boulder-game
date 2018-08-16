@@ -34,7 +34,7 @@ type Action
     = Stay Model
     | GotoPauseMenu Actor.Level
     | Failed Actor.Level Actor.LevelFailedData
-    | Completed Actor.Level
+    | Completed Actor.Level Actor.LevelCompletedData
 
 
 init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
@@ -97,8 +97,8 @@ mapEventActionToAction model eventAction =
         Actor.LevelFailed data ->
             Failed model.level data
 
-        Actor.LevelCompleted ->
-            Completed model.level
+        Actor.LevelCompleted data ->
+            Completed model.level data
 
 
 handleEvent : Actor.EventManager -> Actor.Event -> Actor.EventAction -> Actor.EventAction
