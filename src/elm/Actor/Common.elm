@@ -7,6 +7,7 @@ module Actor.Common
         , updateViewPosition
           -- Remove
         , removeActor
+        , removeActorFromIndexByPosition
           -- Add
         , addActor
         , addActorToIndex
@@ -21,17 +22,10 @@ module Actor.Common
         , isDestinationEmpty
         , isDestinationEmptyByOffset
           -- TransformComponent
-        , updateTransformComponent
         , getTransformComponent
         , getPosition
-        , getMovingTowardsData
-        , isActorMoving
-        , isMoving
-        , isNotMoving
-        , isMovingAt
-        , isNotMovingAt
-        , isMovingDown
-        , startMovingTowards
+          -- CameraComponent
+        , getCameraComponent
           -- TagComponent
         , getTagComponent
           -- EventManager
@@ -252,20 +246,6 @@ addActorToIndex position actorId level =
         |> updatePositionIndex level
 
 
-getCameraComponent : Actor -> Maybe Actor.CameraComponentData
-getCameraComponent actor =
-    Dict.get "camera" actor.components
-        |> Maybe.andThen
-            (\component ->
-                case component of
-                    Actor.CameraComponent data ->
-                        Just data
-
-                    _ ->
-                        Nothing
-            )
-
-
 
 {-
 
@@ -385,60 +365,6 @@ isDestinationEmptyByOffset actor offset level =
 -}
 
 
-movingTicks : Int
-movingTicks =
-    4
-
-
-updateTransformComponent : TransformComponentData -> Actor -> Level -> Level
-updateTransformComponent transformData actor level =
-    getMovingTowardsData transformData
-        |> Maybe.andThen
-            (\towardsData ->
-                if towardsData.tickCountLeft > 0 then
-                    -- Still moving
-                    Dict.insert
-                        "transform"
-                        (TransformComponent
-                            { transformData
-                                | movingState =
-                                    MovingTowards
-                                        { towardsData
-                                            | tickCountLeft = towardsData.tickCountLeft - 1
-                                            , completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
-                                        }
-                            }
-                        )
-                        actor.components
-                        |> updateComponents actor
-                        |> updateActor level.actors
-                        |> updateActors level
-                        |> Just
-                else
-                    -- Finished moving
-                    Dict.insert
-                        "transform"
-                        (TransformComponent
-                            { position = towardsData.position
-                            , movingState = NotMoving
-                            }
-                        )
-                        actor.components
-                        |> updateComponents actor
-                        |> updateActor level.actors
-                        |> updateActors level
-                        |> removeActorFromIndexByPosition transformData.position actor.id
-                        |> addActorToIndex towardsData.position actor.id
-                        |> Just
-            )
-        |> Maybe.withDefault level
-
-
-calculateCompletionPercentage : Int -> Int -> Float
-calculateCompletionPercentage totalTickCount tickCountLeft =
-    100 / (toFloat (totalTickCount)) * (toFloat (totalTickCount - tickCountLeft))
-
-
 getTransformComponent : Actor -> Maybe TransformComponentData
 getTransformComponent actor =
     Dict.get "transform" actor.components
@@ -459,84 +385,26 @@ getPosition actor =
         |> Maybe.map .position
 
 
-getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData
-getMovingTowardsData transformData =
-    case transformData.movingState of
-        MovingTowards towardsData ->
-            Just towardsData
 
-        NotMoving ->
-            Nothing
+{-
+
+   CameraComponent
+
+-}
 
 
-isActorMoving : Actor -> Bool
-isActorMoving actor =
-    getTransformComponent actor
-        |> Maybe.map isMoving
-        |> Maybe.withDefault False
+getCameraComponent : Actor -> Maybe Actor.CameraComponentData
+getCameraComponent actor =
+    Dict.get "camera" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    Actor.CameraComponent data ->
+                        Just data
 
-
-isMoving : TransformComponentData -> Bool
-isMoving transformData =
-    getMovingTowardsData transformData
-        |> Maybe.Extra.isJust
-
-
-isNotMoving : TransformComponentData -> Bool
-isNotMoving transformComponent =
-    isMoving transformComponent |> not
-
-
-isMovingAt : Position -> Level -> Bool
-isMovingAt position level =
-    getActorsByPosition position level
-        |> List.map getTransformComponent
-        |> Maybe.Extra.values
-        |> List.filter isMoving
-        |> List.isEmpty
-        |> not
-
-
-isNotMovingAt : Position -> Level -> Bool
-isNotMovingAt position level =
-    isMovingAt position level
-        |> not
-
-
-getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
-getNewPosition direction transformData =
-    ( transformData, Position.addPosition transformData.position (Position.getOffsetFromDirection direction) )
-
-
-isMovingDown : TransformComponentData -> Bool
-isMovingDown transformData =
-    getMovingTowardsData transformData
-        |> Maybe.Extra.filter
-            (\towardsData ->
-                Position.addPosition transformData.position (Position.getOffsetFromDirection Direction.Down) == towardsData.position
+                    _ ->
+                        Nothing
             )
-        |> Maybe.Extra.isJust
-
-
-startMovingTowards : Actor -> TransformComponentData -> Position -> Level -> Level
-startMovingTowards actor transformData newPosition level =
-    Dict.insert
-        "transform"
-        (TransformComponent
-            { transformData
-                | movingState =
-                    MovingTowards
-                        { position = newPosition
-                        , totalTickCount = movingTicks
-                        , tickCountLeft = movingTicks
-                        , completionPercentage = 0.0
-                        }
-            }
-        )
-        actor.components
-        |> updateComponents actor
-        |> updateActor level.actors
-        |> updateActors level
 
 
 

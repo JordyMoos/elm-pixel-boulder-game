@@ -15,6 +15,7 @@ import Data.Position as Position exposing (Position)
 import Actor.Common as Common
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
+import Actor.Component.TransformComponent as Transform
 import Util.Util as Util
 import Dict
 import List.Extra
@@ -23,7 +24,7 @@ import Maybe.Extra
 
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputControllerDirection controlData actor level =
-    if Common.isActorMoving actor |> not then
+    if Transform.isActorMoving actor |> not then
         getControlDirection inputControllerDirection controlData actor level
             |> Maybe.map
                 (\( direction, actor ) ->
@@ -171,18 +172,18 @@ handleDirection direction actor level =
                 case Common.getActorsThatAffectNeighborPosition actor direction level of
                     -- No one there
                     [] ->
-                        Common.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
+                        Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
 
                     -- Only one actor
                     [ otherActor ] ->
                         if canBeWalkedOver actor otherActor then
-                            Common.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
+                            Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
                         else if canPush actor otherActor direction level then
                             Common.getTransformComponent otherActor
                                 |> Maybe.map
                                     (\otherTransformData ->
-                                        Common.startMovingTowards otherActor otherTransformData (Position.addPositions [ otherTransformData.position, Position.getOffsetFromDirection direction ]) level
-                                            |> Common.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
+                                        Transform.startMovingTowards otherActor otherTransformData (Position.addPositions [ otherTransformData.position, Position.getOffsetFromDirection direction ]) level
+                                            |> Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
                                     )
                                 |> Maybe.withDefault level
                         else
@@ -219,7 +220,7 @@ canPush pushingActor toBePushedActor direction level =
     Util.lazyAll
         [ \() -> Rigid.hasRigidComponent pushingActor
         , \() -> Rigid.hasRigidComponent toBePushedActor
-        , \() -> Common.isActorMoving toBePushedActor |> not
+        , \() -> Transform.isActorMoving toBePushedActor |> not
         , \() -> isAllowedToBePushedByAi direction toBePushedActor
         , \() -> Common.isDestinationEmpty toBePushedActor direction level
         , \() -> hasEnoughPushStrength pushingActor toBePushedActor
