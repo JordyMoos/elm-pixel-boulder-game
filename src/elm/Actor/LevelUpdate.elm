@@ -3,6 +3,7 @@ module Actor.LevelUpdate exposing (update)
 import Data.Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
+import Actor.Component.TransformComponent as Transform
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
 import Actor.Component.CameraComponent as Camera
@@ -40,7 +41,7 @@ update maybeDirection level levelConfig =
                                                                     updatedLevel =
                                                                         case component of
                                                                             Actor.TransformComponent transformData ->
-                                                                                Common.updateTransformComponent transformData actor level
+                                                                                Transform.updateTransformComponent transformData actor level
 
                                                                             Actor.CollectorComponent data ->
                                                                                 Collector.updateCollectorComponent data actor level
