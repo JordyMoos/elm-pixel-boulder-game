@@ -55,18 +55,17 @@ drawBackground tick images backgroundData width height =
             ]
 
         Actor.ImageRenderComponent data ->
-            Dict.get
-                data.name
-                images
-                |> Maybe.andThen
+            getImageName tick data
+                |> Maybe.andThen (flip Dict.get images)
+                |> Maybe.map
                     (\image ->
-                        Just [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
+                        [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
                     )
                 |> Maybe.withDefault []
 
 
-getImage : Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImage viewPosition position level images acc =
+getImage : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImage tick viewPosition position level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
@@ -80,10 +79,11 @@ getImage viewPosition position level images acc =
                                 _ ->
                                     Nothing
                         )
+                    |> Maybe.andThen (getImageName tick)
                     |> Maybe.andThen
-                        (\imageData ->
+                        (\imageName ->
                             Dict.get
-                                imageData.name
+                                imageName
                                 images
                         )
                     |> Maybe.andThen
@@ -159,7 +159,7 @@ getDrawOps : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( Lis
 getDrawOps tick viewPosition position level images acc =
     acc
         |> (getPixel tick viewPosition position level)
-        |> (getImage viewPosition position level images)
+        |> (getImage tick viewPosition position level images)
 
 
 getPixel : Int -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
@@ -229,6 +229,13 @@ getColor tick renderData =
         % (max 1 <| List.length renderData.colors)
         |> (flip List.Extra.getAt) renderData.colors
         |> Maybe.withDefault noColor
+
+
+getImageName : Int -> Actor.ImageRenderComponentData -> Maybe String
+getImageName tick renderData =
+    round ((toFloat tick) / (toFloat (max renderData.ticksPerImage 1)))
+        % (max 1 <| List.length renderData.names)
+        |> (flip List.Extra.getAt) renderData.names
 
 
 noColor : Color

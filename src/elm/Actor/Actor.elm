@@ -398,7 +398,9 @@ type alias PixelRenderComponentData =
 
 
 type alias ImageRenderComponentData =
-    { name : String }
+    { names : List String
+    , ticksPerImage : Int
+    }
 
 
 

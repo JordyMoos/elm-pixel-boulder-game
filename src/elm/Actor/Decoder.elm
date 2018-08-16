@@ -181,7 +181,8 @@ renderPixelDataDecoder =
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
-        |> JDP.required "name" Decode.string
+        |> JDP.required "names" (Decode.list Decode.string)
+        |> JDP.optional "ticksPerImage" Decode.int 1
 
 
 tagDataDecoder : Decoder TagComponentData
