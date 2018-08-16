@@ -144,7 +144,10 @@
           "type": "failed",
           "data": {
             "description": "You died",
-            "entityNames": ["failed"]
+            "entityNames": ["failed"],
+            "animation": {
+              "type": "currentTick"
+            }
           }
         }
       }
