@@ -2,7 +2,7 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {"names": ["hero"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"names": ["hero-0", "hero-1"], "ticksPerImage": 3}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -16,7 +16,7 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "rock": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["rock"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"names": ["rock-0"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -27,7 +27,7 @@
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["explosive"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -44,7 +44,7 @@
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["enemy"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"], "ticksPerImage": 3}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -90,7 +90,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["diamond"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"], "ticksPerImage": 4}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
         "control": {
@@ -119,15 +119,20 @@
     "*": "diamond"
   },
   "images": {
-    "hero": "./images/itch.io/hero.png",
-    "diamond": "./images/itch.io/diamond.png",
-    "dirt": "./images/itch.io/dirt.png",
-    "enemy": "./images/itch.io/enemy.png",
-    "explosive": "./images/itch.io/explosive.png",
-    "rock": "./images/itch.io/rock.png",
-    "wall": "./images/itch.io/wall.png",
-    "background": "./images/itch.io/background.png",
-    "background-big": "./images/itch.io/background-big.png"
+    "hero-0": "./images/spriters-resource.com/hero-0.png",
+    "hero-1": "./images/spriters-resource.com/hero-1.png",
+    "diamond-0": "./images/spriters-resource.com/diamond-0.png",
+    "diamond-1": "./images/spriters-resource.com/diamond-1.png",
+    "diamond-2": "./images/spriters-resource.com/diamond-2.png",
+    "diamond-3": "./images/spriters-resource.com/diamond-3.png",
+    "dirt": "./images/spriters-resource.com/dirt.png",
+    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
+    "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
+    "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
+    "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
+    "rock-0": "./images/spriters-resource.com/rock-0.png",
+    "wall": "./images/spriters-resource.com/wall.png",
+    "background-big": "./images/spriters-resource.com/background-big.png"
   },
   "background": {
     "type": "image",
