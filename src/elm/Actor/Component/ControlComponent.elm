@@ -172,18 +172,37 @@ handleDirection direction actor level =
                 case Common.getActorsThatAffectNeighborPosition actor direction level of
                     -- No one there
                     [] ->
-                        Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
+                        Transform.startMovingTowards
+                            actor
+                            transformData
+                            (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
+                            direction
+                            level
 
                     -- Only one actor
                     [ otherActor ] ->
                         if canBeWalkedOver actor otherActor then
-                            Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ]) level
+                            Transform.startMovingTowards
+                                actor
+                                transformData
+                                (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
+                                direction
+                                level
                         else if canPush actor otherActor direction level then
                             Common.getTransformComponent otherActor
                                 |> Maybe.map
                                     (\otherTransformData ->
-                                        Transform.startMovingTowards otherActor otherTransformData (Position.addPositions [ otherTransformData.position, Position.getOffsetFromDirection direction ]) level
-                                            |> Transform.startMovingTowards actor transformData (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
+                                        Transform.startMovingTowards
+                                            otherActor
+                                            otherTransformData
+                                            (Position.addPositions [ otherTransformData.position, Position.getOffsetFromDirection direction ])
+                                            direction
+                                            level
+                                            |> Transform.startMovingTowards
+                                                actor
+                                                transformData
+                                                (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
+                                                direction
                                     )
                                 |> Maybe.withDefault level
                         else

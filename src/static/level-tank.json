@@ -2,7 +2,11 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {"name": "hero"}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["hero"]
+        }
+      }}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -32,7 +36,11 @@
       {"type": "lifetime", "data": {"remainingTicks": 150}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {"name": "enemy"}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["enemy"]
+        }
+      }}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -63,7 +71,11 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "image", "data": {"name": "wall"}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["wall"]
+        }
+      }}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
@@ -102,9 +114,9 @@
     "e": "enemy"
   },
   "images": {
-    "hero": "./images/hero.png",
-    "enemy": "./images/enemy.png",
-    "wall": "./images/wall.png"
+    "hero": "./images/itch.io/hero.png",
+    "enemy": "./images/itch.io/enemy.png",
+    "wall": "./images/itch.io/wall.png"
   },
   "background": {
     "type": "pixel",

@@ -51,6 +51,7 @@ module Actor.Actor
         , RenderComponentData(..)
         , PixelRenderComponentData
         , ImageRenderComponentData
+        , ImagesData
           -- TagComponent
         , TagComponentData
           -- Animation
@@ -189,6 +190,7 @@ type alias MovingTowardsData =
     , totalTickCount : Int
     , tickCountLeft : Int
     , completionPercentage : Float
+    , direction : Direction
     }
 
 
@@ -397,9 +399,15 @@ type alias PixelRenderComponentData =
     }
 
 
-type alias ImageRenderComponentData =
+type alias ImagesData =
     { names : List String
     , ticksPerImage : Int
+    }
+
+
+type alias ImageRenderComponentData =
+    { default : ImagesData
+    , direction : Dict Int ImagesData
     }
 
 

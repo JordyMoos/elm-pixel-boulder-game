@@ -129,8 +129,8 @@ isMovingDown transformData =
         |> Maybe.Extra.isJust
 
 
-startMovingTowards : Actor -> TransformComponentData -> Position -> Level -> Level
-startMovingTowards actor transformData newPosition level =
+startMovingTowards : Actor -> TransformComponentData -> Position -> Direction -> Level -> Level
+startMovingTowards actor transformData newPosition direction level =
     Dict.insert
         "transform"
         (TransformComponent
@@ -141,6 +141,7 @@ startMovingTowards actor transformData newPosition level =
                         , totalTickCount = movingTicks
                         , tickCountLeft = movingTicks
                         , completionPercentage = 0.0
+                        , direction = direction
                         }
             }
         )

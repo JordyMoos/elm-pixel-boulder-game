@@ -14,6 +14,7 @@ import Actor.Actor as Actor
         , MovingDownState(..)
         , PixelRenderComponentData
         , ImageRenderComponentData
+        , ImagesData
         , SpawnComponentData
         , SpawnRepeat
         , SpawnRepeatTimes(..)
@@ -44,12 +45,13 @@ import Json.Decode.Pipeline as JDP
 import Canvas exposing (Canvas)
 import Color exposing (Color)
 import Color.Convert
-import Dict
+import Dict exposing (Dict)
 import Actor.EventManager as EventManager
 import Util.PrimeSearch as PrimeSearch
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import Maybe.Extra
 
 
 defaultCameraBorderSize : Int
@@ -181,8 +183,53 @@ renderPixelDataDecoder =
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
+        |> JDP.required "default" imagesDataDecoder
+        |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
+
+
+type alias DirectionNames =
+    { directionId : Int
+    , entityNames : List String
+    }
+
+
+imagesDataDecoder : Decoder ImagesData
+imagesDataDecoder =
+    JDP.decode ImagesData
         |> JDP.required "names" (Decode.list Decode.string)
         |> JDP.optional "ticksPerImage" Decode.int 1
+
+
+decodeDirectionImagesData : Decoder (Dict Int ImagesData)
+decodeDirectionImagesData =
+    Decode.dict imagesDataDecoder
+        |> Decode.andThen
+            (\dict ->
+                Dict.toList dict
+                    |> List.map
+                        (\( directionName, imagesData ) ->
+                            Direction.getIDFromKey directionName
+                                |> Maybe.map
+                                    (\directionId ->
+                                        ( directionId, imagesData )
+                                    )
+                        )
+                    |> Maybe.Extra.values
+                    |> Dict.fromList
+                    |> (\newDict ->
+                            if Dict.size dict == Dict.size newDict then
+                                Decode.succeed newDict
+                            else
+                                Decode.fail "There are invalid directions in the image data"
+                       )
+            )
+
+
+decodeDirectionNames : Decoder DirectionNames
+decodeDirectionNames =
+    JDP.decode DirectionNames
+        |> JDP.required "direction" directionIdDecoder
+        |> JDP.required "names" (Decode.list Decode.string)
 
 
 tagDataDecoder : Decoder TagComponentData
@@ -390,6 +437,15 @@ directionDecoder =
                             "Trying to decode direction, but the direction "
                                 ++ direction
                                 ++ " is not supported. Supported directions are: left, up, right, down."
+            )
+
+
+directionIdDecoder : Decoder Int
+directionIdDecoder =
+    directionDecoder
+        |> Decode.andThen
+            (\direction ->
+                Decode.succeed <| Direction.getIDFromDirection direction
             )
 
 

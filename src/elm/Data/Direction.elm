@@ -3,6 +3,7 @@ module Data.Direction
         ( Direction(..)
         , getDirectionFromID
         , getIDFromDirection
+        , getIDFromKey
         )
 
 
@@ -43,3 +44,22 @@ getIDFromDirection direction =
 
         Down ->
             3
+
+
+getIDFromKey : String -> Maybe Int
+getIDFromKey key =
+    case key of
+        "left" ->
+            Just 0
+
+        "up" ->
+            Just 1
+
+        "right" ->
+            Just 2
+
+        "down" ->
+            Just 3
+
+        _ ->
+            Nothing
