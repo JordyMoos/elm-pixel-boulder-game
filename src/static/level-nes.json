@@ -3,12 +3,29 @@
     "player": [
       {"type": "tag", "data": {"name": "player"}},
       {"type": "render", "data": {"type": "image", "data": {
-        "defaultNames": ["hero-0", "hero-1"],
+        "defaultNames": [
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-66", "hero-67"
+        ],
         "ticksPerImage": 3,
         "directionNames": [
           {
             "direction": "left",
-            "names": ["enemy-a-0"]
+            "names": ["hero-06", "hero-07"]
+          },
+          {
+            "direction": "up",
+            "names": ["hero-32"]
+          },
+          {
+            "direction": "right",
+            "names": ["hero-18", "hero-19"]
+          },
+          {
+            "direction": "down",
+            "names": ["hero-00", "hero-01"]
           }
         ]
       }}},
@@ -128,8 +145,18 @@
     "*": "diamond"
   },
   "images": {
-    "hero-0": "./images/spriters-resource.com/hero-0.png",
-    "hero-1": "./images/spriters-resource.com/hero-1.png",
+    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
+    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
+    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
+    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
+    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
+    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
+    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
+    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
+    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
+    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
+    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
+    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
     "diamond-0": "./images/spriters-resource.com/diamond-0.png",
     "diamond-1": "./images/spriters-resource.com/diamond-1.png",
     "diamond-2": "./images/spriters-resource.com/diamond-2.png",
