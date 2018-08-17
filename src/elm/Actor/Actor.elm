@@ -439,6 +439,7 @@ type alias AnimationSetup =
 type Event
     = ActorAdded Actor
     | ActorRemoved Actor
+    | InventoryUpdated Inventory
 
 
 type EventAction
@@ -456,6 +457,7 @@ type alias LevelFailedData =
 
 type alias LevelCompletedData =
     { description : String
+    , nextLevel : String
     , entityNames : List String
     , animationSetup : AnimationSetup
     }

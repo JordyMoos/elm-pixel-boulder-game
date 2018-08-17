@@ -11,7 +11,12 @@ import Data.Config exposing (Config)
 import Actor.Actor as Actor
 import GameState.PlayingLevel.Playing as Playing
 import GameState.PlayingLevel.PauseMenu as PauseMenu
-import GameState.PlayingLevel.FailedLevelAnimation as FailedLevelAnimation
+import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
+import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
+import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import GameState.PlayingLevel.Completed.CompletedAnimation as CompletedAnimation
+import GameState.PlayingLevel.Completed.CompletedDescription as CompletedDescription
+import GameState.PlayingLevel.Completed.CompletedMenu as CompletedMenu
 import GameState.PlayingLevel.Animation.Animation as Animation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
 import InputController
@@ -29,11 +34,17 @@ type alias Model =
 type State
     = PlayingState Playing.Model
     | PauseMenuState PauseMenu.Model
-    | FailedLevelAnimationState FailedLevelAnimation.Model
+    | FailedAnimationState FailedAnimation.Model
+    | FailedDescriptionState FailedDescription.Model
+    | FailedMenuState FailedMenu.Model
+    | CompletedAnimationState CompletedAnimation.Model
+    | CompletedDescriptionState CompletedDescription.Model
+    | CompletedMenuState CompletedMenu.Model
 
 
 type Action
     = Stay Model
+    | LoadLevel String
     | GotoMainMenu
 
 
@@ -64,8 +75,8 @@ updateTick currentTick inputModel model =
                     Stay
                         { model
                             | state =
-                                FailedLevelAnimationState <|
-                                    FailedLevelAnimation.init
+                                FailedAnimationState <|
+                                    FailedAnimation.init
                                         model.config
                                         model.levelConfig
                                         model.images
@@ -77,12 +88,31 @@ updateTick currentTick inputModel model =
                                             model.levelConfig.entities
                                             data.entityNames
                                         )
+                                        data.description
                                         level
                         }
 
-                -- @todo fix completed screen
                 Playing.Completed level data ->
-                    GotoMainMenu
+                    Stay
+                        { model
+                            | state =
+                                CompletedAnimationState <|
+                                    CompletedAnimation.init
+                                        model.config
+                                        model.levelConfig
+                                        model.images
+                                        (Animation.init
+                                            (data.animationSetup
+                                                model.config
+                                                currentTick
+                                            )
+                                            model.levelConfig.entities
+                                            data.entityNames
+                                        )
+                                        data.description
+                                        data.nextLevel
+                                        level
+                        }
 
         PauseMenuState subModel ->
             case PauseMenu.updateTick inputModel subModel of
@@ -115,12 +145,61 @@ updateTick currentTick inputModel model =
                 PauseMenu.GotoMainMenu ->
                     GotoMainMenu
 
-        FailedLevelAnimationState subModel ->
-            case FailedLevelAnimation.updateTick currentTick inputModel subModel of
-                FailedLevelAnimation.Stay animationModel ->
-                    Stay { model | state = FailedLevelAnimationState animationModel }
+        FailedAnimationState subModel ->
+            case FailedAnimation.updateTick currentTick inputModel subModel of
+                FailedAnimation.Stay animationModel ->
+                    Stay { model | state = FailedAnimationState animationModel }
 
-                FailedLevelAnimation.GotoMainMenu ->
+                FailedAnimation.Finished description ->
+                    Stay { model | state = FailedDescriptionState <| FailedDescription.init model.config description }
+
+        FailedDescriptionState subModel ->
+            case FailedDescription.updateTick inputModel subModel of
+                FailedDescription.Stay descriptionModel ->
+                    Stay { model | state = FailedDescriptionState descriptionModel }
+
+                FailedDescription.Finished ->
+                    Stay { model | state = FailedMenuState <| FailedMenu.init model.config }
+
+        FailedMenuState subModel ->
+            case FailedMenu.updateTick inputModel subModel of
+                FailedMenu.Stay menuModel ->
+                    Stay { model | state = FailedMenuState menuModel }
+
+                FailedMenu.Restart ->
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig model.images }
+
+                FailedMenu.GotoMainMenu ->
+                    GotoMainMenu
+
+        CompletedAnimationState subModel ->
+            case CompletedAnimation.updateTick currentTick inputModel subModel of
+                CompletedAnimation.Stay animationModel ->
+                    Stay { model | state = CompletedAnimationState animationModel }
+
+                CompletedAnimation.Finished description nextLevel ->
+                    Stay { model | state = CompletedDescriptionState <| CompletedDescription.init model.config description nextLevel }
+
+        CompletedDescriptionState subModel ->
+            case CompletedDescription.updateTick inputModel subModel of
+                CompletedDescription.Stay descriptionModel ->
+                    Stay { model | state = CompletedDescriptionState descriptionModel }
+
+                CompletedDescription.Finished nextLevel ->
+                    Stay { model | state = CompletedMenuState <| CompletedMenu.init model.config nextLevel }
+
+        CompletedMenuState subModel ->
+            case CompletedMenu.updateTick inputModel subModel of
+                CompletedMenu.Stay menuModel ->
+                    Stay { model | state = CompletedMenuState menuModel }
+
+                CompletedMenu.GotoNextLevel name ->
+                    LoadLevel name
+
+                CompletedMenu.Restart ->
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig model.images }
+
+                CompletedMenu.GotoMainMenu ->
                     GotoMainMenu
 
 
@@ -133,5 +212,20 @@ view currentTick model =
         PauseMenuState subModel ->
             PauseMenu.view subModel
 
-        FailedLevelAnimationState subModel ->
-            FailedLevelAnimation.view currentTick subModel
+        FailedAnimationState subModel ->
+            FailedAnimation.view currentTick subModel
+
+        FailedDescriptionState subModel ->
+            FailedDescription.view subModel
+
+        FailedMenuState subModel ->
+            FailedMenu.view subModel
+
+        CompletedAnimationState subModel ->
+            CompletedAnimation.view currentTick subModel
+
+        CompletedDescriptionState subModel ->
+            CompletedDescription.view subModel
+
+        CompletedMenuState subModel ->
+            CompletedMenu.view subModel
