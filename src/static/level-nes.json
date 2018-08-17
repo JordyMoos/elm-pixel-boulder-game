@@ -2,7 +2,16 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["hero-0", "hero-1"], "ticksPerImage": 3}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "defaultNames": ["hero-0", "hero-1"],
+        "ticksPerImage": 3,
+        "directionNames": [
+          {
+            "direction": "left",
+            "names": ["enemy-a-0"]
+          }
+        ]
+      }}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {

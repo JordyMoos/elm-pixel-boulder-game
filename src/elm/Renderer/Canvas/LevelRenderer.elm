@@ -5,6 +5,7 @@ import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Html exposing (Html)
+import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Color exposing (Color)
 import Canvas.Point
@@ -55,7 +56,7 @@ drawBackground tick images backgroundData width height =
             ]
 
         Actor.ImageRenderComponent data ->
-            getImageName tick data
+            getImageName tick data.ticksPerImage data.defaultNames
                 |> Maybe.andThen (flip Dict.get images)
                 |> Maybe.map
                     (\image ->
@@ -79,15 +80,8 @@ getImage tick viewPosition position level images acc =
                                 _ ->
                                     Nothing
                         )
-                    |> Maybe.andThen (getImageName tick)
                     |> Maybe.andThen
-                        (\imageName ->
-                            Dict.get
-                                imageName
-                                images
-                        )
-                    |> Maybe.andThen
-                        (\image ->
+                        (\imageRenderData ->
                             Common.getTransformComponent actor
                                 |> Maybe.andThen
                                     (\transformData ->
@@ -98,7 +92,7 @@ getImage tick viewPosition position level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp image transformData viewPosition acc
+                                        Just <| getImageOp tick imageRenderData transformData viewPosition images acc
                                     )
                         )
                     |> Maybe.withDefault acc
@@ -106,20 +100,33 @@ getImage tick viewPosition position level images acc =
             acc
 
 
-getImageOp : Canvas.Canvas -> Actor.TransformComponentData -> Position -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImageOp image transformData viewPosition ( backOps, frontOps ) =
+getImageOp :
+    Int
+    -> Actor.ImageRenderComponentData
+    -> Actor.TransformComponentData
+    -> Position
+    -> Actor.CanvasImages
+    -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+    -> ( List Canvas.DrawOp, List Canvas.DrawOp )
+getImageOp tick imageRenderData transformData viewPosition images ( backOps, frontOps ) =
     case transformData.movingState of
         Actor.NotMoving ->
-            ( List.append backOps
-                [ Canvas.DrawImage image <|
-                    Canvas.At <|
-                        Canvas.Point.fromInts
-                            ( (transformData.position.x - viewPosition.x) * pixelSize
-                            , (transformData.position.y - viewPosition.y) * pixelSize
-                            )
-                ]
-            , frontOps
-            )
+            (getImageName tick imageRenderData.ticksPerImage imageRenderData.defaultNames)
+                |> Maybe.andThen (flip Dict.get images)
+                |> Maybe.map
+                    (\image ->
+                        ( List.append backOps
+                            [ Canvas.DrawImage image <|
+                                Canvas.At <|
+                                    Canvas.Point.fromInts
+                                        ( (transformData.position.x - viewPosition.x) * pixelSize
+                                        , (transformData.position.y - viewPosition.y) * pixelSize
+                                        )
+                            ]
+                        , frontOps
+                        )
+                    )
+                |> Maybe.withDefault ( backOps, frontOps )
 
         Actor.MovingTowards towardsData ->
             let
@@ -143,16 +150,30 @@ getImageOp image transformData viewPosition ( backOps, frontOps ) =
                     in
                         result
             in
-                ( backOps
-                , List.append frontOps
-                    [ Canvas.DrawImage image <|
-                        Canvas.At <|
-                            Canvas.Point.fromInts
-                                ( calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                                , calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                                )
-                    ]
-                )
+                getImageNamesByDirection towardsData.direction imageRenderData
+                    |> getImageName tick imageRenderData.ticksPerImage
+                    |> Maybe.andThen (flip Dict.get images)
+                    |> Maybe.map
+                        (\image ->
+                            ( backOps
+                            , List.append frontOps
+                                [ Canvas.DrawImage image <|
+                                    Canvas.At <|
+                                        Canvas.Point.fromInts
+                                            ( calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                                            , calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                                            )
+                                ]
+                            )
+                        )
+                    |> Maybe.withDefault ( backOps, frontOps )
+
+
+getImageNamesByDirection : Direction -> Actor.ImageRenderComponentData -> List String
+getImageNamesByDirection direction imageRenderData =
+    Direction.getIDFromDirection direction
+        |> flip Dict.get imageRenderData.directionNames
+        |> Maybe.withDefault imageRenderData.defaultNames
 
 
 getDrawOps : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
@@ -231,11 +252,11 @@ getColor tick renderData =
         |> Maybe.withDefault noColor
 
 
-getImageName : Int -> Actor.ImageRenderComponentData -> Maybe String
-getImageName tick renderData =
-    round ((toFloat tick) / (toFloat (max renderData.ticksPerImage 1)))
-        % (max 1 <| List.length renderData.defaultNames)
-        |> (flip List.Extra.getAt) renderData.defaultNames
+getImageName : Int -> Int -> List String -> Maybe String
+getImageName tick ticksPerImage names =
+    round ((toFloat tick) / (toFloat (max ticksPerImage 1)))
+        % (max 1 <| List.length names)
+        |> (flip List.Extra.getAt) names
 
 
 noColor : Color
