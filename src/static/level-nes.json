@@ -185,7 +185,7 @@
       "type": "onInventoryUpdated",
       "data": {
         "interestedIn": "diamond",
-        "minimumQuantity": 5,
+        "minimumQuantity": 36,
         "action": {
           "type": "completed",
           "data": {
