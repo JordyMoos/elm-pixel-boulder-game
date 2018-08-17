@@ -2,11 +2,11 @@
 
 require('./static/style.css');
 const Elm = require('./elm/Main.elm');
-const levelPixel = require('./static/level-pixel');
-const levelNes = require('./static/level-nes');
-const levelImage = require('./static/level-images');
-const levelPacman = require('./static/level-pacman');
-const levelTank = require('./static/level-tank');
+const levelPixel = require('./static/levels/other/pixel');
+const levelNes = require('./static/levels/other/nes');
+const levelImage = require('./static/levels/other/images');
+const levelPacman = require('./static/levels/other/pacman');
+const levelTank = require('./static/levels/other/tank');
 
 
 document.getElementById('textarea-level').value =

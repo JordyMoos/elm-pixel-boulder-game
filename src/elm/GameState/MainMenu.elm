@@ -42,19 +42,19 @@ init config =
                     }
                 , after =
                     [ { text = Text.stringToLetters "Pixel"
-                      , action = LoadLevel "pixel"
+                      , action = LoadLevel "other/pixel"
                       }
                     , { text = Text.stringToLetters "Nes"
-                      , action = LoadLevel "nes"
+                      , action = LoadLevel "other/nes"
                       }
                     , { text = Text.stringToLetters "Images"
-                      , action = LoadLevel "images"
+                      , action = LoadLevel "other/images"
                       }
                     , { text = Text.stringToLetters "Pac-Man"
-                      , action = LoadLevel "pacman"
+                      , action = LoadLevel "other/pacman"
                       }
                     , { text = Text.stringToLetters "Tank"
-                      , action = LoadLevel "tank"
+                      , action = LoadLevel "other/tank"
                       }
                     ]
                 }

@@ -60,7 +60,19 @@ view model =
 downloadLevel : String -> Cmd Msg
 downloadLevel name =
     Http.get
-        ("./level-" ++ name ++ ".json")
+        ("./levels/" ++ (filterName name) ++ ".json")
         Actor.Decoder.levelConfigDecoder
         |> RemoteData.sendRequest
         |> Cmd.map DownloadLevelResponse
+
+
+filterName : String -> String
+filterName name =
+    name
+        |> String.filter
+            ((String.fromChar) >> (flip String.contains allowedCharacters))
+
+
+allowedCharacters : String
+allowedCharacters =
+    "abcdefghijklmnopqrstuvwxyz1234567890-/"

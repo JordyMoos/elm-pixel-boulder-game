@@ -253,7 +253,7 @@
           "type": "completed",
           "data": {
             "description": "Level Completed",
-            "nextLevel": "pixel",
+            "nextLevel": "other/pixel",
             "entityNames": ["diamond"],
             "animation": {
               "type": "currentTick"
