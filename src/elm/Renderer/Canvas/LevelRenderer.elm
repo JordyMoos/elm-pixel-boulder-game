@@ -56,7 +56,7 @@ drawBackground tick images backgroundData width height =
             ]
 
         Actor.ImageRenderComponent data ->
-            getImageName tick data.ticksPerImage data.defaultNames
+            getImageName tick data.default
                 |> Maybe.andThen (flip Dict.get images)
                 |> Maybe.map
                     (\image ->
@@ -111,7 +111,7 @@ getImageOp :
 getImageOp tick imageRenderData transformData viewPosition images ( backOps, frontOps ) =
     case transformData.movingState of
         Actor.NotMoving ->
-            (getImageName tick imageRenderData.ticksPerImage imageRenderData.defaultNames)
+            (getImageName tick imageRenderData.default)
                 |> Maybe.andThen (flip Dict.get images)
                 |> Maybe.map
                     (\image ->
@@ -150,8 +150,8 @@ getImageOp tick imageRenderData transformData viewPosition images ( backOps, fro
                     in
                         result
             in
-                getImageNamesByDirection towardsData.direction imageRenderData
-                    |> getImageName tick imageRenderData.ticksPerImage
+                getImageNamesDataByDirection towardsData.direction imageRenderData
+                    |> getImageName tick
                     |> Maybe.andThen (flip Dict.get images)
                     |> Maybe.map
                         (\image ->
@@ -169,11 +169,11 @@ getImageOp tick imageRenderData transformData viewPosition images ( backOps, fro
                     |> Maybe.withDefault ( backOps, frontOps )
 
 
-getImageNamesByDirection : Direction -> Actor.ImageRenderComponentData -> List String
-getImageNamesByDirection direction imageRenderData =
+getImageNamesDataByDirection : Direction -> Actor.ImageRenderComponentData -> Actor.ImagesData
+getImageNamesDataByDirection direction imageRenderData =
     Direction.getIDFromDirection direction
-        |> flip Dict.get imageRenderData.directionNames
-        |> Maybe.withDefault imageRenderData.defaultNames
+        |> flip Dict.get imageRenderData.direction
+        |> Maybe.withDefault imageRenderData.default
 
 
 getDrawOps : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
@@ -252,11 +252,11 @@ getColor tick renderData =
         |> Maybe.withDefault noColor
 
 
-getImageName : Int -> Int -> List String -> Maybe String
-getImageName tick ticksPerImage names =
-    round ((toFloat tick) / (toFloat (max ticksPerImage 1)))
-        % (max 1 <| List.length names)
-        |> (flip List.Extra.getAt) names
+getImageName : Int -> Actor.ImagesData -> Maybe String
+getImageName tick imagesData =
+    round ((toFloat tick) / (toFloat (max imagesData.ticksPerImage 1)))
+        % (max 1 <| List.length imagesData.names)
+        |> (flip List.Extra.getAt) imagesData.names
 
 
 noColor : Color

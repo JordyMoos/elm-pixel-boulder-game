@@ -14,6 +14,7 @@ import Actor.Actor as Actor
         , MovingDownState(..)
         , PixelRenderComponentData
         , ImageRenderComponentData
+        , ImagesData
         , SpawnComponentData
         , SpawnRepeat
         , SpawnRepeatTimes(..)
@@ -50,6 +51,7 @@ import Util.PrimeSearch as PrimeSearch
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import Maybe.Extra
 
 
 defaultCameraBorderSize : Int
@@ -181,9 +183,8 @@ renderPixelDataDecoder =
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
-        |> JDP.required "defaultNames" (Decode.list Decode.string)
-        |> JDP.optional "directionNames" decodeListDirectionNames Dict.empty
-        |> JDP.optional "ticksPerImage" Decode.int 1
+        |> JDP.required "default" imagesDataDecoder
+        |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
 
 
 type alias DirectionNames =
@@ -192,18 +193,35 @@ type alias DirectionNames =
     }
 
 
-decodeListDirectionNames : Decoder (Dict Int (List String))
-decodeListDirectionNames =
-    Decode.list decodeDirectionNames
+imagesDataDecoder : Decoder ImagesData
+imagesDataDecoder =
+    JDP.decode ImagesData
+        |> JDP.required "names" (Decode.list Decode.string)
+        |> JDP.optional "ticksPerImage" Decode.int 1
+
+
+decodeDirectionImagesData : Decoder (Dict Int ImagesData)
+decodeDirectionImagesData =
+    Decode.dict imagesDataDecoder
         |> Decode.andThen
-            (\listDirectionNames ->
-                listDirectionNames
+            (\dict ->
+                Dict.toList dict
                     |> List.map
-                        (\directionNames ->
-                            ( directionNames.directionId, directionNames.entityNames )
+                        (\( directionName, imagesData ) ->
+                            Direction.getIDFromKey directionName
+                                |> Maybe.map
+                                    (\directionId ->
+                                        ( directionId, imagesData )
+                                    )
                         )
+                    |> Maybe.Extra.values
                     |> Dict.fromList
-                    |> Decode.succeed
+                    |> (\newDict ->
+                            if Dict.size dict == Dict.size newDict then
+                                Decode.succeed newDict
+                            else
+                                Decode.fail "There are invalid directions in the image data"
+                       )
             )
 
 

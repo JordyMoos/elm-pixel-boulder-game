@@ -51,6 +51,7 @@ module Actor.Actor
         , RenderComponentData(..)
         , PixelRenderComponentData
         , ImageRenderComponentData
+        , ImagesData
           -- TagComponent
         , TagComponentData
           -- Animation
@@ -398,10 +399,15 @@ type alias PixelRenderComponentData =
     }
 
 
-type alias ImageRenderComponentData =
-    { defaultNames : List String
-    , directionNames : Dict Int (List String)
+type alias ImagesData =
+    { names : List String
     , ticksPerImage : Int
+    }
+
+
+type alias ImageRenderComponentData =
+    { default : ImagesData
+    , direction : Dict Int ImagesData
     }
 
 

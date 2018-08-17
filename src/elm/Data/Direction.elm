@@ -3,6 +3,7 @@ module Data.Direction
         ( Direction(..)
         , getDirectionFromID
         , getIDFromDirection
+        , getIDFromKey
         )
 
 
