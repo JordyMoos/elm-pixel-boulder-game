@@ -234,8 +234,8 @@ getColor tick renderData =
 getImageName : Int -> Actor.ImageRenderComponentData -> Maybe String
 getImageName tick renderData =
     round ((toFloat tick) / (toFloat (max renderData.ticksPerImage 1)))
-        % (max 1 <| List.length renderData.names)
-        |> (flip List.Extra.getAt) renderData.names
+        % (max 1 <| List.length renderData.defaultNames)
+        |> (flip List.Extra.getAt) renderData.defaultNames
 
 
 noColor : Color

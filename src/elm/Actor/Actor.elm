@@ -189,6 +189,7 @@ type alias MovingTowardsData =
     , totalTickCount : Int
     , tickCountLeft : Int
     , completionPercentage : Float
+    , direction : Direction
     }
 
 
@@ -398,7 +399,8 @@ type alias PixelRenderComponentData =
 
 
 type alias ImageRenderComponentData =
-    { names : List String
+    { defaultNames : List String
+    , directionNames : Dict Int (List String)
     , ticksPerImage : Int
     }
 

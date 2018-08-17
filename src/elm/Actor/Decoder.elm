@@ -44,7 +44,7 @@ import Json.Decode.Pipeline as JDP
 import Canvas exposing (Canvas)
 import Color exposing (Color)
 import Color.Convert
-import Dict
+import Dict exposing (Dict)
 import Actor.EventManager as EventManager
 import Util.PrimeSearch as PrimeSearch
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
@@ -181,8 +181,37 @@ renderPixelDataDecoder =
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
     JDP.decode ImageRenderComponentData
-        |> JDP.required "names" (Decode.list Decode.string)
+        |> JDP.required "defaultNames" (Decode.list Decode.string)
+        |> JDP.optional "directionNames" decodeListDirectionNames Dict.empty
         |> JDP.optional "ticksPerImage" Decode.int 1
+
+
+type alias DirectionNames =
+    { directionId : Int
+    , entityNames : List String
+    }
+
+
+decodeListDirectionNames : Decoder (Dict Int (List String))
+decodeListDirectionNames =
+    Decode.list decodeDirectionNames
+        |> Decode.andThen
+            (\listDirectionNames ->
+                listDirectionNames
+                    |> List.map
+                        (\directionNames ->
+                            ( directionNames.directionId, directionNames.entityNames )
+                        )
+                    |> Dict.fromList
+                    |> Decode.succeed
+            )
+
+
+decodeDirectionNames : Decoder DirectionNames
+decodeDirectionNames =
+    JDP.decode DirectionNames
+        |> JDP.required "direction" directionIdDecoder
+        |> JDP.required "names" (Decode.list Decode.string)
 
 
 tagDataDecoder : Decoder TagComponentData
@@ -390,6 +419,15 @@ directionDecoder =
                             "Trying to decode direction, but the direction "
                                 ++ direction
                                 ++ " is not supported. Supported directions are: left, up, right, down."
+            )
+
+
+directionIdDecoder : Decoder Int
+directionIdDecoder =
+    directionDecoder
+        |> Decode.andThen
+            (\direction ->
+                Decode.succeed <| Direction.getIDFromDirection direction
             )
 
 
