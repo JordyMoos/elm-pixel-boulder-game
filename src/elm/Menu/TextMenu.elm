@@ -45,7 +45,7 @@ init config menu =
     { config = config
     , menu = menu
     , tick = 0
-    , delay = 0
+    , delay = 6
     }
 
 

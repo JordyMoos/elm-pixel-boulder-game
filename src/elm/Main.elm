@@ -162,16 +162,7 @@ updateGameState time model =
                                         |> flip (!) [ cmd ]
 
                                 MainMenu.LoadLevel name ->
-                                    let
-                                        ( newModel, newCmd ) =
-                                            LoadingLevel.init model.config name
-                                    in
-                                        newModel
-                                            |> LoadingLevelState
-                                            |> setGameState model
-                                            |> setInputModel (InputController.resetWasPressed model.inputModel)
-                                            |> increaseCurrentTick
-                                            |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+                                    loadLevel model cmd name
 
                                 MainMenu.LoadFlags ->
                                     case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
@@ -199,11 +190,13 @@ updateGameState time model =
                                         |> increaseCurrentTick
                                         |> flip (!) [ cmd ]
 
+                                PlayingLevel.LoadLevel name ->
+                                    loadLevel model cmd name
+
                                 PlayingLevel.GotoMainMenu ->
                                     MainMenu.init model.config
                                         |> MainMenuState
                                         |> setGameState model
-                                        |> setInputModel InputController.init
                                         |> increaseCurrentTick
                                         |> flip (!) [ cmd ]
 
@@ -219,6 +212,20 @@ updateGameState time model =
 
         Nothing ->
             model ! []
+
+
+loadLevel : Model -> Cmd Msg -> String -> ( Model, Cmd Msg )
+loadLevel model cmd name =
+    let
+        ( newModel, newCmd ) =
+            LoadingLevel.init model.config name
+    in
+        newModel
+            |> LoadingLevelState
+            |> setGameState model
+            |> setInputModel (InputController.resetWasPressed model.inputModel)
+            |> increaseCurrentTick
+            |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
 
 
 setGameState : Model -> GameState -> Model

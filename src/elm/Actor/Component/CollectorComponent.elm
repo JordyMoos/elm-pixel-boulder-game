@@ -42,11 +42,14 @@ updateCollectorComponent collectorData collectorActor level =
         |> List.foldr
             (\( position, actor, collectibleData ) level ->
                 updateCollectorComponentData collectorData collectibleData
-                    |> setCollectorComponent collectorActor.components
-                    |> Common.updateComponents collectorActor
-                    |> Common.updateActor level.actors
-                    |> Common.updateActors level
-                    |> Common.removeActor actor
+                    |> (\newCollectorComponentData ->
+                            setCollectorComponent collectorActor.components newCollectorComponentData
+                                |> Common.updateComponents collectorActor
+                                |> Common.updateActor level.actors
+                                |> Common.updateActors level
+                                |> Common.removeActor actor
+                                |> Common.addEvent (Actor.InventoryUpdated newCollectorComponentData.inventory)
+                       )
             )
             level
 

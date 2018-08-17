@@ -431,6 +431,9 @@ subscriberDecoder =
                     "onTagDied" ->
                         Decode.field "data" onTagDiedSubscriberDecoder
 
+                    "onInventoryUpdated" ->
+                        Decode.field "data" onInventoryUpdatedSubscriberDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode subscriber, but the type "
@@ -443,6 +446,14 @@ onTagDiedSubscriberDecoder : Decoder Subscriber
 onTagDiedSubscriberDecoder =
     JDP.decode EventManager.onTagDiedSubscriber
         |> JDP.required "tagName" Decode.string
+        |> JDP.required "action" eventActionDecoder
+
+
+onInventoryUpdatedSubscriberDecoder : Decoder Subscriber
+onInventoryUpdatedSubscriberDecoder =
+    JDP.decode EventManager.onInventoryUpdatedSubscriber
+        |> JDP.required "interestedIn" Decode.string
+        |> JDP.required "minimumQuantity" Decode.int
         |> JDP.required "action" eventActionDecoder
 
 
@@ -478,6 +489,7 @@ eventActionCompletedDataDecoder : Decoder LevelCompletedData
 eventActionCompletedDataDecoder =
     JDP.decode LevelCompletedData
         |> JDP.required "description" Decode.string
+        |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
 

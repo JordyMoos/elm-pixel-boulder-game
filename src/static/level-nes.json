@@ -39,7 +39,7 @@
       {"type": "smash-down"}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "image", "data": {"names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"], "ticksPerImage": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
@@ -125,6 +125,10 @@
     "diamond-1": "./images/spriters-resource.com/diamond-1.png",
     "diamond-2": "./images/spriters-resource.com/diamond-2.png",
     "diamond-3": "./images/spriters-resource.com/diamond-3.png",
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png",
     "dirt": "./images/spriters-resource.com/dirt.png",
     "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
     "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
@@ -169,7 +173,25 @@
           "type": "failed",
           "data": {
             "description": "You died",
-            "entityNames": ["failed"],
+            "entityNames": ["explosion"],
+            "animation": {
+              "type": "currentTick"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "onInventoryUpdated",
+      "data": {
+        "interestedIn": "diamond",
+        "minimumQuantity": 36,
+        "action": {
+          "type": "completed",
+          "data": {
+            "description": "Level Completed",
+            "nextLevel": "pixel",
+            "entityNames": ["diamond"],
             "animation": {
               "type": "currentTick"
             }
