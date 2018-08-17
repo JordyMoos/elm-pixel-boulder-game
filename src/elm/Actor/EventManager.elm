@@ -7,6 +7,7 @@ import Actor.Actor as Actor
         , EventAction(..)
         )
 import Actor.Common as Common
+import Maybe.Extra
 
 
 onTagDiedSubscriber : String -> EventAction -> Event -> Level -> EventAction
@@ -15,7 +16,7 @@ onTagDiedSubscriber tag action event level =
         ActorRemoved actor ->
             Common.getTagComponent actor
                 |> Maybe.map .name
-                |> Maybe.map ((==) tag)
+                |> Maybe.Extra.filter ((==) tag)
                 |> Maybe.map (always action)
                 |> Maybe.withDefault (LevelContinue level)
 
