@@ -2,7 +2,7 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {"names": ["hero"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["hero"]}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -16,7 +16,7 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "rock": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["rock"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["rock"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -27,7 +27,7 @@
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["explosive"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["explosive"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -44,7 +44,7 @@
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["enemy"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["enemy"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -75,12 +75,12 @@
       {"type": "explodable"}
     ],
     "dirt": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["dirt"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["dirt"]}}},
       {"type": "collectible", "data": {"name": "dirt"}},
       {"type": "physics", "data": {"strength": 30, "shape": "square"}}
     ],
     "wall": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["wall"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["wall"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
@@ -90,7 +90,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["diamond"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["diamond"]}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
         "control": {
@@ -132,7 +132,7 @@
   "background": {
     "type": "image",
     "data": {
-      "names": ["background-big"]
+      "defaultNames": ["background-big"]
     }
   },
   "scene": [
