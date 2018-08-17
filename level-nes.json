@@ -2,7 +2,33 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {"names": ["hero-0", "hero-1"], "ticksPerImage": 3}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "defaultNames": [
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+          "hero-66", "hero-67"
+        ],
+        "ticksPerImage": 3,
+        "directionNames": [
+          {
+            "direction": "left",
+            "names": ["hero-06", "hero-07"]
+          },
+          {
+            "direction": "up",
+            "names": ["hero-32"]
+          },
+          {
+            "direction": "right",
+            "names": ["hero-18", "hero-19"]
+          },
+          {
+            "direction": "down",
+            "names": ["hero-00", "hero-01"]
+          }
+        ]
+      }}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -16,7 +42,7 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "rock": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["rock-0"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["rock-0"]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -39,12 +65,12 @@
       {"type": "smash-down"}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"], "ticksPerImage": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"], "ticksPerImage": 3}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"], "ticksPerImage": 3}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -75,12 +101,12 @@
       {"type": "explodable"}
     ],
     "dirt": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["dirt"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["dirt"]}}},
       {"type": "collectible", "data": {"name": "dirt"}},
       {"type": "physics", "data": {"strength": 30, "shape": "square"}}
     ],
     "wall": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["wall"]}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["wall"]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
@@ -90,7 +116,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "image", "data": {"names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"], "ticksPerImage": 4}}},
+      {"type": "render", "data": {"type": "image", "data": {"defaultNames": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"], "ticksPerImage": 4}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
         "control": {
@@ -119,12 +145,26 @@
     "*": "diamond"
   },
   "images": {
-    "hero-0": "./images/spriters-resource.com/hero-0.png",
-    "hero-1": "./images/spriters-resource.com/hero-1.png",
+    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
+    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
+    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
+    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
+    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
+    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
+    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
+    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
+    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
+    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
+    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
+    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
     "diamond-0": "./images/spriters-resource.com/diamond-0.png",
     "diamond-1": "./images/spriters-resource.com/diamond-1.png",
     "diamond-2": "./images/spriters-resource.com/diamond-2.png",
     "diamond-3": "./images/spriters-resource.com/diamond-3.png",
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png",
     "dirt": "./images/spriters-resource.com/dirt.png",
     "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
     "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
@@ -137,7 +177,7 @@
   "background": {
     "type": "image",
     "data": {
-      "names": ["background-big"]
+      "defaultNames": ["background-big"]
     }
   },
   "scene": [
@@ -169,7 +209,25 @@
           "type": "failed",
           "data": {
             "description": "You died",
-            "entityNames": ["failed"],
+            "entityNames": ["explosion"],
+            "animation": {
+              "type": "currentTick"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "onInventoryUpdated",
+      "data": {
+        "interestedIn": "diamond",
+        "minimumQuantity": 36,
+        "action": {
+          "type": "completed",
+          "data": {
+            "description": "Level Completed",
+            "nextLevel": "pixel",
+            "entityNames": ["diamond"],
             "animation": {
               "type": "currentTick"
             }
