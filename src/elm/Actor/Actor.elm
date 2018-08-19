@@ -72,6 +72,7 @@ import Dict exposing (Dict)
 import Data.Config exposing (Config)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
+import Data.Coordinate exposing (Coordinate)
 import Canvas exposing (Canvas)
 import Color exposing (Color)
 
@@ -95,7 +96,7 @@ type alias Actors =
 
 
 type alias View =
-    { position : Position
+    { coordinate : Coordinate
     , width : Int
     , height : Int
     }

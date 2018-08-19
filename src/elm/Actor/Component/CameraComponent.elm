@@ -9,7 +9,6 @@ import Actor.Actor as Actor
         , CameraComponentData
         )
 import Actor.Common as Common
-import Data.Position as Position exposing (Position)
 import Dict
 
 
@@ -22,8 +21,8 @@ updateCameraComponent camera actor level =
                     view =
                         level.view
 
-                    viewPosition =
-                        view.position
+                    viewCoordinate =
+                        view.coordinate
 
                     position =
                         transformData.position

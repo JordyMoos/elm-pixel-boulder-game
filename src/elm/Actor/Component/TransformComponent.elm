@@ -14,6 +14,7 @@ import Maybe.Extra
 import Dict
 import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
+import Data.Coordinate exposing (Coordinate)
 
 
 movingTicks : Int
@@ -117,6 +118,15 @@ isNotMovingAt position level =
 getNewPosition : Direction -> TransformComponentData -> ( TransformComponentData, Position )
 getNewPosition direction transformData =
     ( transformData, Position.addPosition transformData.position (Position.getOffsetFromDirection direction) )
+
+
+getCoordinate : TransformComponentData -> Coordinate
+getCoordinate transformComponentData =
+    case transformComponentData.movingState of
+        NotMoving ->
+
+
+
 
 
 isMovingDown : TransformComponentData -> Bool

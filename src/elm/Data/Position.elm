@@ -7,6 +7,7 @@ module Data.Position
         )
 
 import Data.Direction as Direction exposing (Direction)
+import Data.Coordinate exposing (Coordinate)
 
 
 type alias Position =
@@ -45,3 +46,10 @@ getOffsetFromDirection direction =
 
         Direction.Down ->
             { x = 0, y = 1 }
+
+
+asCoordinate : Position -> Int -> Coordinate
+asCoordinate position pixelSize =
+    { x = position.x * pixelSize
+    , y = position.y * pixelSize
+    }

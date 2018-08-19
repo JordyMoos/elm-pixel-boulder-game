@@ -20,7 +20,7 @@ emptyLevel width height =
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , view =
-        { position = { x = 0, y = 0 }
+        { coordinate = { x = 0, y = 0 }
         , width = width
         , height = height
         }
