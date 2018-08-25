@@ -13,15 +13,15 @@ import Data.Config exposing (Config)
 import InputController
 import Actor.Actor as Actor exposing (Level)
 import Json.Decode
-import Canvas
 import Task
 import AnimationFrame
 import Text
 import GameState.MainMenu as MainMenu
 import GameState.LoadingLevel as LoadingLevel
-import GameState.LoadingAssets as LoadingAssets
 import GameState.PlayingLevel.PlayingLevel as PlayingLevel
 import Actor.Decoder
+import Svg
+import Svg.Attributes
 
 
 type alias Model =
@@ -40,7 +40,6 @@ type alias Model =
 type GameState
     = MainMenuState MainMenu.Model
     | LoadingLevelState LoadingLevel.Model
-    | LoadingAssetsState LoadingAssets.Model
     | PlayingLevelState PlayingLevel.Model
     | ErrorState String
 
@@ -59,7 +58,6 @@ type Msg
     = GameSpeed (Maybe Int)
     | InputControllerMsg InputController.Msg
     | LoadingLevelMsg LoadingLevel.Msg
-    | LoadingAssetsMsg LoadingAssets.Msg
     | AnimationFrameUpdate Time.Time
 
 
@@ -69,6 +67,7 @@ init flags =
         config =
             { width = 12
             , height = 12
+            , pixelSize = 32
             }
     in
         { config = config
@@ -106,21 +105,7 @@ update msg model =
                     { model | gameState = ErrorState error } ! []
 
                 LoadingLevel.Success levelConfig ->
-                    if Dict.toList levelConfig.images |> List.isEmpty then
-                        gotoPlayingLevel levelConfig Dict.empty model
-                    else
-                        gotoLoadingAssets levelConfig model
-
-        ( LoadingAssetsMsg subMsg, LoadingAssetsState subModel ) ->
-            case LoadingAssets.update subMsg subModel of
-                LoadingAssets.Stay newModel ->
-                    { model | gameState = LoadingAssetsState newModel } ! []
-
-                LoadingAssets.Failed error ->
-                    { model | gameState = ErrorState error } ! []
-
-                LoadingAssets.Success levelConfig images ->
-                    gotoPlayingLevel levelConfig images model
+                    gotoPlayingLevel levelConfig model
 
         ( AnimationFrameUpdate time, _ ) ->
             updateGameState time model
@@ -129,19 +114,12 @@ update msg model =
             model ! []
 
 
-gotoPlayingLevel : Actor.LevelConfig -> Actor.CanvasImages -> Model -> ( Model, Cmd Msg )
-gotoPlayingLevel levelConfig images model =
-    PlayingLevel.init model.config levelConfig images
+gotoPlayingLevel : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
+gotoPlayingLevel levelConfig model =
+    PlayingLevel.init model.config levelConfig
         |> PlayingLevelState
         |> setGameState model
         |> flip (!) []
-
-
-gotoLoadingAssets : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
-gotoLoadingAssets levelConfig model =
-    case LoadingAssets.init model.config levelConfig of
-        ( subModel, subCmd ) ->
-            ( setGameState model (LoadingAssetsState subModel), Cmd.map LoadingAssetsMsg subCmd )
 
 
 updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
@@ -175,10 +153,7 @@ updateGameState time model =
 
                                         Ok levelConfig ->
                                             -- Need to update the ACC here..
-                                            if Dict.toList levelConfig.images |> List.isEmpty then
-                                                gotoPlayingLevel levelConfig Dict.empty model
-                                            else
-                                                gotoLoadingAssets levelConfig model
+                                            gotoPlayingLevel levelConfig model
 
                         PlayingLevelState stateModel ->
                             case PlayingLevel.updateTick model.currentTick model.inputModel stateModel of
@@ -258,9 +233,6 @@ view model =
 
             LoadingLevelState subModel ->
                 LoadingLevel.view subModel |> Html.map LoadingLevelMsg
-
-            LoadingAssetsState subModel ->
-                LoadingAssets.view subModel |> Html.map LoadingAssetsMsg
 
             PlayingLevelState subModel ->
                 PlayingLevel.view model.currentTick subModel

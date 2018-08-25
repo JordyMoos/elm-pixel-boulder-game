@@ -15,7 +15,7 @@ import Actor.Common as Common
 import Dict
 import LevelInitializer
 import InputController
-import Renderer.Canvas.LevelRenderer as LevelRenderer
+import Renderer.Svg.LevelRenderer as LevelRenderer
 import Html exposing (Html)
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
@@ -24,7 +24,6 @@ import Actor.LevelUpdate as LevelUpdate
 type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
-    , images : Actor.CanvasImages
     , level : Actor.Level
     , eventManager : Actor.EventManager
     }
@@ -37,11 +36,10 @@ type Action
     | Completed Actor.Level Actor.LevelCompletedData
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
-init config levelConfig images =
+init : Config -> Actor.LevelConfig -> Model
+init config levelConfig =
     { config = config
     , levelConfig = levelConfig
-    , images = images
     , level = LevelInitializer.initLevel config levelConfig
     , eventManager =
         { subscribers = levelConfig.subscribers
@@ -49,11 +47,10 @@ init config levelConfig images =
     }
 
 
-resume : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Actor.Level -> Model
-resume config levelConfig images level =
+resume : Config -> Actor.LevelConfig -> Actor.Level -> Model
+resume config levelConfig level =
     { config = config
     , levelConfig = levelConfig
-    , images = images
     , level = level
     , eventManager =
         { subscribers = levelConfig.subscribers
@@ -129,4 +126,4 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.level model.images
+    LevelRenderer.renderLevel currentTick model.config model.level model.levelConfig.images

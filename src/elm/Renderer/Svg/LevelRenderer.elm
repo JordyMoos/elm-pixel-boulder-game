@@ -1,58 +1,49 @@
-module Renderer.Canvas.LevelRenderer exposing (renderLevel)
+module Renderer.Svg.LevelRenderer exposing (renderLevel)
 
-import Canvas
+import Svg exposing (Svg)
+import Svg.Attributes as Attributes
 import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Html exposing (Html)
+import Data.Config exposing (Config)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Color exposing (Color)
-import Canvas.Point
+import Color.Convert
 import Maybe.Extra
 import List.Extra
 import Dict exposing (Dict)
 import Text
-import Renderer.Canvas.Common exposing (pixelSize)
 
 
-renderLevel : Int -> Level -> Actor.CanvasImages -> Html msg
-renderLevel currentTick level images =
-    Canvas.initialize (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize))
-        |> Canvas.batch [ Canvas.ClearRect (Canvas.Point.fromInts ( 0, 0 )) (Canvas.Size (level.view.width * pixelSize) (level.view.height * pixelSize)) ]
-        |> Canvas.batch (drawBackground currentTick images level.background level.view.width level.view.height)
-        |> (\canvas ->
-                List.foldr
-                    (\y acc ->
-                        List.range level.view.position.x (level.view.position.x + level.view.height - 1)
-                            |> List.foldr
-                                (\x acc ->
-                                    getDrawOps currentTick level.view.position { x = x, y = y } level images acc
-                                )
-                                acc
-                    )
-                    ( [], [] )
-                    (List.range level.view.position.y (level.view.position.y + level.view.height - 1))
-                    |> (\( back, front ) ->
-                            [ back, front ]
-                       )
-                    |> List.foldl
-                        (\ops canvas ->
-                            Canvas.batch ops canvas
-                        )
-                        canvas
-           )
-        |> Canvas.toHtml []
+renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
+renderLevel currentTick config level images =
+    List.concat
+        [ drawBackground currentTick config images level.background
+        , drawLevel currentTick config level images
+        ]
+        |> Svg.svg
+            [ Attributes.width <| toString <| (config.width * config.pixelSize)
+            , Attributes.height <| toString <| (config.height * config.pixelSize)
+            , Attributes.x "0"
+            , Attributes.y "0"
+            , Attributes.version "1.1"
+            ]
 
 
-drawBackground : Int -> Actor.CanvasImages -> Actor.RenderComponentData -> Int -> Int -> List Canvas.DrawOp
-drawBackground tick images backgroundData width height =
+drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> List (Svg msg)
+drawBackground tick config images backgroundData =
     case backgroundData of
         Actor.PixelRenderComponent data ->
-            [ Canvas.FillStyle <| getColor tick data
-            , Canvas.FillRect
-                (Canvas.Point.fromInts ( 0, 0 ))
-                (Canvas.Size (width * pixelSize) (height * pixelSize))
+            [ Svg.rect
+                [ Attributes.width <| toString <| (config.width * config.pixelSize)
+                , Attributes.height <| toString <| (config.height * config.pixelSize)
+                , Attributes.x "0"
+                , Attributes.y "0"
+                , Attributes.fill <| Color.Convert.colorToHex <| getColor tick data
+                ]
+                []
             ]
 
         Actor.ImageRenderComponent data ->
@@ -60,13 +51,41 @@ drawBackground tick images backgroundData width height =
                 |> Maybe.andThen (flip Dict.get images)
                 |> Maybe.map
                     (\image ->
-                        [ Canvas.DrawImage image <| Canvas.At (Canvas.Point.fromInts ( 0, 0 )) ]
+                        [ Svg.image
+                            [ Attributes.width <| toString <| (config.width * config.pixelSize)
+                            , Attributes.height <| toString <| (config.height * config.pixelSize)
+                            , Attributes.xlinkHref image
+                            , Attributes.x "0"
+                            , Attributes.y "0"
+                            ]
+                            []
+                        ]
                     )
                 |> Maybe.withDefault []
 
 
-getImage : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImage tick viewPosition position level images acc =
+drawLevel : Int -> Config -> Level -> Actor.Images -> List (Svg msg)
+drawLevel tick config level images =
+    List.foldr
+        (\y acc ->
+            List.range level.view.position.x (level.view.position.x + level.view.height - 1)
+                |> List.foldr
+                    (\x acc ->
+                        getDrawOps tick config level.view.position { x = x, y = y } level images acc
+                    )
+                    acc
+        )
+        ( [], [] )
+        (List.range level.view.position.y (level.view.position.y + level.view.height - 1))
+        |> (\( back, front ) ->
+                List.append
+                    back
+                    front
+           )
+
+
+getImage : Int -> Config -> Position -> Position -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getImage tick config viewPosition position level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
@@ -92,7 +111,7 @@ getImage tick viewPosition position level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp tick imageRenderData transformData viewPosition images acc
+                                        Just <| getImageOp tick config imageRenderData transformData viewPosition images actor.id acc
                                     )
                         )
                     |> Maybe.withDefault acc
@@ -102,13 +121,15 @@ getImage tick viewPosition position level images acc =
 
 getImageOp :
     Int
+    -> Config
     -> Actor.ImageRenderComponentData
     -> Actor.TransformComponentData
     -> Position
-    -> Actor.CanvasImages
-    -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-    -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getImageOp tick imageRenderData transformData viewPosition images ( backOps, frontOps ) =
+    -> Actor.Images
+    -> Actor.ActorId
+    -> ( List (Svg msg), List (Svg msg) )
+    -> ( List (Svg msg), List (Svg msg) )
+getImageOp tick config imageRenderData transformData viewPosition images actorId ( backOps, frontOps ) =
     case transformData.movingState of
         Actor.NotMoving ->
             (getImageName tick imageRenderData.default)
@@ -116,12 +137,15 @@ getImageOp tick imageRenderData transformData viewPosition images ( backOps, fro
                 |> Maybe.map
                     (\image ->
                         ( List.append backOps
-                            [ Canvas.DrawImage image <|
-                                Canvas.At <|
-                                    Canvas.Point.fromInts
-                                        ( (transformData.position.x - viewPosition.x) * pixelSize
-                                        , (transformData.position.y - viewPosition.y) * pixelSize
-                                        )
+                            [ Svg.image
+                                [ Attributes.width (toString config.pixelSize)
+                                , Attributes.height (toString config.pixelSize)
+                                , Attributes.xlinkHref image
+                                , Attributes.x <| toString <| (transformData.position.x - viewPosition.x) * config.pixelSize
+                                , Attributes.y <| toString <| (transformData.position.y - viewPosition.y) * config.pixelSize
+                                , Attributes.id <| "actor-" ++ (toString actorId)
+                                ]
+                                []
                             ]
                         , frontOps
                         )
@@ -134,10 +158,10 @@ getImageOp tick imageRenderData transformData viewPosition images ( backOps, fro
                 calculateWithCompletion a b =
                     let
                         aFloat =
-                            toFloat (a * pixelSize)
+                            toFloat (a * config.pixelSize)
 
                         bFloat =
-                            toFloat (b * pixelSize)
+                            toFloat (b * config.pixelSize)
 
                         diffFloat =
                             bFloat - aFloat
@@ -157,12 +181,15 @@ getImageOp tick imageRenderData transformData viewPosition images ( backOps, fro
                         (\image ->
                             ( backOps
                             , List.append frontOps
-                                [ Canvas.DrawImage image <|
-                                    Canvas.At <|
-                                        Canvas.Point.fromInts
-                                            ( calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                                            , calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                                            )
+                                [ Svg.image
+                                    [ Attributes.width (toString config.pixelSize)
+                                    , Attributes.height (toString config.pixelSize)
+                                    , Attributes.xlinkHref image
+                                    , Attributes.x <| toString <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                                    , Attributes.y <| toString <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                                    , Attributes.id <| "actor-" ++ (toString actorId)
+                                    ]
+                                    []
                                 ]
                             )
                         )
@@ -176,15 +203,15 @@ getImageNamesDataByDirection direction imageRenderData =
         |> Maybe.withDefault imageRenderData.default
 
 
-getDrawOps : Int -> Position -> Position -> Level -> Actor.CanvasImages -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getDrawOps tick viewPosition position level images acc =
+getDrawOps : Int -> Config -> Position -> Position -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getDrawOps tick config viewPosition position level images acc =
     acc
-        |> (getPixel tick viewPosition position level)
-        |> (getImage tick viewPosition position level images)
+        |> (getPixel tick config viewPosition position level)
+        |> (getImage tick config viewPosition position level images)
 
 
-getPixel : Int -> Position -> Position -> Level -> ( List Canvas.DrawOp, List Canvas.DrawOp ) -> ( List Canvas.DrawOp, List Canvas.DrawOp )
-getPixel tick viewPosition position level ( backOps, frontOps ) =
+getPixel : Int -> Config -> Position -> Position -> Level -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getPixel tick config viewPosition position level ( backOps, frontOps ) =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
@@ -239,7 +266,7 @@ getPixel tick viewPosition position level ( backOps, frontOps ) =
             Nothing
         |> Maybe.andThen
             (\color ->
-                Just <| ( List.append backOps (asPixel viewPosition position color), frontOps )
+                Just <| ( List.append backOps [ (asPixel config viewPosition position color) ], frontOps )
             )
         |> Maybe.withDefault ( backOps, frontOps )
 
@@ -301,10 +328,13 @@ calculateColor color percentage =
         Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
-asPixel : Position -> Position -> Color -> List Canvas.DrawOp
-asPixel viewPosition position color =
-    [ Canvas.FillStyle color
-    , Canvas.FillRect
-        (Canvas.Point.fromInts ( (position.x - viewPosition.x) * pixelSize, (position.y - viewPosition.y) * pixelSize ))
-        (Canvas.Size pixelSize pixelSize)
-    ]
+asPixel : Config -> Position -> Position -> Color -> Svg msg
+asPixel config viewPosition position color =
+    Svg.rect
+        [ Attributes.width <| toString <| config.pixelSize
+        , Attributes.height <| toString <| config.pixelSize
+        , Attributes.x <| toString <| (position.x - viewPosition.x) * config.pixelSize
+        , Attributes.y <| toString <| (position.y - viewPosition.y) * config.pixelSize
+        , Attributes.fill <| Color.Convert.colorToHex color
+        ]
+        []

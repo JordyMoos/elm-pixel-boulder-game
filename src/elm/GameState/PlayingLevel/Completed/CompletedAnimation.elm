@@ -14,7 +14,7 @@ import Actor.Common as Common
 import Dict
 import LevelInitializer
 import InputController
-import Renderer.Canvas.LevelRenderer as LevelRenderer
+import Renderer.Svg.LevelRenderer as LevelRenderer
 import Html exposing (Html)
 import Actor.EventManager as EventManager
 import GameState.PlayingLevel.Animation.Animation as Animation
@@ -24,7 +24,6 @@ import Actor.LevelUpdate as LevelUpdate
 type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
-    , images : Actor.CanvasImages
     , level : Actor.Level
     , animationModel : Animation.Model
     , description : String
@@ -37,11 +36,10 @@ type Action
     | Finished String String
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Animation.Model -> String -> String -> Actor.Level -> Model
-init config levelConfig images animationModel description nextLevel level =
+init : Config -> Actor.LevelConfig -> Animation.Model -> String -> String -> Actor.Level -> Model
+init config levelConfig animationModel description nextLevel level =
     { config = config
     , levelConfig = levelConfig
-    , images = images
     , level = level
     , animationModel = animationModel
     , description = description
@@ -90,4 +88,4 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.level model.images
+    LevelRenderer.renderLevel currentTick model.config model.level model.levelConfig.images

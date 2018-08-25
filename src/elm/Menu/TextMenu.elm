@@ -14,7 +14,7 @@ import Data.Config exposing (Config)
 import Text
 import InputController
 import Html exposing (Html)
-import Renderer.Canvas.MenuRenderer as MenuRenderer
+import Renderer.Svg.MenuRenderer as MenuRenderer
 
 
 type alias Model a =

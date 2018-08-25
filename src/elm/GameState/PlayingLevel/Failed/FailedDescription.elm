@@ -12,7 +12,6 @@ import Data.Menu as Menu
 import Data.Config exposing (Config)
 import InputController
 import Html exposing (Html, div)
-import Renderer.Canvas.MenuRenderer as MenuRenderer
 import List.Extra
 import Maybe.Extra
 import Color

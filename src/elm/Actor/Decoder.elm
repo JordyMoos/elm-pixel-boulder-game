@@ -42,7 +42,6 @@ import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
-import Canvas exposing (Canvas)
 import Color exposing (Color)
 import Color.Convert
 import Dict exposing (Dict)
@@ -588,12 +587,6 @@ coefficientsDecoder =
         |> JDP.required "a" Decode.int
         |> JDP.required "b" Decode.int
         |> JDP.required "c" Decode.int
-
-
-emptyImage : Canvas
-emptyImage =
-    Canvas.Size 32 32
-        |> Canvas.initialize
 
 
 spawnNeverRepeat : SpawnRepeat

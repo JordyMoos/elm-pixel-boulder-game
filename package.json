@@ -26,6 +26,6 @@
   "scripts": {
     "dev": "./node_modules/.bin/webpack-dev-server --config ./webpack.config.dev.js --open",
     "prod": "./node_modules/.bin/webpack --config ./webpack.config.prod.js -p",
-    "postinstall": "NODE_TLS_REJECT_UNAUTHORIZED=\"0\" ./node_modules/.bin/elm-install install"
+    "postinstall": "NODE_TLS_REJECT_UNAUTHORIZED=\"0\" ./node_modules/.bin/elm-package install"
   }
 }

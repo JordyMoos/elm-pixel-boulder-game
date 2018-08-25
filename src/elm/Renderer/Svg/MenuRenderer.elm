@@ -1,9 +1,9 @@
-module Renderer.Canvas.MenuRenderer exposing (..)
+module Renderer.Svg.MenuRenderer exposing (..)
 
 import Html exposing (Html)
 import Data.Config exposing (Config)
 import Data.Menu as Menu exposing (Menu)
-import Renderer.Canvas.TextRenderer as TextRenderer
+import Renderer.Svg.TextRenderer as TextRenderer
 import Maybe.Extra
 import List.Extra
 import Color
@@ -17,8 +17,7 @@ type alias WithText a =
 render : Config -> Int -> Menu (WithText a) -> Html msg
 render config tick menu =
     TextRenderer.renderText
-        config.width
-        config.height
+        config
         (Maybe.Extra.values
             [ List.Extra.last menu.items.before |> Maybe.map (\item -> ( 0, -3, Color.red, item.text ))
             , Just ( getXOffset config tick menu.items.selected.text, 3, Color.blue, menu.items.selected.text )

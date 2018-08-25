@@ -9,7 +9,6 @@ module Actor.Actor
         , View
         , Signs
         , Images
-        , CanvasImages
         , LevelConfig
         , Component(..)
         , Components
@@ -72,7 +71,6 @@ import Dict exposing (Dict)
 import Data.Config exposing (Config)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
-import Canvas exposing (Canvas)
 import Color exposing (Color)
 
 
@@ -123,10 +121,6 @@ type alias Signs =
 
 type alias Scene =
     List String
-
-
-type alias CanvasImages =
-    Dict String Canvas
 
 
 type alias Images =
