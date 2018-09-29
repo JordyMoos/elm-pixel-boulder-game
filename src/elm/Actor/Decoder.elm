@@ -43,7 +43,7 @@ import Data.Direction as Direction exposing (Direction)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Color exposing (Color)
-import Color.Convert
+import Util.Util as Util
 import Dict exposing (Dict)
 import Actor.EventManager as EventManager
 import Util.PrimeSearch as PrimeSearch
@@ -453,7 +453,7 @@ colorDecoder =
     Decode.string
         |> Decode.andThen
             (\stringColor ->
-                case Color.Convert.hexToColor stringColor of
+                case Util.hexToColor stringColor of
                     Ok color ->
                         Decode.succeed color
 

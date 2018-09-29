@@ -7,7 +7,7 @@ import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Position as Position exposing (Position)
 import Text
-import Color.Convert
+import Util.Util as Util
 
 
 type alias XOffset =
@@ -55,7 +55,7 @@ renderLine config xOffset yOffset color letters =
                                 , Attributes.height <| toString config.pixelSize
                                 , Attributes.x <| toString <| position.x * config.pixelSize
                                 , Attributes.y <| toString <| position.y * config.pixelSize
-                                , Attributes.fill <| Color.Convert.colorToHex color
+                                , Attributes.fill <| Util.colorToHex color
                                 ]
                                 []
                             ]

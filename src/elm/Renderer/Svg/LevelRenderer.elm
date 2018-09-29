@@ -10,7 +10,7 @@ import Data.Config exposing (Config)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Color exposing (Color)
-import Color.Convert
+import Util.Util as Util
 import Maybe.Extra
 import List.Extra
 import Dict exposing (Dict)
@@ -41,7 +41,7 @@ drawBackground tick config images backgroundData =
                 , Attributes.height <| toString <| (config.height * config.pixelSize)
                 , Attributes.x "0"
                 , Attributes.y "0"
-                , Attributes.fill <| Color.Convert.colorToHex <| getColor tick data
+                , Attributes.fill <| Util.colorToHex <| getColor tick data
                 ]
                 []
             ]
@@ -335,6 +335,6 @@ asPixel config viewPosition position color =
         , Attributes.height <| toString <| config.pixelSize
         , Attributes.x <| toString <| (position.x - viewPosition.x) * config.pixelSize
         , Attributes.y <| toString <| (position.y - viewPosition.y) * config.pixelSize
-        , Attributes.fill <| Color.Convert.colorToHex color
+        , Attributes.fill <| Util.colorToHex color
         ]
         []
