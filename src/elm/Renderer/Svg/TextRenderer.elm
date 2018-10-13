@@ -1,13 +1,13 @@
-module Renderer.Svg.TextRenderer exposing (renderText)
+module Renderer.Svg.TextRenderer exposing (Line, renderText)
 
 import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Position as Position exposing (Position)
 import Html exposing (Html)
+import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import Text
-import String
 
 
 type alias XOffset =
@@ -18,7 +18,15 @@ type alias YOffset =
     Int
 
 
-renderText : Config -> List ( XOffset, YOffset, Color, Text.Letters ) -> Html msg
+type alias Line =
+    { xOffset : XOffset
+    , yOffset : Int
+    , color : Color
+    , letters : Text.Letters
+    }
+
+
+renderText : Config -> List Line -> Html msg
 renderText config lines =
     Svg.svg
         [ Attributes.width <| String.fromInt <| (config.width * config.pixelSize)
@@ -30,26 +38,24 @@ renderText config lines =
         (renderLines config lines)
 
 
-
-renderLines : Config -> List ( XOffset, YOffset, Color, Text.Letters ) -> List (Svg msg)
+renderLines : Config -> List Line -> List (Svg msg)
 renderLines config lines =
     lines
         |> List.indexedMap
-            (\index ( xOffset, yOffset, color, line ) ->
-                renderLine config xOffset yOffset color line
+            (\index line ->
+                renderLine config line
             )
         |> List.concat
 
 
-
-renderLine : Config -> XOffset -> YOffset -> Color -> Text.Letters -> List (Svg msg)
-renderLine config givenXOffset yOffset color letters =
-    letters
+renderLine : Config -> Line -> List (Svg msg)
+renderLine config line =
+    line.letters
         |> List.foldr
             (\letter ( xOffset, ops ) ->
                 ( xOffset + letter.width + 1
                 , letter.positions
-                    |> List.map (Position.addPosition { x = xOffset, y = yOffset })
+                    |> List.map (Position.addPosition { x = xOffset, y = line.yOffset })
                     |> List.concatMap
                         (\position ->
                             [ Svg.rect
@@ -57,7 +63,7 @@ renderLine config givenXOffset yOffset color letters =
                                 , Attributes.height <| String.fromInt config.pixelSize
                                 , Attributes.x <| String.fromInt <| position.x * config.pixelSize
                                 , Attributes.y <| String.fromInt <| position.y * config.pixelSize
-                                , Attributes.fill <| Color.Convert.colorToHex color
+                                , Attributes.fill <| Color.toCssString line.color
                                 ]
                                 []
                             ]
@@ -65,7 +71,5 @@ renderLine config givenXOffset yOffset color letters =
                     |> List.append ops
                 )
             )
-            ( givenXOffset, [] )
+            ( line.xOffset, [] )
         |> Tuple.second
-
-

@@ -19,9 +19,9 @@ render config tick menu =
     TextRenderer.renderText
         config
         (Maybe.Extra.values
-            [ List.Extra.last menu.items.before |> Maybe.map (\item -> ( 0, -3, Color.red, item.text ))
-            , Just ( getXOffset config tick menu.items.selected.text, 3, Color.blue, menu.items.selected.text )
-            , List.head menu.items.after |> Maybe.map (\item -> ( 0, 9, Color.red, item.text ))
+            [ List.Extra.last menu.items.before |> Maybe.map (\item -> TextRenderer.Line 0 -3 Color.red item.text)
+            , Just <| TextRenderer.Line (getXOffset config tick menu.items.selected.text) 3 Color.blue menu.items.selected.text
+            , List.head menu.items.after |> Maybe.map (\item -> TextRenderer.Line 0 9 Color.red item.text)
             ]
         )
 
@@ -51,7 +51,7 @@ getXOffset config tick letters =
             tick // 4
 
         offset =
-            (modBy totalLength tickSpeedCorrection) - beforeLength
+            modBy totalLength tickSpeedCorrection - beforeLength
     in
     clamp minOffset maxOffset offset
         |> negate

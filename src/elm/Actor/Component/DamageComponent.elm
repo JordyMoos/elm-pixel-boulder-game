@@ -28,7 +28,7 @@ updateDamageComponent damageData damageDealingActor level =
                     |> Maybe.withDefault True
             )
         |> List.foldr
-            (\actor level ->
-                Common.removeActor actor level
+            (\actor accLevel ->
+                Common.removeActor actor accLevel
             )
             level

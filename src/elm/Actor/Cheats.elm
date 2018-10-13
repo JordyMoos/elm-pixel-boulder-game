@@ -29,8 +29,8 @@ addExplosion x y level =
 addBigExplosion : Position -> Level -> Level
 addBigExplosion position level =
     List.foldr
-        (\position level ->
-            level |> addExplosion position.x position.y
+        (\pos lev ->
+            lev |> addExplosion pos.x pos.y
         )
         level
         [ Position.addPositions [ position, Position.getOffsetFromDirection Direction.Left, Position.getOffsetFromDirection Direction.Up ]

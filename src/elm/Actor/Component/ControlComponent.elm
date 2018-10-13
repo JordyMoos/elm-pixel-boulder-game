@@ -27,8 +27,8 @@ updateControlComponent inputControllerDirection controlData actor level =
     if Transform.isActorMoving actor |> not then
         getControlDirection inputControllerDirection controlData actor level
             |> Maybe.map
-                (\( direction, actor ) ->
-                    handleDirection direction actor level
+                (\( direction, updatedActor ) ->
+                    handleDirection direction updatedActor level
                 )
             |> Maybe.withDefault level
 

@@ -47,7 +47,7 @@ update msg model =
                     Stay { model | levelConfig = levelConfigResponse }
 
                 RemoteData.Failure error ->
-                    Failed <| toString error
+                    Failed <| Debug.toString error
 
                 RemoteData.Success levelConfig ->
                     Success levelConfig

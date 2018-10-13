@@ -170,7 +170,6 @@ removeActorFromDict actorId level =
 -}
 
 
-
 addActor : Components -> Level -> Level
 addActor components givenLevel =
     givenLevel
@@ -228,7 +227,6 @@ addActor components givenLevel =
                 updateActor level.actors actor
                     |> updateActors level
            )
-
 
 
 incrementNextActorId : Level -> Level
@@ -307,7 +305,7 @@ getActorsThatAffectNeighborPosition actor direction level =
 getActorsThatAffect : Position -> Level -> List Actor
 getActorsThatAffect position level =
     List.map
-        (flip getActorIdsByPosition position)
+        (flip getActorIdsByPosition level)
         [ position
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Left
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Up

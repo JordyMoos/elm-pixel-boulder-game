@@ -34,9 +34,9 @@ setSpawnComponentData actor level data =
                 Dict.insert "spawn" component actor.components
            )
         |> Common.updateComponents actor
-        |> (\actor ->
-                ( actor
-                , Common.updateActor level.actors actor
+        |> (\updatedActor ->
+                ( updatedActor
+                , Common.updateActor level.actors updatedActor
                     |> Common.updateActors level
                 )
            )

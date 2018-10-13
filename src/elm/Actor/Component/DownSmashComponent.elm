@@ -33,8 +33,8 @@ updateDownSmashComponent downSmashData actor level =
                             level
                             |> List.filter Explodable.hasExplodableComponent
                             |> List.foldr
-                                (\downActor level ->
-                                    level
+                                (\downActor accLevel ->
+                                    accLevel
                                         |> Cheats.addBigExplosion (Position.addPosition position <| Position.getOffsetFromDirection Direction.Down)
                                         |> Common.removeActor downActor
                                 )
@@ -44,11 +44,11 @@ updateDownSmashComponent downSmashData actor level =
                         level
                 )
                     -- Update the WasMovingDown
-                    |> (\level ->
+                    |> (\accLevel ->
                             updateMovingDownState movingDown downSmashData
                                 |> updateDownSmash
                                     actor
-                                    level
+                                    accLevel
                        )
                     |> Just
             )

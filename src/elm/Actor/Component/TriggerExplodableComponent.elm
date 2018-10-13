@@ -34,8 +34,8 @@ updateTriggerExplodableComponent triggerData actor level =
             )
         |> List.concat
         |> List.foldr
-            (\( position, explodableActor ) level ->
-                level
+            (\( position, explodableActor ) accLevel ->
+                accLevel
                     |> Cheats.addBigExplosion position
                     |> Common.removeActor explodableActor
             )

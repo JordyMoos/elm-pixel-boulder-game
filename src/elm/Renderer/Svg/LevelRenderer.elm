@@ -11,6 +11,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import List.Extra
 import Maybe.Extra
+import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import Text
@@ -23,8 +24,8 @@ renderLevel currentTick config level images =
         , drawLevel currentTick config level images
         ]
         |> Svg.svg
-            [ Attributes.width <| toString <| (config.width * config.pixelSize)
-            , Attributes.height <| toString <| (config.height * config.pixelSize)
+            [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
+            , Attributes.height <| String.fromInt <| config.height * config.pixelSize
             , Attributes.x "0"
             , Attributes.y "0"
             , Attributes.version "1.1"
@@ -36,11 +37,11 @@ drawBackground tick config images backgroundData =
     case backgroundData of
         Actor.PixelRenderComponent data ->
             [ Svg.rect
-                [ Attributes.width <| toString <| (config.width * config.pixelSize)
-                , Attributes.height <| toString <| (config.height * config.pixelSize)
+                [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
+                , Attributes.height <| String.fromInt <| config.height * config.pixelSize
                 , Attributes.x "0"
                 , Attributes.y "0"
-                , Attributes.fill <| Color.Convert.colorToHex <| getColor tick data
+                , Attributes.fill <| Color.toCssString <| getColor tick data
                 ]
                 []
             ]
@@ -51,8 +52,8 @@ drawBackground tick config images backgroundData =
                 |> Maybe.map
                     (\image ->
                         [ Svg.image
-                            [ Attributes.width <| toString <| (config.width * config.pixelSize)
-                            , Attributes.height <| toString <| (config.height * config.pixelSize)
+                            [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
+                            , Attributes.height <| String.fromInt <| config.height * config.pixelSize
                             , Attributes.xlinkHref image
                             , Attributes.x "0"
                             , Attributes.y "0"
@@ -69,8 +70,8 @@ drawLevel tick config level images =
         (\y acc ->
             List.range level.view.position.x (level.view.position.x + level.view.height - 1)
                 |> List.foldr
-                    (\x acc ->
-                        getDrawOps tick config level.view.position { x = x, y = y } level images acc
+                    (\x innerAcc ->
+                        getDrawOps tick config level.view.position { x = x, y = y } level images innerAcc
                     )
                     acc
         )
@@ -138,12 +139,12 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                     (\image ->
                         ( List.append backOps
                             [ Svg.image
-                                [ Attributes.width (toString config.pixelSize)
-                                , Attributes.height (toString config.pixelSize)
+                                [ Attributes.width <| String.fromInt config.pixelSize
+                                , Attributes.height <| String.fromInt config.pixelSize
                                 , Attributes.xlinkHref image
-                                , Attributes.x <| toString <| (transformData.position.x - viewPosition.x) * config.pixelSize
-                                , Attributes.y <| toString <| (transformData.position.y - viewPosition.y) * config.pixelSize
-                                , Attributes.id <| "actor-" ++ toString actorId
+                                , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize
+                                , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize
+                                , Attributes.id <| "actor-" ++ String.fromInt actorId
                                 ]
                                 []
                             ]
@@ -182,12 +183,12 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                         ( backOps
                         , List.append frontOps
                             [ Svg.image
-                                [ Attributes.width (toString config.pixelSize)
-                                , Attributes.height (toString config.pixelSize)
+                                [ Attributes.width <| String.fromInt config.pixelSize
+                                , Attributes.height <| String.fromInt config.pixelSize
                                 , Attributes.xlinkHref image
-                                , Attributes.x <| toString <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                                , Attributes.y <| toString <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                                , Attributes.id <| "actor-" ++ toString actorId
+                                , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                                , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                                , Attributes.id <| "actor-" ++ String.fromInt actorId
                                 ]
                                 []
                             ]
@@ -295,32 +296,30 @@ combineColors : Color -> Color -> Color
 combineColors color1 color2 =
     let
         rgba1 =
-            Color.toRgb color1
+            Color.toRgba color1
 
         rgba2 =
-            Color.toRgb color2
+            Color.toRgba color2
 
         intAlpha1 =
-            round (rgba1.alpha * 100.0)
+            rgba1.alpha * 100.0
 
         intAlpha2 =
-            round (rgba2.alpha * 100.0)
-
-        combinedRgba =
-            { red = round <| toFloat ((rgba1.red * intAlpha1) + (rgba2.red * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
-            , green = round <| toFloat ((rgba1.green * intAlpha1) + (rgba2.green * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
-            , blue = round <| toFloat ((rgba1.blue * intAlpha1) + (rgba2.blue * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
-            , alpha = max rgba1.alpha rgba2.alpha
-            }
+            rgba2.alpha * 100.0
     in
-    Color.rgba combinedRgba.red combinedRgba.green combinedRgba.blue combinedRgba.alpha
+    Color.fromRgba
+        { red = ((rgba1.red * intAlpha1) + (rgba2.red * intAlpha2)) / max 1 (intAlpha1 + intAlpha2)
+        , green = ((rgba1.green * intAlpha1) + (rgba2.green * intAlpha2)) / max 1 (intAlpha1 + intAlpha2)
+        , blue = ((rgba1.blue * intAlpha1) + (rgba2.blue * intAlpha2)) / max 1 (intAlpha1 + intAlpha2)
+        , alpha = max rgba1.alpha rgba2.alpha
+        }
 
 
 calculateColor : Color -> Float -> Color
 calculateColor color percentage =
     let
         rgba =
-            Color.toRgb color
+            Color.toRgba color
 
         newRgba =
             { rgba | alpha = percentage / 100 }
@@ -331,10 +330,10 @@ calculateColor color percentage =
 asPixel : Config -> Position -> Position -> Color -> Svg msg
 asPixel config viewPosition position color =
     Svg.rect
-        [ Attributes.width <| toString <| config.pixelSize
-        , Attributes.height <| toString <| config.pixelSize
-        , Attributes.x <| toString <| (position.x - viewPosition.x) * config.pixelSize
-        , Attributes.y <| toString <| (position.y - viewPosition.y) * config.pixelSize
-        , Attributes.fill <| Color.Convert.colorToHex color
+        [ Attributes.width <| String.fromInt config.pixelSize
+        , Attributes.height <| String.fromInt config.pixelSize
+        , Attributes.x <| String.fromInt <| (position.x - viewPosition.x) * config.pixelSize
+        , Attributes.y <| String.fromInt <| (position.y - viewPosition.y) * config.pixelSize
+        , Attributes.fill <| Color.toCssString color
         ]
         []
