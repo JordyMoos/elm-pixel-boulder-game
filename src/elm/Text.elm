@@ -1,8 +1,8 @@
-module Text exposing (Letter, Letters, stringToLetters, letterHeight)
+module Text exposing (Letter, Letters, letterHeight, stringToLetters)
 
 import Color exposing (Color)
-import Dict exposing (Dict)
 import Data.Position as Position exposing (Position)
+import Dict exposing (Dict)
 import Maybe.Extra
 
 
@@ -294,7 +294,7 @@ getPositions design =
     design
         |> List.indexedMap
             (\y line ->
-                (String.toList line)
+                String.toList line
                     |> List.indexedMap
                         (\x symbol ->
                             [ symbol ]
@@ -311,6 +311,6 @@ stringToLetters string =
     string
         |> String.toLower
         |> String.toList
-        |> List.map (flip Dict.get dictionary)
+        |> List.map (\a -> Dict.get a dictionary)
         |> Maybe.Extra.values
         |> List.reverse

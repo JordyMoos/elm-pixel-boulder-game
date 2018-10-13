@@ -1,12 +1,12 @@
-module Renderer.Svg.MenuRenderer exposing (..)
+module Renderer.Svg.MenuRenderer exposing (WithText, getLineLength, getXOffset, render)
 
-import Html exposing (Html)
+import Color
 import Data.Config exposing (Config)
 import Data.Menu as Menu exposing (Menu)
-import Renderer.Svg.TextRenderer as TextRenderer
-import Maybe.Extra
+import Html exposing (Html)
 import List.Extra
-import Color
+import Maybe.Extra
+import Renderer.Svg.TextRenderer as TextRenderer
 import Text
 
 
@@ -51,10 +51,10 @@ getXOffset config tick letters =
             tick // 4
 
         offset =
-            (tickSpeedCorrection % totalLength) - beforeLength
+            (modBy totalLength tickSpeedCorrection) - beforeLength
     in
-        clamp minOffset maxOffset offset
-            |> negate
+    clamp minOffset maxOffset offset
+        |> negate
 
 
 getLineLength : Text.Letters -> Int

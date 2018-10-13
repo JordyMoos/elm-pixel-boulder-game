@@ -1,26 +1,25 @@
-module GameState.PlayingLevel.PlayingLevel
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.PlayingLevel exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Data.Config exposing (Config)
 import Actor.Actor as Actor
-import GameState.PlayingLevel.Playing as Playing
-import GameState.PlayingLevel.PauseMenu as PauseMenu
-import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
-import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
-import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import Data.Config exposing (Config)
+import GameState.PlayingLevel.Animation.Animation as Animation
+import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
 import GameState.PlayingLevel.Completed.CompletedAnimation as CompletedAnimation
 import GameState.PlayingLevel.Completed.CompletedDescription as CompletedDescription
 import GameState.PlayingLevel.Completed.CompletedMenu as CompletedMenu
-import GameState.PlayingLevel.Animation.Animation as Animation
-import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
-import InputController
+import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
+import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
+import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import GameState.PlayingLevel.PauseMenu as PauseMenu
+import GameState.PlayingLevel.Playing as Playing
 import Html exposing (Html)
+import InputController
 
 
 type alias Model =

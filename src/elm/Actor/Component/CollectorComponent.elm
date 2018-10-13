@@ -3,15 +3,15 @@ module Actor.Component.CollectorComponent exposing (updateCollectorComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Level
-        , Components
-        , CollectorComponentData
         , CollectibleComponentData
+        , CollectorComponentData
+        , Components
+        , Level
         )
 import Actor.Common as Common
-import Maybe.Extra
 import Actor.Component.CollectibleComponent as CollectibleComponent
 import Dict
+import Maybe.Extra
 
 
 updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
@@ -60,7 +60,7 @@ updateCollectorComponentData collector collectible =
         |> Dict.update
             collectible.name
             (\maybeCurrentQuantity ->
-                Just <| (Maybe.withDefault 0 maybeCurrentQuantity) + collectible.quantity
+                Just <| Maybe.withDefault 0 maybeCurrentQuantity + collectible.quantity
             )
         |> updateCollectorInventory collector
 

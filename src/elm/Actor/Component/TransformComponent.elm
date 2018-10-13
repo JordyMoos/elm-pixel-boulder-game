@@ -1,19 +1,19 @@
-module Actor.Component.TransformComponent exposing (..)
+module Actor.Component.TransformComponent exposing (calculateCompletionPercentage, getMovingTowardsData, getNewPosition, isActorMoving, isMoving, isMovingAt, isMovingDown, isNotMoving, isNotMovingAt, movingTicks, startMovingTowards, updateTransformComponent)
 
 import Actor.Actor as Actor
     exposing
         ( Actor
+        , Component(..)
         , Level
-        , Component(TransformComponent)
         , MovingState(..)
         , MovingTowardsData
         , TransformComponentData
         )
 import Actor.Common as Common
-import Maybe.Extra
-import Dict
-import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
+import Dict
+import Maybe.Extra
 
 
 movingTicks : Int
@@ -45,6 +45,7 @@ updateTransformComponent transformData actor level =
                         |> Common.updateActor level.actors
                         |> Common.updateActors level
                         |> Just
+
                 else
                     -- Finished moving
                     Dict.insert
@@ -67,7 +68,7 @@ updateTransformComponent transformData actor level =
 
 calculateCompletionPercentage : Int -> Int -> Float
 calculateCompletionPercentage totalTickCount tickCountLeft =
-    100 / (toFloat (totalTickCount)) * (toFloat (totalTickCount - tickCountLeft))
+    100 / toFloat totalTickCount * toFloat (totalTickCount - tickCountLeft)
 
 
 getMovingTowardsData : TransformComponentData -> Maybe MovingTowardsData

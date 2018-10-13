@@ -12,7 +12,7 @@ init coefficients config currentTick =
         (config.width * config.height)
         |> List.map
             (\number ->
-                { x = (number - 1) % config.width
+                { x = modBy config.width (number - 1)
                 , y = (number - 1) // config.height
                 }
             )

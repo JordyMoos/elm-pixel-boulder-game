@@ -1,77 +1,91 @@
-module Actor.Actor
-    exposing
-        ( ActorId
-        , Actor
-        , Actors
-        , Level
-        , Scene
-        , Entities
-        , View
-        , Signs
-        , Images
-        , LevelConfig
-        , Component(..)
-        , Components
-        , PositionIndex
-        , KeyedComponent
-          -- TransformComponent
-        , TransformComponentData
-        , MovingTowardsData
-        , MovingState(..)
-          -- PhysicsComponent
-        , PhysicsComponentData
-        , Shape(..)
-          -- CollectibleComponent
-        , CollectibleComponentData
-          -- CollectorComponent
-        , CollectorComponentData
-        , Inventory
-          -- ControlComponent
-        , ControlComponentData
-        , ControlSettings
-        , ControlType(..)
-        , WalkAroundAiControlData
-          -- CameraComponent
-        , CameraComponentData
-          -- TriggerExplodableComponent
-        , TriggerExplodableComponentData
-          -- LifetimeComponent
-        , LifetimeComponentData
-          -- DamageComponent
-        , DamageComponentData
-          -- SpawnComponent
-        , SpawnComponentData
-        , SpawnRepeat
-        , SpawnRepeatTimes(..)
-          -- DownSmashComponent
-        , DownSmashComponentData
-        , MovingDownState(..)
-          -- RenderComponent
-        , RenderComponentData(..)
-        , PixelRenderComponentData
-        , ImageRenderComponentData
-        , ImagesData
-          -- TagComponent
-        , TagComponentData
-          -- Animation
-        , AnimationSetup
-          -- EventManager
-        , Event(..)
-        , Events
-        , EventAction(..)
-        , LevelFailedData
-        , LevelCompletedData
-        , Subscriber
-        , Subscribers
-        , EventManager
-        , emptyEventManager
-        )
+module Actor.Actor exposing
+    ( Actor
+    , ActorId
+    , Actors
+    ,  AnimationSetup
+       -- EventManager
 
-import Dict exposing (Dict)
+    ,  CameraComponentData
+       -- TriggerExplodableComponent
+
+    ,  CollectibleComponentData
+       -- CollectorComponent
+
+    , CollectorComponentData
+    , Component(..)
+    , Components
+    , ControlComponentData
+    , ControlSettings
+    , ControlType(..)
+    ,  DamageComponentData
+       -- SpawnComponent
+
+    , DownSmashComponentData
+    , Entities
+    , Event(..)
+    , EventAction(..)
+    , EventManager
+    , Events
+    , ImageRenderComponentData
+    , Images
+    ,  ImagesData
+       -- TagComponent
+
+    ,  Inventory
+       -- ControlComponent
+
+    ,  KeyedComponent
+       -- TransformComponent
+
+    , Level
+    , LevelCompletedData
+    , LevelConfig
+    , LevelFailedData
+    ,  LifetimeComponentData
+       -- DamageComponent
+
+    ,  MovingDownState(..)
+       -- RenderComponent
+
+    ,  MovingState(..)
+       -- PhysicsComponent
+
+    , MovingTowardsData
+    , PhysicsComponentData
+    , PixelRenderComponentData
+    , PositionIndex
+    , RenderComponentData(..)
+    , Scene
+    ,  Shape(..)
+       -- CollectibleComponent
+
+    , Signs
+    , SpawnComponentData
+    , SpawnRepeat
+    ,  SpawnRepeatTimes(..)
+       -- DownSmashComponent
+
+    , Subscriber
+    , Subscribers
+    ,  TagComponentData
+       -- Animation
+
+    , TransformComponentData
+    ,  TriggerExplodableComponentData
+       -- LifetimeComponent
+
+    , View
+    ,  WalkAroundAiControlData
+       -- CameraComponent
+
+    , emptyEventManager
+    )
+
+import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
-import Color exposing (Color)
+import Dict exposing (Dict)
 
 
 type alias ActorId =

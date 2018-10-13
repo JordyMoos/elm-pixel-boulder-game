@@ -1,19 +1,18 @@
 module Renderer.Svg.LevelRenderer exposing (renderLevel)
 
-import Svg exposing (Svg)
-import Svg.Attributes as Attributes
 import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
-import Html exposing (Html)
+import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
-import Color exposing (Color)
-import Color.Convert
-import Maybe.Extra
-import List.Extra
 import Dict exposing (Dict)
+import Html exposing (Html)
+import List.Extra
+import Maybe.Extra
+import Svg exposing (Svg)
+import Svg.Attributes as Attributes
 import Text
 
 
@@ -48,7 +47,7 @@ drawBackground tick config images backgroundData =
 
         Actor.ImageRenderComponent data ->
             getImageName tick data.default
-                |> Maybe.andThen (flip Dict.get images)
+                |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
                     (\image ->
                         [ Svg.image
@@ -106,6 +105,7 @@ getImage tick config viewPosition position level images acc =
                                     (\transformData ->
                                         if transformData.position == position then
                                             Just transformData
+
                                         else
                                             Nothing
                                     )
@@ -132,8 +132,8 @@ getImageOp :
 getImageOp tick config imageRenderData transformData viewPosition images actorId ( backOps, frontOps ) =
     case transformData.movingState of
         Actor.NotMoving ->
-            (getImageName tick imageRenderData.default)
-                |> Maybe.andThen (flip Dict.get images)
+            getImageName tick imageRenderData.default
+                |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
                     (\image ->
                         ( List.append backOps
@@ -143,7 +143,7 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                                 , Attributes.xlinkHref image
                                 , Attributes.x <| toString <| (transformData.position.x - viewPosition.x) * config.pixelSize
                                 , Attributes.y <| toString <| (transformData.position.y - viewPosition.y) * config.pixelSize
-                                , Attributes.id <| "actor-" ++ (toString actorId)
+                                , Attributes.id <| "actor-" ++ toString actorId
                                 ]
                                 []
                             ]
@@ -172,42 +172,42 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                         result =
                             round <| aFloat + offset
                     in
-                        result
+                    result
             in
-                getImageNamesDataByDirection towardsData.direction imageRenderData
-                    |> getImageName tick
-                    |> Maybe.andThen (flip Dict.get images)
-                    |> Maybe.map
-                        (\image ->
-                            ( backOps
-                            , List.append frontOps
-                                [ Svg.image
-                                    [ Attributes.width (toString config.pixelSize)
-                                    , Attributes.height (toString config.pixelSize)
-                                    , Attributes.xlinkHref image
-                                    , Attributes.x <| toString <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                                    , Attributes.y <| toString <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                                    , Attributes.id <| "actor-" ++ (toString actorId)
-                                    ]
-                                    []
+            getImageNamesDataByDirection towardsData.direction imageRenderData
+                |> getImageName tick
+                |> Maybe.andThen (\a -> Dict.get a images)
+                |> Maybe.map
+                    (\image ->
+                        ( backOps
+                        , List.append frontOps
+                            [ Svg.image
+                                [ Attributes.width (toString config.pixelSize)
+                                , Attributes.height (toString config.pixelSize)
+                                , Attributes.xlinkHref image
+                                , Attributes.x <| toString <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                                , Attributes.y <| toString <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                                , Attributes.id <| "actor-" ++ toString actorId
                                 ]
-                            )
+                                []
+                            ]
                         )
-                    |> Maybe.withDefault ( backOps, frontOps )
+                    )
+                |> Maybe.withDefault ( backOps, frontOps )
 
 
 getImageNamesDataByDirection : Direction -> Actor.ImageRenderComponentData -> Actor.ImagesData
 getImageNamesDataByDirection direction imageRenderData =
     Direction.getIDFromDirection direction
-        |> flip Dict.get imageRenderData.direction
+        |> (\a -> Dict.get a imageRenderData.direction)
         |> Maybe.withDefault imageRenderData.default
 
 
 getDrawOps : Int -> Config -> Position -> Position -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
 getDrawOps tick config viewPosition position level images acc =
     acc
-        |> (getPixel tick config viewPosition position level)
-        |> (getImage tick config viewPosition position level images)
+        |> getPixel tick config viewPosition position level
+        |> getImage tick config viewPosition position level images
 
 
 getPixel : Int -> Config -> Position -> Position -> Level -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
@@ -237,11 +237,13 @@ getPixel tick config viewPosition position level ( backOps, frontOps ) =
 
                                                 _ ->
                                                     Just (getColor tick renderData)
+
                                         else
                                             case transformData.movingState of
                                                 Actor.MovingTowards towardsData ->
                                                     if towardsData.position == position then
                                                         Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
+
                                                     else
                                                         Nothing
 
@@ -266,24 +268,22 @@ getPixel tick config viewPosition position level ( backOps, frontOps ) =
             Nothing
         |> Maybe.andThen
             (\color ->
-                Just <| ( List.append backOps [ (asPixel config viewPosition position color) ], frontOps )
+                Just <| ( List.append backOps [ asPixel config viewPosition position color ], frontOps )
             )
         |> Maybe.withDefault ( backOps, frontOps )
 
 
 getColor : Int -> Actor.PixelRenderComponentData -> Color
 getColor tick renderData =
-    round ((toFloat tick) / (toFloat (max renderData.ticksPerColor 1)))
-        % (max 1 <| List.length renderData.colors)
-        |> (flip List.Extra.getAt) renderData.colors
+    modBy (max 1 <| List.length renderData.colors) (round (toFloat tick / toFloat (max renderData.ticksPerColor 1)))
+        |> (\b a -> List.Extra.getAt a b) renderData.colors
         |> Maybe.withDefault noColor
 
 
 getImageName : Int -> Actor.ImagesData -> Maybe String
 getImageName tick imagesData =
-    round ((toFloat tick) / (toFloat (max imagesData.ticksPerImage 1)))
-        % (max 1 <| List.length imagesData.names)
-        |> (flip List.Extra.getAt) imagesData.names
+    modBy (max 1 <| List.length imagesData.names) (round (toFloat tick / toFloat (max imagesData.ticksPerImage 1)))
+        |> (\b a -> List.Extra.getAt a b) imagesData.names
 
 
 noColor : Color
@@ -307,13 +307,13 @@ combineColors color1 color2 =
             round (rgba2.alpha * 100.0)
 
         combinedRgba =
-            { red = round <| (toFloat ((rgba1.red * intAlpha1) + (rgba2.red * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
-            , green = round <| (toFloat ((rgba1.green * intAlpha1) + (rgba2.green * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
-            , blue = round <| (toFloat ((rgba1.blue * intAlpha1) + (rgba2.blue * intAlpha2))) / (toFloat (max 1 (intAlpha1 + intAlpha2)))
-            , alpha = (max rgba1.alpha rgba2.alpha)
+            { red = round <| toFloat ((rgba1.red * intAlpha1) + (rgba2.red * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
+            , green = round <| toFloat ((rgba1.green * intAlpha1) + (rgba2.green * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
+            , blue = round <| toFloat ((rgba1.blue * intAlpha1) + (rgba2.blue * intAlpha2)) / toFloat (max 1 (intAlpha1 + intAlpha2))
+            , alpha = max rgba1.alpha rgba2.alpha
             }
     in
-        Color.rgba combinedRgba.red combinedRgba.green combinedRgba.blue combinedRgba.alpha
+    Color.rgba combinedRgba.red combinedRgba.green combinedRgba.blue combinedRgba.alpha
 
 
 calculateColor : Color -> Float -> Color
@@ -323,9 +323,9 @@ calculateColor color percentage =
             Color.toRgb color
 
         newRgba =
-            { rgba | alpha = (percentage / 100) }
+            { rgba | alpha = percentage / 100 }
     in
-        Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
+    Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
 asPixel : Config -> Position -> Position -> Color -> Svg msg

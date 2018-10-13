@@ -1,22 +1,21 @@
-module GameState.PlayingLevel.Failed.FailedMenu
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.Failed.FailedMenu exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Text
-import Data.Menu as Menu
+import Actor.Actor as Actor
+import Color
 import Data.Config exposing (Config)
-import InputController
+import Data.Menu as Menu
 import Html exposing (Html, div)
+import InputController
 import List.Extra
 import Maybe.Extra
-import Color
-import Actor.Actor as Actor
 import Menu.TextMenu as TextMenu
+import Text
 
 
 type alias Model =

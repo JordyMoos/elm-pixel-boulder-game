@@ -1,24 +1,23 @@
-module GameState.PlayingLevel.Failed.FailedAnimation
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.Failed.FailedAnimation exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Dict
-import LevelInitializer
-import InputController
-import Renderer.Svg.LevelRenderer as LevelRenderer
-import Html exposing (Html)
 import Actor.EventManager as EventManager
-import GameState.PlayingLevel.Animation.Animation as Animation
 import Actor.LevelUpdate as LevelUpdate
+import Data.Config exposing (Config)
+import Data.Direction as Direction exposing (Direction)
+import Dict
+import GameState.PlayingLevel.Animation.Animation as Animation
+import Html exposing (Html)
+import InputController
+import LevelInitializer
+import Renderer.Svg.LevelRenderer as LevelRenderer
 
 
 type alias Model =
@@ -55,8 +54,8 @@ updateTick currentTick inputModel model =
             case Animation.updateTick currentTick model.animationModel model.level of
                 Animation.Stay animationModel level ->
                     model
-                        |> flip setAnimation animationModel
-                        |> flip setLevel level
+                        |> (\a -> setAnimation a animationModel)
+                        |> (\a -> setLevel a level)
                         |> (\model ->
                                 LevelUpdate.update
                                     (InputController.getCurrentDirection inputModel)

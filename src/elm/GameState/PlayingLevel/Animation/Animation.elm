@@ -1,17 +1,16 @@
-module GameState.PlayingLevel.Animation.Animation
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        )
+module GameState.PlayingLevel.Animation.Animation exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    )
 
 import Actor.Actor as Actor exposing (Level)
-import Data.Position as Position exposing (Position)
-import Data.Config as Config exposing (Config)
 import Actor.Common as Common
-import Dict
 import Color
+import Data.Config as Config exposing (Config)
+import Data.Position as Position exposing (Position)
+import Dict
 import List.Extra
 import Util.PrimeSearch as PrimeSearch
 
@@ -56,7 +55,7 @@ updateTick currentTick model level =
 addActor : Int -> Model -> Position -> Level -> Level
 addActor currentTick model position level =
     getEntityName currentTick model.entityNames
-        |> Maybe.andThen (flip Dict.get model.entities)
+        |> Maybe.andThen (\a -> Dict.get a model.entities)
         |> Maybe.map
             (\entity ->
                 Common.addActor
@@ -73,5 +72,5 @@ addActor currentTick model position level =
 getEntityName : Int -> List String -> Maybe String
 getEntityName currentTick entityNames =
     List.Extra.getAt
-        (currentTick % (List.length entityNames))
+        (modBy (List.length entityNames) currentTick)
         entityNames

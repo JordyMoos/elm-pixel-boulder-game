@@ -1,10 +1,9 @@
-module Data.Position
-    exposing
-        ( Position
-        , addPosition
-        , addPositions
-        , getOffsetFromDirection
-        )
+module Data.Position exposing
+    ( Position
+    , addPosition
+    , addPositions
+    , getOffsetFromDirection
+    )
 
 import Data.Direction as Direction exposing (Direction)
 

@@ -1,10 +1,9 @@
-module Data.Direction
-    exposing
-        ( Direction(..)
-        , getDirectionFromID
-        , getIDFromDirection
-        , getIDFromKey
-        )
+module Data.Direction exposing
+    ( Direction(..)
+    , getDirectionFromID
+    , getIDFromDirection
+    , getIDFromKey
+    )
 
 
 type Direction
@@ -16,7 +15,7 @@ type Direction
 
 getDirectionFromID : Int -> Direction
 getDirectionFromID id =
-    case id % 4 of
+    case modBy 4 id of
         0 ->
             Left
 

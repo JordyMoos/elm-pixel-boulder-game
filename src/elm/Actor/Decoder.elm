@@ -1,56 +1,55 @@
-module Actor.Decoder exposing (levelConfigDecoder, defaultBackground)
+module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
-        ( LevelConfig
-        , Entities
-        , Signs
-        , Scene
-        , Images
-        , Component(..)
-        , Components
-        , RenderComponentData(..)
-        , KeyedComponent
-        , MovingDownState(..)
-        , PixelRenderComponentData
-        , ImageRenderComponentData
-        , ImagesData
-        , SpawnComponentData
-        , SpawnRepeat
-        , SpawnRepeatTimes(..)
+        ( AnimationSetup
         , CameraComponentData
-        , PhysicsComponentData
-        , LifetimeComponentData
-        , DamageComponentData
-        , TriggerExplodableComponentData
         , CollectibleComponentData
         , CollectorComponentData
-        , Inventory
-        , Shape(..)
+        , Component(..)
+        , Components
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
-        , WalkAroundAiControlData
-        , TagComponentData
-        , Subscriber
+        , DamageComponentData
+        , Entities
         , EventAction(..)
-        , LevelFailedData
+        , ImageRenderComponentData
+        , Images
+        , ImagesData
+        , Inventory
+        , KeyedComponent
         , LevelCompletedData
-        , AnimationSetup
+        , LevelConfig
+        , LevelFailedData
+        , LifetimeComponentData
+        , MovingDownState(..)
+        , PhysicsComponentData
+        , PixelRenderComponentData
+        , RenderComponentData(..)
+        , Scene
+        , Shape(..)
+        , Signs
+        , SpawnComponentData
+        , SpawnRepeat
+        , SpawnRepeatTimes(..)
+        , Subscriber
+        , TagComponentData
+        , TriggerExplodableComponentData
+        , WalkAroundAiControlData
         )
-import Data.Position as Position exposing (Position)
-import Data.Direction as Direction exposing (Direction)
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as JDP
-import Color exposing (Color)
-import Color.Convert
-import Dict exposing (Dict)
 import Actor.EventManager as EventManager
-import Util.PrimeSearch as PrimeSearch
+import Color exposing (Color)
+import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
+import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as JDP
 import Maybe.Extra
+import Util.PrimeSearch as PrimeSearch
 
 
 defaultCameraBorderSize : Int
@@ -218,6 +217,7 @@ decodeDirectionImagesData =
                     |> (\newDict ->
                             if Dict.size dict == Dict.size newDict then
                                 Decode.succeed newDict
+
                             else
                                 Decode.fail "There are invalid directions in the image data"
                        )

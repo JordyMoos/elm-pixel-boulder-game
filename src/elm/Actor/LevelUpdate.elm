@@ -1,17 +1,17 @@
 module Actor.LevelUpdate exposing (update)
 
-import Data.Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Actor.Component.TransformComponent as Transform
+import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
-import Actor.Component.CameraComponent as Camera
+import Actor.Component.DamageComponent as Damage
 import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
-import Actor.Component.DamageComponent as Damage
-import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Actor.Component.SpawnComponent as Spawn
+import Actor.Component.TransformComponent as Transform
+import Actor.Component.TriggerExplodableComponent as TriggerExplodable
+import Data.Direction exposing (Direction)
 import Dict
 
 
@@ -70,7 +70,7 @@ update maybeDirection level levelConfig =
                                                                             _ ->
                                                                                 level
                                                                 in
-                                                                    Just updatedLevel
+                                                                Just updatedLevel
                                                             )
                                                         |> Maybe.withDefault level
                                                 )

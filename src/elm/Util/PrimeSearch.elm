@@ -26,26 +26,28 @@ primeSearch coefficients maxValue =
             findLowestPrime maxElements
 
         skip =
-            if skipSetup % prime == 0 then
+            if modBy prime skipSetup == 0 then
                 skipSetup + 1
+
             else
                 skipSetup
     in
-        List.foldr
-            (\_ ( acc, lastValue ) ->
-                let
-                    nextMember =
-                        (lastValue + skip) % prime
-                in
-                    if nextMember < maxElements then
-                        ( nextMember :: acc, nextMember )
-                    else
-                        ( acc, nextMember )
-            )
-            ( [], 0 )
-            (List.range 1 prime)
-            |> Tuple.first
-            |> List.drop 1
+    List.foldr
+        (\_ ( acc, lastValue ) ->
+            let
+                nextMember =
+                    modBy prime (lastValue + skip)
+            in
+            if nextMember < maxElements then
+                ( nextMember :: acc, nextMember )
+
+            else
+                ( acc, nextMember )
+        )
+        ( [], 0 )
+        (List.range 1 prime)
+        |> Tuple.first
+        |> List.drop 1
 
 
 findLowestPrime : Int -> Int

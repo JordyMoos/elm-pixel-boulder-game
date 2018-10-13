@@ -1,66 +1,73 @@
-module Actor.Common
-    exposing
-        ( updateComponents
-        , updateActor
-        , updateActors
-        , setView
-        , updateViewPosition
-          -- Remove
-        , removeActor
-        , removeActorFromIndexByPosition
-          -- Add
-        , addActor
-        , addActorToIndex
-          -- Query
-        , getActorById
-        , getActorsByPosition
-        , getActorIdsByPosition
-        , getActorIdsByXY
-        , getActorsThatAffectNeighborPosition
-        , getActorsThatAffect
-        , isEmpty
-        , isDestinationEmpty
-        , isDestinationEmptyByOffset
-          -- TransformComponent
-        , getTransformComponent
-        , getPosition
-          -- CameraComponent
-        , getCameraComponent
-          -- TagComponent
-        , getTagComponent
-          -- EventManager
-        , addEvent
-        )
+module Actor.Common exposing
+    ( addActor
+    ,  addActorToIndex
+       -- Query
 
-import Data.Position exposing (Position)
+    , addEvent
+    , getActorById
+    , getActorIdsByPosition
+    , getActorIdsByXY
+    , getActorsByPosition
+    , getActorsThatAffect
+    , getActorsThatAffectNeighborPosition
+    ,  getCameraComponent
+       -- TagComponent
+
+    ,  getPosition
+       -- CameraComponent
+
+    ,  getTagComponent
+       -- EventManager
+
+    , getTransformComponent
+    , isDestinationEmpty
+    ,  isDestinationEmptyByOffset
+       -- TransformComponent
+
+    , isEmpty
+    , removeActor
+    ,  removeActorFromIndexByPosition
+       -- Add
+
+    , setView
+    , updateActor
+    , updateActors
+    , updateComponents
+    ,  updateViewPosition
+       -- Remove
+
+    )
+
 import Actor.Actor as Actor
     exposing
-        ( ActorId
-        , Actor
+        ( Actor
+        , ActorId
         , Actors
+        , Component(..)
         , Components
+        , Event
+        , EventManager
+        , Events
         , Level
-        , View
-        , PositionIndex
-          -- For TransformComponent
-        , Component(TransformComponent, TagComponent)
-        , TransformComponentData
         , MovingState(..)
         , MovingTowardsData
           -- For TagComponent
-        , TagComponentData
-          -- For EventManager
-        , Event
-        , Events
+        , PositionIndex
+          -- For TransformComponent
         , Subscriber
         , Subscribers
-        , EventManager
+        , TagComponentData
+          -- For EventManager
+        , TransformComponentData
+        , View
         )
+import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
 import Dict
 import List.Extra
-import Data.Position as Position exposing (Position)
-import Data.Direction as Direction exposing (Direction)
 import Maybe.Extra
+import Pilf exposing (flip)
+
 
 
 {-
@@ -163,9 +170,10 @@ removeActorFromDict actorId level =
 -}
 
 
+
 addActor : Components -> Level -> Level
-addActor components level =
-    level
+addActor components givenLevel =
+    givenLevel
         |> incrementNextActorId
         |> (\level ->
                 ( level
@@ -194,16 +202,16 @@ addActor components level =
                     |> Maybe.andThen
                         (\transform ->
                             updateViewPosition
-                                { x = transform.position.x - (round ((toFloat level.view.width) / 2))
-                                , y = transform.position.y - (round ((toFloat level.view.height) / 2))
+                                { x = transform.position.x - round (toFloat level.view.width / 2)
+                                , y = transform.position.y - round (toFloat level.view.height / 2)
                                 }
                                 level.view
-                                |> (flip setView) level
+                                |> (\b a -> setView a b) level
                                 |> Just
                         )
                     |> Maybe.andThen
-                        (\level ->
-                            Just ( level, actor )
+                        (\updatedLevel ->
+                            Just ( updatedLevel, actor )
                         )
                     |> Maybe.withDefault ( level, actor )
            )
@@ -220,6 +228,7 @@ addActor components level =
                 updateActor level.actors actor
                     |> updateActors level
            )
+
 
 
 incrementNextActorId : Level -> Level
@@ -298,9 +307,7 @@ getActorsThatAffectNeighborPosition actor direction level =
 getActorsThatAffect : Position -> Level -> List Actor
 getActorsThatAffect position level =
     List.map
-        (\position ->
-            getActorIdsByPosition position level
-        )
+        (flip getActorIdsByPosition position)
         [ position
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Left
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Up
@@ -320,6 +327,7 @@ getActorsThatAffect position level =
                         (\transformData ->
                             if transformData.position == position then
                                 Just True
+
                             else
                                 case transformData.movingState of
                                     MovingTowards towardsData ->

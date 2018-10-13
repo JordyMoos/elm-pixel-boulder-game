@@ -1,11 +1,10 @@
-module Data.Menu
-    exposing
-        ( Menu
-        , ListSelector
-        , Items
-        , moveMenuDown
-        , moveMenuUp
-        )
+module Data.Menu exposing
+    ( Items
+    , ListSelector
+    , Menu
+    , moveMenuDown
+    , moveMenuUp
+    )
 
 import Text
 

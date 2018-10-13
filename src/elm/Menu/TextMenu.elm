@@ -1,20 +1,19 @@
-module Menu.TextMenu
-    exposing
-        ( Model
-        , Action(..)
-        , Item
-        , TextMenu
-        , init
-        , updateTick
-        , view
-        )
+module Menu.TextMenu exposing
+    ( Action(..)
+    , Item
+    , Model
+    , TextMenu
+    , init
+    , updateTick
+    , view
+    )
 
-import Data.Menu as Menu
 import Data.Config exposing (Config)
-import Text
-import InputController
+import Data.Menu as Menu
 import Html exposing (Html)
+import InputController
 import Renderer.Svg.MenuRenderer as MenuRenderer
+import Text
 
 
 type alias Model a =
@@ -55,6 +54,7 @@ updateTick inputModel model =
         model
             |> decreaseDelay
             |> Stay
+
     else
         case InputController.getOrderedPressedKeys inputModel |> List.head of
             Just InputController.UpKey ->

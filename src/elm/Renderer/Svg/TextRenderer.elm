@@ -1,13 +1,13 @@
 module Renderer.Svg.TextRenderer exposing (renderText)
 
-import Svg exposing (Svg)
-import Svg.Attributes as Attributes
-import Html exposing (Html)
 import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Position as Position exposing (Position)
+import Html exposing (Html)
+import Svg exposing (Svg)
+import Svg.Attributes as Attributes
 import Text
-import Color.Convert
+import String
 
 
 type alias XOffset =
@@ -21,13 +21,14 @@ type alias YOffset =
 renderText : Config -> List ( XOffset, YOffset, Color, Text.Letters ) -> Html msg
 renderText config lines =
     Svg.svg
-        [ Attributes.width <| toString <| (config.width * config.pixelSize)
-        , Attributes.height <| toString <| (config.height * config.pixelSize)
+        [ Attributes.width <| String.fromInt <| (config.width * config.pixelSize)
+        , Attributes.height <| String.fromInt <| (config.height * config.pixelSize)
         , Attributes.x "0"
         , Attributes.y "0"
         , Attributes.version "1.1"
         ]
         (renderLines config lines)
+
 
 
 renderLines : Config -> List ( XOffset, YOffset, Color, Text.Letters ) -> List (Svg msg)
@@ -40,8 +41,9 @@ renderLines config lines =
         |> List.concat
 
 
+
 renderLine : Config -> XOffset -> YOffset -> Color -> Text.Letters -> List (Svg msg)
-renderLine config xOffset yOffset color letters =
+renderLine config givenXOffset yOffset color letters =
     letters
         |> List.foldr
             (\letter ( xOffset, ops ) ->
@@ -51,10 +53,10 @@ renderLine config xOffset yOffset color letters =
                     |> List.concatMap
                         (\position ->
                             [ Svg.rect
-                                [ Attributes.width <| toString config.pixelSize
-                                , Attributes.height <| toString config.pixelSize
-                                , Attributes.x <| toString <| position.x * config.pixelSize
-                                , Attributes.y <| toString <| position.y * config.pixelSize
+                                [ Attributes.width <| String.fromInt config.pixelSize
+                                , Attributes.height <| String.fromInt config.pixelSize
+                                , Attributes.x <| String.fromInt <| position.x * config.pixelSize
+                                , Attributes.y <| String.fromInt <| position.y * config.pixelSize
                                 , Attributes.fill <| Color.Convert.colorToHex color
                                 ]
                                 []
@@ -63,5 +65,7 @@ renderLine config xOffset yOffset color letters =
                     |> List.append ops
                 )
             )
-            ( xOffset, [] )
+            ( givenXOffset, [] )
         |> Tuple.second
+
+

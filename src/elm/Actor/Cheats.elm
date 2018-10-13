@@ -2,15 +2,15 @@ module Actor.Cheats exposing (addBigExplosion)
 
 import Actor.Actor as Actor
     exposing
-        ( Level
-        , Component(TransformComponent, RenderComponent, LifetimeComponent, DamageComponent)
-        , RenderComponentData(PixelRenderComponent)
+        ( Component(..)
+        , Level
+        , RenderComponentData(..)
         )
-import Dict
 import Actor.Common as Common
-import Data.Position as Position exposing (Position)
-import Data.Direction as Direction exposing (Direction)
 import Color
+import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
+import Dict
 
 
 addExplosion : Int -> Int -> Level -> Level

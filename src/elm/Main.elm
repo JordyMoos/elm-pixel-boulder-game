@@ -1,27 +1,25 @@
 module Main exposing (main)
 
-import Html exposing (Html, text, br, div, button)
-import Html.Events exposing (onClick)
-import Keyboard
-import Time
-import Char
-import List.Extra
-import Dict exposing (Dict)
-import Maybe.Extra
-import Data.Position exposing (Position)
-import Data.Config exposing (Config)
-import InputController
 import Actor.Actor as Actor exposing (Level)
-import Json.Decode
-import Task
-import AnimationFrame
-import Text
-import GameState.MainMenu as MainMenu
-import GameState.LoadingLevel as LoadingLevel
-import GameState.PlayingLevel.PlayingLevel as PlayingLevel
 import Actor.Decoder
+import Char
+import Data.Config exposing (Config)
+import Data.Position exposing (Position)
+import Dict exposing (Dict)
+import GameState.LoadingLevel as LoadingLevel
+import GameState.MainMenu as MainMenu
+import GameState.PlayingLevel.PlayingLevel as PlayingLevel
+import Html exposing (Html, br, button, div, text)
+import Html.Events exposing (onClick)
+import InputController
+import Json.Decode
+import List.Extra
+import Maybe.Extra
 import Svg
 import Svg.Attributes
+import Task
+import Text
+import Time
 
 
 type alias Model =
@@ -70,39 +68,47 @@ init flags =
             , pixelSize = 32
             }
     in
-        { config = config
-        , flags = flags
-        , inputModel = InputController.init
-        , gameState = MainMenuState <| MainMenu.init config
-        , gameSpeed = Just 41
-        , currentTick = 0
-        , timeBuffer = 0
-        , maxUpdatesPerView = 4
-        , debug = True
-        }
-            ! []
+    ( { config = config
+      , flags = flags
+      , inputModel = InputController.init
+      , gameState = MainMenuState <| MainMenu.init config
+      , gameSpeed = Just 41
+      , currentTick = 0
+      , timeBuffer = 0
+      , maxUpdatesPerView = 4
+      , debug = True
+      }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.gameState ) of
         ( GameSpeed gameSpeed, _ ) ->
-            { model | gameSpeed = gameSpeed } ! []
+            ( { model | gameSpeed = gameSpeed }
+            , Cmd.none
+            )
 
         ( InputControllerMsg subMsg, _ ) ->
-            { model
+            ( { model
                 | inputModel =
                     InputController.update subMsg model.inputModel
-            }
-                ! []
+              }
+            , Cmd.none
+            )
 
         ( LoadingLevelMsg subMsg, LoadingLevelState subModel ) ->
             case LoadingLevel.update subMsg subModel of
                 LoadingLevel.Stay newModel ->
-                    { model | gameState = LoadingLevelState newModel } ! []
+                    ( { model | gameState = LoadingLevelState newModel }
+                    , Cmd.none
+                    )
 
                 LoadingLevel.Failed error ->
-                    { model | gameState = ErrorState error } ! []
+                    ( { model | gameState = ErrorState error }
+                    , Cmd.none
+                    )
 
                 LoadingLevel.Success levelConfig ->
                     gotoPlayingLevel levelConfig model
@@ -111,7 +117,9 @@ update msg model =
             updateGameState time model
 
         ( _, _ ) ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
 
 gotoPlayingLevel : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
@@ -119,7 +127,15 @@ gotoPlayingLevel levelConfig model =
     PlayingLevel.init model.config levelConfig
         |> PlayingLevelState
         |> setGameState model
-        |> flip (!) []
+        |> (\a ->
+                (\model cmds ->
+                    ( model
+                    , Cmd.batch cmds
+                    )
+                )
+                    a
+                    []
+           )
 
 
 updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
@@ -137,7 +153,15 @@ updateGameState time model =
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\model cmds ->
+                                                    ( model
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                                 MainMenu.LoadLevel name ->
                                     loadLevel model cmd name
@@ -149,7 +173,15 @@ updateGameState time model =
                                                 |> setGameState model
                                                 |> setInputModel (InputController.resetWasPressed model.inputModel)
                                                 |> increaseCurrentTick
-                                                |> flip (!) [ cmd ]
+                                                |> (\a ->
+                                                        (\model cmds ->
+                                                            ( model
+                                                            , Cmd.batch cmds
+                                                            )
+                                                        )
+                                                            a
+                                                            [ cmd ]
+                                                   )
 
                                         Ok levelConfig ->
                                             -- Need to update the ACC here..
@@ -163,7 +195,15 @@ updateGameState time model =
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\model cmds ->
+                                                    ( model
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                                 PlayingLevel.LoadLevel name ->
                                     loadLevel model cmd name
@@ -173,20 +213,33 @@ updateGameState time model =
                                         |> MainMenuState
                                         |> setGameState model
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\model cmds ->
+                                                    ( model
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                         -- Other states do not have updateTick
                         _ ->
                             ( model, cmd )
                 )
-                (model ! [])
-                (List.take model.maxUpdatesPerView <| List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                (( model
+                 , Cmd.none
+                 )
+                )
+                (List.take model.maxUpdatesPerView <| List.repeat ((model.timeBuffer + round time) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
                         ( updateTimeBuffer (round time) gameSpeed newModel, newCmd )
                    )
 
         Nothing ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
 
 loadLevel : Model -> Cmd Msg -> String -> ( Model, Cmd Msg )
@@ -195,12 +248,20 @@ loadLevel model cmd name =
         ( newModel, newCmd ) =
             LoadingLevel.init model.config name
     in
-        newModel
-            |> LoadingLevelState
-            |> setGameState model
-            |> setInputModel (InputController.resetWasPressed model.inputModel)
-            |> increaseCurrentTick
-            |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+    newModel
+        |> LoadingLevelState
+        |> setGameState model
+        |> setInputModel (InputController.resetWasPressed model.inputModel)
+        |> increaseCurrentTick
+        |> (\a ->
+                (\model cmds ->
+                    ( model
+                    , Cmd.batch cmds
+                    )
+                )
+                    a
+                    [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+           )
 
 
 setGameState : Model -> GameState -> Model
@@ -215,7 +276,7 @@ setInputModel inputModel model =
 
 updateTimeBuffer : Int -> Int -> Model -> Model
 updateTimeBuffer time gameSpeed model =
-    { model | timeBuffer = (model.timeBuffer + time) % gameSpeed }
+    { model | timeBuffer = modBy gameSpeed (model.timeBuffer + time) }
 
 
 increaseCurrentTick : Model -> Model
@@ -227,7 +288,7 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ (case model.gameState of
+        [ case model.gameState of
             MainMenuState subModel ->
                 MainMenu.view subModel
 
@@ -239,9 +300,9 @@ view model =
 
             ErrorState error ->
                 text <| "ERROR: " ++ error
-          )
         , if model.debug then
             debugView
+
           else
             text ""
         ]
@@ -289,8 +350,8 @@ subscriptions model =
                 Nothing ->
                     []
     in
-        List.append
-            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputModel)
-            ]
-            gameSpeedSub
-            |> Sub.batch
+    List.append
+        [ Sub.map InputControllerMsg (InputController.subscriptions model.inputModel)
+        ]
+        gameSpeedSub
+        |> Sub.batch

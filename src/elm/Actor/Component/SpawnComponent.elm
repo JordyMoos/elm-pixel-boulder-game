@@ -3,9 +3,9 @@ module Actor.Component.SpawnComponent exposing (updateSpawnComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Level
+        , Component(..)
         , Entities
-        , Component(SpawnComponent)
+        , Level
         , SpawnComponentData
         , SpawnRepeat
         , SpawnRepeatTimes(..)
@@ -20,6 +20,7 @@ updateSpawnComponent entities data actor level =
         spawnDecrementDelayTicks data
             |> setSpawnComponentData actor level
             |> Tuple.second
+
     else
         spawnActor entities data level
             |> updateSpawnComponentAfterSpawn data actor
@@ -58,6 +59,7 @@ spawnActor entities data level =
                         level
                 )
             |> Maybe.withDefault level
+
     else
         level
 
@@ -76,11 +78,12 @@ updateSpawnComponentAfterSpawn data actor level =
         RepeatTimes count ->
             if count > 0 then
                 RepeatTimes (count - 1)
-                    |> flip spawnUpdateRepeatTimes data.repeat
-                    |> flip spawnUpdateRepeat data
+                    |> (\a -> spawnUpdateRepeatTimes a data.repeat)
+                    |> (\a -> spawnUpdateRepeat a data)
                     |> spawnResetDelayTicks
                     |> setSpawnComponentData actor level
                     |> Tuple.second
+
             else
                 removeSpawnComponent actor level
 

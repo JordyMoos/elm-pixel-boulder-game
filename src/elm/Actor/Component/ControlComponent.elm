@@ -1,25 +1,25 @@
-module Actor.Component.ControlComponent exposing (updateControlComponent, getControlComponent)
+module Actor.Component.ControlComponent exposing (getControlComponent, updateControlComponent)
 
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Level
-        , Component(ControlComponent)
+        , Component(..)
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
+        , Level
         , WalkAroundAiControlData
         )
-import Data.Direction as Direction exposing (Direction)
-import Data.Position as Position exposing (Position)
 import Actor.Common as Common
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
 import Actor.Component.TransformComponent as Transform
-import Util.Util as Util
+import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
 import Dict
 import List.Extra
 import Maybe.Extra
+import Util.Util as Util
 
 
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
@@ -31,6 +31,7 @@ updateControlComponent inputControllerDirection controlData actor level =
                     handleDirection direction actor level
                 )
             |> Maybe.withDefault level
+
     else
         level
 
@@ -84,7 +85,7 @@ getWalkAroundAiDirection controlData aiData actor level =
     aiData.nextDirectionOffsets
         |> List.map
             (\directionOffset ->
-                Direction.getDirectionFromID <| (Direction.getIDFromDirection aiData.previousDirection) - directionOffset
+                Direction.getDirectionFromID <| Direction.getIDFromDirection aiData.previousDirection - directionOffset
             )
         |> List.Extra.find
             (\direction ->
@@ -188,6 +189,7 @@ handleDirection direction actor level =
                                 (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
                                 direction
                                 level
+
                         else if canPush actor otherActor direction level then
                             Common.getTransformComponent otherActor
                                 |> Maybe.map
@@ -205,6 +207,7 @@ handleDirection direction actor level =
                                                 direction
                                     )
                                 |> Maybe.withDefault level
+
                         else
                             level
 
@@ -256,9 +259,9 @@ canBeWalkedOver initiatingActor destinationActor =
 
 hasEnoughPushStrength : Actor -> Actor -> Bool
 hasEnoughPushStrength initiatingActor destinationActor =
-    (getPushStrength initiatingActor) > (Physics.getStrength destinationActor)
+    getPushStrength initiatingActor > Physics.getStrength destinationActor
 
 
 hasEnoughWalkOverStrength : Actor -> Actor -> Bool
 hasEnoughWalkOverStrength initiatingActor destinationActor =
-    (getWalkOverStrength initiatingActor) > (Physics.getStrength destinationActor)
+    getWalkOverStrength initiatingActor > Physics.getStrength destinationActor

@@ -1,24 +1,23 @@
-module GameState.PlayingLevel.Playing
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , resume
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.Playing exposing
+    ( Action(..)
+    , Model
+    , init
+    , resume
+    , updateTick
+    , view
+    )
 
-import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Dict
-import LevelInitializer
-import InputController
-import Renderer.Svg.LevelRenderer as LevelRenderer
-import Html exposing (Html)
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
+import Data.Config exposing (Config)
+import Data.Direction as Direction exposing (Direction)
+import Dict
+import Html exposing (Html)
+import InputController
+import LevelInitializer
+import Renderer.Svg.LevelRenderer as LevelRenderer
 
 
 type alias Model =
