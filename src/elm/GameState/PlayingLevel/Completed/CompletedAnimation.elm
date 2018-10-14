@@ -58,16 +58,16 @@ updateTick currentTick inputModel model =
                     model
                         |> (\a -> setAnimation a animationModel)
                         |> (\a -> setLevel a level)
-                        |> (\model ->
+                        |> (\updatedModel ->
                                 LevelUpdate.update
                                     (InputController.getCurrentDirection inputModel)
-                                    model.level
-                                    model.levelConfig
+                                    updatedModel.level
+                                    updatedModel.levelConfig
                                     -- We won't handle events
                                     |> EventManager.clearEvents
                                     -- Prevents view movement
-                                    |> Common.setView model.level.view
-                                    |> setLevel model
+                                    |> Common.setView updatedModel.level.view
+                                    |> setLevel updatedModel
                            )
                         |> Stay
 

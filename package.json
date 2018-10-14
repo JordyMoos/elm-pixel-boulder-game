@@ -1,31 +1,48 @@
 {
+  "author": "Jordy Moos",
   "name": "elm-pixel-boulder-game",
   "version": "0.0.1",
-  "repository": "https://github.com/JordyMoos/elm-pixel-boulder-game.git",
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.25.0",
-    "babel-loader": "^7.1.1",
-    "babel-preset-env": "^1.6.0",
-    "copy-webpack-plugin": "^4.2.3",
-    "css-loader": "^0.28.11",
-    "elm": "^0.18.0",
-    "elm-github-install": "^1.6.1",
-    "elm-hot-loader": "^0.5.4",
-    "elm-webpack-loader": "^4.4.0",
-    "file-loader": "^1.1.6",
-    "html-webpack-plugin": "^2.30.1",
-    "image-webpack-loader": "^3.4.2",
-    "node-sass": "^4.9.0",
-    "postcss-loader": "^2.1.5",
-    "sass-loader": "^6.0.7",
-    "style-loader": "^0.21.0",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
-  },
+  "description": "Elm Pixel Boulder Game Engine",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "./node_modules/.bin/webpack-dev-server --config ./webpack.config.dev.js --open",
-    "prod": "./node_modules/.bin/webpack --config ./webpack.config.prod.js -p",
-    "postinstall": "NODE_TLS_REJECT_UNAUTHORIZED=\"0\" ./node_modules/.bin/elm-package install"
+    "test": "elm-test",
+    "start": "npm run dev",
+    "dev": "webpack-dev-server --hot --colors --port 3000",
+    "build": "webpack",
+    "prod": "webpack -p"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JordyMoos/elm-pixel-boulder-game.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "babel-loader": "^8.0.4",
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.2",
+    "css-loader": "^1.0.0",
+    "elm": "^0.19.0-bugfix2",
+    "elm-hot-webpack-loader": "^1.0.2",
+    "elm-test": "^0.19.0-beta9",
+    "elm-verify-examples": "^3.0.1",
+    "elm-webpack-loader": "^5.0.0",
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "koa-connect-history-api-fallback": "^0.3.1",
+    "mini-css-extract-plugin": "^0.4.3",
+    "node-sass": "^4.9.3",
+    "resolve-url-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.0",
+    "url-loader": "^1.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9",
+    "webpack-merge": "^4.1.4"
+  },
+  "dependencies": {
+    "purecss": "^1.0.0"
   }
 }

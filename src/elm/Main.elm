@@ -2,6 +2,8 @@ module Main exposing (main)
 
 import Actor.Actor as Actor exposing (Level)
 import Actor.Decoder
+import Browser
+import Browser.Events
 import Char
 import Data.Config exposing (Config)
 import Data.Position exposing (Position)
@@ -19,7 +21,6 @@ import Svg
 import Svg.Attributes
 import Task
 import Text
-import Time
 
 
 type alias Model =
@@ -44,7 +45,7 @@ type GameState
 
 main : Program Json.Decode.Value Model Msg
 main =
-    Html.programWithFlags
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -56,7 +57,7 @@ type Msg
     = GameSpeed (Maybe Int)
     | InputControllerMsg InputController.Msg
     | LoadingLevelMsg LoadingLevel.Msg
-    | AnimationFrameUpdate Time.Time
+    | AnimationFrameUpdate Float
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -113,8 +114,8 @@ update msg model =
                 LoadingLevel.Success levelConfig ->
                     gotoPlayingLevel levelConfig model
 
-        ( AnimationFrameUpdate time, _ ) ->
-            updateGameState time model
+        ( AnimationFrameUpdate timeDelta, _ ) ->
+            updateGameState timeDelta model
 
         ( _, _ ) ->
             ( model
@@ -128,8 +129,8 @@ gotoPlayingLevel levelConfig model =
         |> PlayingLevelState
         |> setGameState model
         |> (\a ->
-                (\model cmds ->
-                    ( model
+                (\updatedModel cmds ->
+                    ( updatedModel
                     , Cmd.batch cmds
                     )
                 )
@@ -138,9 +139,9 @@ gotoPlayingLevel levelConfig model =
            )
 
 
-updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
-updateGameState time model =
-    case model.gameSpeed of
+updateGameState : Float -> Model -> ( Model, Cmd Msg )
+updateGameState timeDelta givenModel =
+    case givenModel.gameSpeed of
         Just gameSpeed ->
             List.foldr
                 (\_ ( model, cmd ) ->
@@ -154,8 +155,8 @@ updateGameState time model =
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
                                         |> (\a ->
-                                                (\model cmds ->
-                                                    ( model
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
                                                     , Cmd.batch cmds
                                                     )
                                                 )
@@ -169,13 +170,13 @@ updateGameState time model =
                                 MainMenu.LoadFlags ->
                                     case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
                                         Err error ->
-                                            ErrorState error
+                                            ErrorState (Debug.toString error)
                                                 |> setGameState model
                                                 |> setInputModel (InputController.resetWasPressed model.inputModel)
                                                 |> increaseCurrentTick
                                                 |> (\a ->
-                                                        (\model cmds ->
-                                                            ( model
+                                                        (\updatedModel cmds ->
+                                                            ( updatedModel
                                                             , Cmd.batch cmds
                                                             )
                                                         )
@@ -196,8 +197,8 @@ updateGameState time model =
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
                                         |> (\a ->
-                                                (\model cmds ->
-                                                    ( model
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
                                                     , Cmd.batch cmds
                                                     )
                                                 )
@@ -214,8 +215,8 @@ updateGameState time model =
                                         |> setGameState model
                                         |> increaseCurrentTick
                                         |> (\a ->
-                                                (\model cmds ->
-                                                    ( model
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
                                                     , Cmd.batch cmds
                                                     )
                                                 )
@@ -227,17 +228,16 @@ updateGameState time model =
                         _ ->
                             ( model, cmd )
                 )
-                (( model
-                 , Cmd.none
-                 )
+                ( givenModel
+                , Cmd.none
                 )
-                (List.take model.maxUpdatesPerView <| List.repeat ((model.timeBuffer + round time) // gameSpeed) ())
+                (List.take givenModel.maxUpdatesPerView <| List.repeat ((givenModel.timeBuffer + round timeDelta) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
-                        ( updateTimeBuffer (round time) gameSpeed newModel, newCmd )
+                        ( updateTimeBuffer (round timeDelta) gameSpeed newModel, newCmd )
                    )
 
         Nothing ->
-            ( model
+            ( givenModel
             , Cmd.none
             )
 
@@ -254,8 +254,8 @@ loadLevel model cmd name =
         |> setInputModel (InputController.resetWasPressed model.inputModel)
         |> increaseCurrentTick
         |> (\a ->
-                (\model cmds ->
-                    ( model
+                (\updatedModel cmds ->
+                    ( updatedModel
                     , Cmd.batch cmds
                     )
                 )
@@ -344,7 +344,7 @@ subscriptions model =
         gameSpeedSub =
             case model.gameSpeed of
                 Just _ ->
-                    [ AnimationFrame.diffs AnimationFrameUpdate
+                    [ Browser.Events.onAnimationFrameDelta AnimationFrameUpdate
                     ]
 
                 Nothing ->
