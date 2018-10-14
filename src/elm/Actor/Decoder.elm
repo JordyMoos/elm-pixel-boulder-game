@@ -454,8 +454,10 @@ directionIdDecoder =
 
 colorDecoder : Decoder Color
 colorDecoder =
-    Decode.succeed <|
-        Color.rgb 255 0 0
+    Decode.succeed (\r g b -> Color.rgb255 r g b)
+        |> JDP.required "red" Decode.int
+        |> JDP.required "green" Decode.int
+        |> JDP.required "blue" Decode.int
 
 
 signsDecoder : Decoder Signs

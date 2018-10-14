@@ -141,10 +141,9 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                             [ Svg.image
                                 [ Attributes.width <| String.fromInt config.pixelSize
                                 , Attributes.height <| String.fromInt config.pixelSize
-                                , Attributes.xlinkHref image
                                 , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize
                                 , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize
-                                , Attributes.id <| "actor-" ++ String.fromInt actorId
+                                , Attributes.xlinkHref image
                                 ]
                                 []
                             ]

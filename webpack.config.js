@@ -107,7 +107,7 @@ if (MODE === "development") {
     devServer: {
       inline: true,
       stats: "errors-only",
-      contentBase: path.join(__dirname, "src/assets"),
+      contentBase: path.join(__dirname, "src/static"),
       historyApiFallback: true,
       before(app) {
         // on port 3000
@@ -133,7 +133,7 @@ if (MODE === "production") {
       // Copy static assets
       new CopyWebpackPlugin([
         {
-          from: "src/assets"
+          from: path.resolve(__dirname, 'src/static')
         }
       ]),
       new MiniCssExtractPlugin({
