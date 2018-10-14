@@ -20,7 +20,8 @@ import Text
 renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
 renderLevel currentTick config level images =
     List.concat
-        [ drawBackground currentTick config images level.background
+        [ drawLoadImages config images
+        , drawBackground currentTick config images level.background
         , drawLevel currentTick config level images
         ]
         |> Svg.svg
@@ -30,6 +31,25 @@ renderLevel currentTick config level images =
             , Attributes.y "0"
             , Attributes.version "1.1"
             ]
+
+
+drawLoadImages : Config -> Actor.Images -> List (Svg msg)
+drawLoadImages config images =
+    Dict.toList images
+        |> List.map (drawLoadImage config)
+
+
+drawLoadImage : Config -> ( String, String ) -> Svg msg
+drawLoadImage config ( name, path ) =
+    Svg.image
+        [ Attributes.width <| String.fromInt config.pixelSize
+        , Attributes.height <| String.fromInt config.pixelSize
+        , Attributes.x "0"
+        , Attributes.y "0"
+        , Attributes.id <| "image-" ++ name
+        , Attributes.xlinkHref path
+        ]
+        []
 
 
 drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> List (Svg msg)
@@ -134,16 +154,15 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
     case transformData.movingState of
         Actor.NotMoving ->
             getImageName tick imageRenderData.default
-                |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
-                    (\image ->
+                    (\imageName ->
                         ( List.append backOps
-                            [ Svg.image
-                                [ Attributes.width <| String.fromInt config.pixelSize
-                                , Attributes.height <| String.fromInt config.pixelSize
+                            [ Svg.use
+                                [ Attributes.xlinkHref <| "#image-" ++ imageName
                                 , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize
                                 , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize
-                                , Attributes.xlinkHref image
+                                , Attributes.width <| String.fromInt config.pixelSize
+                                , Attributes.height <| String.fromInt config.pixelSize
                                 ]
                                 []
                             ]
