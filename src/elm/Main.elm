@@ -320,6 +320,7 @@ debugView =
             , button [ onClick <| GameSpeed <| Just 10000 ] [ text "0.1 fps" ]
             , button [ onClick <| GameSpeed <| Just 5000 ] [ text "0.5 fps" ]
             , button [ onClick <| GameSpeed <| Just 1000 ] [ text "1 fps" ]
+            , button [ onClick <| GameSpeed <| Just 166 ] [ text "6 fps" ]
             , button [ onClick <| GameSpeed <| Just 83 ] [ text "12 fps" ]
             , button [ onClick <| GameSpeed <| Just 41 ] [ text "24 fps" ]
             ]
