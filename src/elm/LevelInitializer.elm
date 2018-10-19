@@ -4,23 +4,24 @@ import Actor.Actor as Actor
 import Actor.Common as Common
 import Actor.Decoder
 import Data.Config exposing (Config)
+import Data.Position exposing (Position)
 import Dict
 
 
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
 initLevel config levelConfig =
-    emptyLevel config.width config.height
+    emptyLevel config.width config.height levelConfig.viewPosition
         |> setBackground levelConfig.background
         |> setActors levelConfig
 
 
-emptyLevel : Int -> Int -> Actor.Level
-emptyLevel width height =
+emptyLevel : Int -> Int -> Position -> Actor.Level
+emptyLevel width height position =
     { nextActorId = 1
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , view =
-        { position = { x = 0, y = 0 }
+        { position = position
         , width = width
         , height = height
         }

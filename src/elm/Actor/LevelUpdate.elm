@@ -2,6 +2,7 @@ module Actor.LevelUpdate exposing (update)
 
 import Actor.Actor as Actor
 import Actor.Common as Common
+import Actor.Component.AiComponent as Ai
 import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
@@ -15,13 +16,8 @@ import Data.Direction exposing (Direction)
 import Dict
 
 
-updateBorder : Int
-updateBorder =
-    5
-
-
 update : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
-update maybeDirection level levelConfig =
+update maybeDirection levelBeforeUpdate levelConfig =
     List.foldr
         (\y levelA ->
             List.foldr
@@ -67,6 +63,9 @@ update maybeDirection level levelConfig =
                                                                             Actor.SpawnComponent spawnData ->
                                                                                 Spawn.updateSpawnComponent levelConfig.entities spawnData updatedActor levelD
 
+                                                                            Actor.AiComponent aiData ->
+                                                                                Ai.updateAiComponent aiData updatedActor levelConfig.entities levelBeforeUpdate levelD
+
                                                                             _ ->
                                                                                 levelD
                                                                 in
@@ -83,7 +82,7 @@ update maybeDirection level levelConfig =
                             levelB
                 )
                 levelA
-                (List.range (levelA.view.position.x - updateBorder) (levelA.view.position.x + levelA.view.width + updateBorder))
+                (List.range (levelA.view.position.x - levelConfig.updateBorder) (levelA.view.position.x + levelA.view.width + levelConfig.updateBorder))
         )
-        level
-        (List.range (level.view.position.y - updateBorder) (level.view.position.y + level.view.height + updateBorder))
+        levelBeforeUpdate
+        (List.range (levelBeforeUpdate.view.position.y - levelConfig.updateBorder) (levelBeforeUpdate.view.position.y + levelBeforeUpdate.view.height + levelConfig.updateBorder))

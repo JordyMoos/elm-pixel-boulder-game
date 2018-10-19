@@ -2,82 +2,56 @@ module Actor.Actor exposing
     ( Actor
     , ActorId
     , Actors
-    ,  AnimationSetup
-       -- EventManager
-
-    ,  CameraComponentData
-       -- TriggerExplodableComponent
-
-    ,  CollectibleComponentData
-       -- CollectorComponent
-
+    , AiComponentData
+    , AiType(..)
+    , AnimationSetup
+    , CameraComponentData
+    , CollectibleComponentData
     , CollectorComponentData
     , Component(..)
     , Components
     , ControlComponentData
     , ControlSettings
     , ControlType(..)
-    ,  DamageComponentData
-       -- SpawnComponent
-
+    , DamageComponentData
     , DownSmashComponentData
     , Entities
     , Event(..)
     , EventAction(..)
     , EventManager
     , Events
+    , GameOfLifeAiAction
+    , GameOfLifeAiData
     , ImageRenderComponentData
     , Images
-    ,  ImagesData
-       -- TagComponent
-
-    ,  Inventory
-       -- ControlComponent
-
-    ,  KeyedComponent
-       -- TransformComponent
-
+    , ImagesData
+    , Inventory
+    , KeyedComponent
     , Level
     , LevelCompletedData
     , LevelConfig
     , LevelFailedData
-    ,  LifetimeComponentData
-       -- DamageComponent
-
-    ,  MovingDownState(..)
-       -- RenderComponent
-
-    ,  MovingState(..)
-       -- PhysicsComponent
-
+    , LifetimeComponentData
+    , MovingDownState(..)
+    , MovingState(..)
     , MovingTowardsData
     , PhysicsComponentData
     , PixelRenderComponentData
     , PositionIndex
     , RenderComponentData(..)
     , Scene
-    ,  Shape(..)
-       -- CollectibleComponent
-
+    , Shape(..)
     , Signs
     , SpawnComponentData
     , SpawnRepeat
-    ,  SpawnRepeatTimes(..)
-       -- DownSmashComponent
-
+    , SpawnRepeatTimes(..)
     , Subscriber
     , Subscribers
-    ,  TagComponentData
-       -- Animation
-
+    , TagComponentData
     , TransformComponentData
-    ,  TriggerExplodableComponentData
-       -- LifetimeComponent
-
+    , TriggerExplodableComponentData
     , View
-    ,  WalkAroundAiControlData
-       -- CameraComponent
-
+    , WalkAroundAiControlData
     , emptyEventManager
     )
 
@@ -145,6 +119,8 @@ type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
+    , viewPosition : Position
+    , updateBorder : Int
     , images : Images
     , background : RenderComponentData
     , subscribers : Subscribers
@@ -168,6 +144,7 @@ type Component
     | CollectibleComponent CollectibleComponentData
     | PhysicsComponent PhysicsComponentData
     | RigidComponent
+    | AiComponent AiComponentData
     | ControlComponent ControlComponentData
     | CameraComponent CameraComponentData
     | ExplodableComponent
@@ -255,6 +232,35 @@ type alias Inventory =
 type alias CollectorComponentData =
     { interestedIn : List String
     , inventory : Inventory
+    }
+
+
+
+{-
+
+   AiComponent
+
+-}
+
+
+type alias AiComponentData =
+    { ai : AiType
+    }
+
+
+type AiType
+    = GameOfLifeAi GameOfLifeAiData
+
+
+type alias GameOfLifeAiData =
+    { tagToSearch : String
+    , actions : List GameOfLifeAiAction
+    }
+
+
+type alias GameOfLifeAiAction =
+    { count : Int
+    , become : String
     }
 
 

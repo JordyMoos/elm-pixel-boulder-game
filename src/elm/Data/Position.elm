@@ -2,6 +2,8 @@ module Data.Position exposing
     ( Position
     , addPosition
     , addPositions
+    , aroundNeighborOffsets
+    , directNeighborOffsets
     , getOffsetFromDirection
     )
 
@@ -44,3 +46,25 @@ getOffsetFromDirection direction =
 
         Direction.Down ->
             { x = 0, y = 1 }
+
+
+directNeighborOffsets : List Position
+directNeighborOffsets =
+    [ getOffsetFromDirection Direction.Left
+    , getOffsetFromDirection Direction.Up
+    , getOffsetFromDirection Direction.Right
+    , getOffsetFromDirection Direction.Down
+    ]
+
+
+aroundNeighborOffsets : List Position
+aroundNeighborOffsets =
+    [ getOffsetFromDirection Direction.Left
+    , getOffsetFromDirection Direction.Up
+    , getOffsetFromDirection Direction.Right
+    , getOffsetFromDirection Direction.Down
+    , addPosition (getOffsetFromDirection Direction.Left) (getOffsetFromDirection Direction.Up)
+    , addPosition (getOffsetFromDirection Direction.Up) (getOffsetFromDirection Direction.Right)
+    , addPosition (getOffsetFromDirection Direction.Right) (getOffsetFromDirection Direction.Down)
+    , addPosition (getOffsetFromDirection Direction.Down) (getOffsetFromDirection Direction.Left)
+    ]
