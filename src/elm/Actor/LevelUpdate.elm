@@ -69,7 +69,7 @@ update maybeDirection levelBeforeUpdate levelConfig =
                                                                                 Spawn.updateSpawnComponent levelConfig.entities spawnData updatedActor levelD
 
                                                                             Actor.AiComponent aiData ->
-                                                                                Ai.updateAiComponent aiData updatedActor levelBeforeUpdate levelD
+                                                                                Ai.updateAiComponent aiData updatedActor levelConfig.entities levelBeforeUpdate levelD
 
                                                                             _ ->
                                                                                 levelD

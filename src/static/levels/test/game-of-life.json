@@ -11,7 +11,11 @@
             "actions": [
               {"count": 0, "become": "dead"},
               {"count": 1, "become": "dead"},
-              {"count": 4, "become": "dead"}
+              {"count": 4, "become": "dead"},
+              {"count": 5, "become": "dead"},
+              {"count": 6, "become": "dead"},
+              {"count": 7, "become": "dead"},
+              {"count": 8, "become": "dead"}
             ]
           }
         }
@@ -50,13 +54,10 @@
     }
   },
   "scene": [
-    "oo                                      ",
-    "  oo                                    ",
     "                                        ",
     "                                        ",
-    "                                        ",
-    "                                        ",
-    "                                        ",
+    "   ooo                                  ",
+    "  ooo                                   ",
     "                                        ",
     "                                        ",
     "                                        ",
