@@ -9,8 +9,8 @@ init : Config -> Int -> List Position
 init config currentTick =
     PseudoRandomTraversal.init
         { a = currentTick
-        , b = (currentTick % 9999) + 1
-        , c = (currentTick % 4242) + 1
+        , b = (modBy 9999 currentTick) + 1
+        , c = (modBy 4242 currentTick) + 1
         }
         config
         currentTick

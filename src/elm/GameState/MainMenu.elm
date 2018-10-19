@@ -1,22 +1,20 @@
-module GameState.MainMenu
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.MainMenu exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Text
-import Data.Menu as Menu
+import Color
 import Data.Config exposing (Config)
-import InputController
+import Data.Menu as Menu
 import Html exposing (Html, div)
-import Renderer.Canvas.MenuRenderer as MenuRenderer
+import InputController
 import List.Extra
 import Maybe.Extra
-import Color
 import Menu.TextMenu as TextMenu
+import Text
 
 
 type alias Model =

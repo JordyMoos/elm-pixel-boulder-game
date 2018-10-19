@@ -2,7 +2,7 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 78, "green": 154, "blue": 6}]}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -16,7 +16,7 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "rock": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#babdb6"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 186, "green": 189, "blue": 182}]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -27,7 +27,7 @@
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -39,12 +39,12 @@
       {"type": "smash-down"}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ce5c00"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 206, "green": 92, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -60,7 +60,7 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "pet": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#75507b", "#ad7fa8"], "ticksPerColor": 8}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 117, "green": 80, "blue": 123}, {"red": 173, "green": 127, "blue": 168}], "ticksPerColor": 8}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
       {"type": "control", "data": {
@@ -75,22 +75,22 @@
       {"type": "explodable"}
     ],
     "dirt": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#e9b96e"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 233, "green": 185, "blue": 110}]}}},
       {"type": "collectible", "data": {"name": "dirt"}},
       {"type": "physics", "data": {"strength": 1, "shape": "square"}}
     ],
     "wall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#626457"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 98, "green": 100, "blue": 87}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#3465a4", "#729fcf"], "ticksPerColor": 12}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 52, "green": 101, "blue": 164}, {"red": 114, "green": 159, "blue": 207}], "ticksPerColor": 12}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
         "control": {
@@ -100,7 +100,7 @@
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
       {"type": "damage", "data": {"damageStrength": 1000}}
@@ -121,7 +121,7 @@
   "background": {
     "type": "pixel",
     "data": {
-      "colors": ["#ffffff"]
+      "colors": [{"red": 255, "green": 255, "blue": 255}]
     }
   },
   "scene": [

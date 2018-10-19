@@ -51,7 +51,7 @@
       {"type": "smash-down"}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
@@ -76,7 +76,7 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "pet": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#75507b", "#ad7fa8"], "ticksPerColor": 8}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 117, "green": 80, "blue": 123}, {"red": 173, "green": 127, "blue": 168}], "ticksPerColor": 8}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
       {"type": "control", "data": {
@@ -109,7 +109,7 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
@@ -128,7 +128,7 @@
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
       {"type": "damage", "data": {"damageStrength": 1000}}

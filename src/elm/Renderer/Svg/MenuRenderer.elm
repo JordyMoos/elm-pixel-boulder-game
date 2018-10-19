@@ -1,12 +1,12 @@
-module Renderer.Canvas.MenuRenderer exposing (..)
+module Renderer.Svg.MenuRenderer exposing (WithText, getLineLength, getXOffset, render)
 
-import Html exposing (Html)
+import Color
 import Data.Config exposing (Config)
 import Data.Menu as Menu exposing (Menu)
-import Renderer.Canvas.TextRenderer as TextRenderer
-import Maybe.Extra
+import Html exposing (Html)
 import List.Extra
-import Color
+import Maybe.Extra
+import Renderer.Svg.TextRenderer as TextRenderer
 import Text
 
 
@@ -17,12 +17,11 @@ type alias WithText a =
 render : Config -> Int -> Menu (WithText a) -> Html msg
 render config tick menu =
     TextRenderer.renderText
-        config.width
-        config.height
+        config
         (Maybe.Extra.values
-            [ List.Extra.last menu.items.before |> Maybe.map (\item -> ( 0, -3, Color.red, item.text ))
-            , Just ( getXOffset config tick menu.items.selected.text, 3, Color.blue, menu.items.selected.text )
-            , List.head menu.items.after |> Maybe.map (\item -> ( 0, 9, Color.red, item.text ))
+            [ List.Extra.last menu.items.before |> Maybe.map (\item -> TextRenderer.Line 0 -3 Color.red item.text)
+            , Just <| TextRenderer.Line (getXOffset config tick menu.items.selected.text) 3 Color.blue menu.items.selected.text
+            , List.head menu.items.after |> Maybe.map (\item -> TextRenderer.Line 0 9 Color.red item.text)
             ]
         )
 
@@ -52,10 +51,10 @@ getXOffset config tick letters =
             tick // 4
 
         offset =
-            (tickSpeedCorrection % totalLength) - beforeLength
+            modBy totalLength tickSpeedCorrection - beforeLength
     in
-        clamp minOffset maxOffset offset
-            |> negate
+    clamp minOffset maxOffset offset
+        |> negate
 
 
 getLineLength : Text.Letters -> Int

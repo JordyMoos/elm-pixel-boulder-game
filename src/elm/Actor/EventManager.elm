@@ -1,14 +1,14 @@
-module Actor.EventManager exposing (onTagDiedSubscriber, onInventoryUpdatedSubscriber, clearEvents)
+module Actor.EventManager exposing (clearEvents, onInventoryUpdatedSubscriber, onTagDiedSubscriber)
 
 import Actor.Actor as Actor
     exposing
-        ( Level
-        , Event(..)
+        ( Event(..)
         , EventAction(..)
+        , Level
         )
 import Actor.Common as Common
-import Maybe.Extra
 import Dict exposing (Dict)
+import Maybe.Extra
 
 
 onTagDiedSubscriber : String -> EventAction -> Event -> Level -> EventAction

@@ -1,32 +1,30 @@
-module GameState.PlayingLevel.PlayingLevel
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.PlayingLevel exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Data.Config exposing (Config)
 import Actor.Actor as Actor
-import GameState.PlayingLevel.Playing as Playing
-import GameState.PlayingLevel.PauseMenu as PauseMenu
-import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
-import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
-import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import Data.Config exposing (Config)
+import GameState.PlayingLevel.Animation.Animation as Animation
+import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
 import GameState.PlayingLevel.Completed.CompletedAnimation as CompletedAnimation
 import GameState.PlayingLevel.Completed.CompletedDescription as CompletedDescription
 import GameState.PlayingLevel.Completed.CompletedMenu as CompletedMenu
-import GameState.PlayingLevel.Animation.Animation as Animation
-import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
-import InputController
+import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
+import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
+import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import GameState.PlayingLevel.PauseMenu as PauseMenu
+import GameState.PlayingLevel.Playing as Playing
 import Html exposing (Html)
+import InputController
 
 
 type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
-    , images : Actor.CanvasImages
     , state : State
     }
 
@@ -48,12 +46,11 @@ type Action
     | GotoMainMenu
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Model
-init config levelConfig images =
+init : Config -> Actor.LevelConfig -> Model
+init config levelConfig =
     { config = config
     , levelConfig = levelConfig
-    , images = images
-    , state = PlayingState <| Playing.init config levelConfig images
+    , state = PlayingState <| Playing.init config levelConfig
     }
 
 
@@ -79,7 +76,6 @@ updateTick currentTick inputModel model =
                                     FailedAnimation.init
                                         model.config
                                         model.levelConfig
-                                        model.images
                                         (Animation.init
                                             (data.animationSetup
                                                 model.config
@@ -100,7 +96,6 @@ updateTick currentTick inputModel model =
                                     CompletedAnimation.init
                                         model.config
                                         model.levelConfig
-                                        model.images
                                         (Animation.init
                                             (data.animationSetup
                                                 model.config
@@ -127,7 +122,6 @@ updateTick currentTick inputModel model =
                                     Playing.resume
                                         model.config
                                         model.levelConfig
-                                        model.images
                                         level
                         }
 
@@ -139,7 +133,6 @@ updateTick currentTick inputModel model =
                                     Playing.init
                                         model.config
                                         model.levelConfig
-                                        model.images
                         }
 
                 PauseMenu.GotoMainMenu ->
@@ -167,7 +160,7 @@ updateTick currentTick inputModel model =
                     Stay { model | state = FailedMenuState menuModel }
 
                 FailedMenu.Restart ->
-                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig model.images }
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig }
 
                 FailedMenu.GotoMainMenu ->
                     GotoMainMenu
@@ -197,7 +190,7 @@ updateTick currentTick inputModel model =
                     LoadLevel name
 
                 CompletedMenu.Restart ->
-                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig model.images }
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig }
 
                 CompletedMenu.GotoMainMenu ->
                     GotoMainMenu

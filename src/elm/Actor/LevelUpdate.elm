@@ -1,17 +1,17 @@
 module Actor.LevelUpdate exposing (update)
 
-import Data.Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Actor.Component.TransformComponent as Transform
+import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
-import Actor.Component.CameraComponent as Camera
+import Actor.Component.DamageComponent as Damage
 import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
-import Actor.Component.DamageComponent as Damage
-import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Actor.Component.SpawnComponent as Spawn
+import Actor.Component.TransformComponent as Transform
+import Actor.Component.TriggerExplodableComponent as TriggerExplodable
+import Data.Direction exposing (Direction)
 import Dict
 
 
@@ -23,67 +23,67 @@ updateBorder =
 update : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
 update maybeDirection level levelConfig =
     List.foldr
-        (\y level ->
+        (\y levelA ->
             List.foldr
-                (\x level ->
-                    Common.getActorIdsByXY x y level
+                (\x levelB ->
+                    Common.getActorIdsByXY x y levelB
                         |> List.foldr
-                            (\actorId level ->
-                                Common.getActorById actorId level
+                            (\actorId levelC ->
+                                Common.getActorById actorId levelC
                                     |> Maybe.andThen
                                         (\actor ->
                                             Dict.foldr
-                                                (\_ component level ->
-                                                    Common.getActorById actorId level
+                                                (\_ component levelD ->
+                                                    Common.getActorById actorId levelD
                                                         |> Maybe.andThen
-                                                            (\actor ->
+                                                            (\updatedActor ->
                                                                 let
                                                                     updatedLevel =
                                                                         case component of
                                                                             Actor.TransformComponent transformData ->
-                                                                                Transform.updateTransformComponent transformData actor level
+                                                                                Transform.updateTransformComponent transformData updatedActor levelD
 
                                                                             Actor.CollectorComponent data ->
-                                                                                Collector.updateCollectorComponent data actor level
+                                                                                Collector.updateCollectorComponent data updatedActor levelD
 
                                                                             Actor.ControlComponent control ->
-                                                                                Control.updateControlComponent maybeDirection control actor level
+                                                                                Control.updateControlComponent maybeDirection control updatedActor levelD
 
                                                                             Actor.CameraComponent camera ->
-                                                                                Camera.updateCameraComponent camera actor level
+                                                                                Camera.updateCameraComponent camera updatedActor levelD
 
                                                                             Actor.DownSmashComponent downSmash ->
-                                                                                DownSmash.updateDownSmashComponent downSmash actor level
+                                                                                DownSmash.updateDownSmashComponent downSmash updatedActor levelD
 
                                                                             Actor.LifetimeComponent lifetimeData ->
-                                                                                Lifetime.updateLifetimeComponent lifetimeData actor level
+                                                                                Lifetime.updateLifetimeComponent lifetimeData updatedActor levelD
 
                                                                             Actor.DamageComponent damageData ->
-                                                                                Damage.updateDamageComponent damageData actor level
+                                                                                Damage.updateDamageComponent damageData updatedActor levelD
 
                                                                             Actor.TriggerExplodableComponent triggerData ->
-                                                                                TriggerExplodable.updateTriggerExplodableComponent triggerData actor level
+                                                                                TriggerExplodable.updateTriggerExplodableComponent triggerData updatedActor levelD
 
                                                                             Actor.SpawnComponent spawnData ->
-                                                                                Spawn.updateSpawnComponent levelConfig.entities spawnData actor level
+                                                                                Spawn.updateSpawnComponent levelConfig.entities spawnData updatedActor levelD
 
                                                                             _ ->
-                                                                                level
+                                                                                levelD
                                                                 in
-                                                                    Just updatedLevel
+                                                                Just updatedLevel
                                                             )
-                                                        |> Maybe.withDefault level
+                                                        |> Maybe.withDefault levelD
                                                 )
-                                                level
+                                                levelC
                                                 actor.components
                                                 |> Just
                                         )
-                                    |> Maybe.withDefault level
+                                    |> Maybe.withDefault levelC
                             )
-                            level
+                            levelB
                 )
-                level
-                (List.range (level.view.position.x - updateBorder) (level.view.position.x + level.view.width + updateBorder))
+                levelA
+                (List.range (levelA.view.position.x - updateBorder) (levelA.view.position.x + levelA.view.width + updateBorder))
         )
         level
         (List.range (level.view.position.y - updateBorder) (level.view.position.y + level.view.height + updateBorder))

@@ -1,30 +1,28 @@
-module GameState.PlayingLevel.Completed.CompletedAnimation
-    exposing
-        ( Model
-        , Action(..)
-        , init
-        , updateTick
-        , view
-        )
+module GameState.PlayingLevel.Completed.CompletedAnimation exposing
+    ( Action(..)
+    , Model
+    , init
+    , updateTick
+    , view
+    )
 
-import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Dict
-import LevelInitializer
-import InputController
-import Renderer.Canvas.LevelRenderer as LevelRenderer
-import Html exposing (Html)
 import Actor.EventManager as EventManager
-import GameState.PlayingLevel.Animation.Animation as Animation
 import Actor.LevelUpdate as LevelUpdate
+import Data.Config exposing (Config)
+import Data.Direction as Direction exposing (Direction)
+import Dict
+import GameState.PlayingLevel.Animation.Animation as Animation
+import Html exposing (Html)
+import InputController
+import LevelInitializer
+import Renderer.Svg.LevelRenderer as LevelRenderer
 
 
 type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
-    , images : Actor.CanvasImages
     , level : Actor.Level
     , animationModel : Animation.Model
     , description : String
@@ -37,11 +35,10 @@ type Action
     | Finished String String
 
 
-init : Config -> Actor.LevelConfig -> Actor.CanvasImages -> Animation.Model -> String -> String -> Actor.Level -> Model
-init config levelConfig images animationModel description nextLevel level =
+init : Config -> Actor.LevelConfig -> Animation.Model -> String -> String -> Actor.Level -> Model
+init config levelConfig animationModel description nextLevel level =
     { config = config
     , levelConfig = levelConfig
-    , images = images
     , level = level
     , animationModel = animationModel
     , description = description
@@ -59,18 +56,18 @@ updateTick currentTick inputModel model =
             case Animation.updateTick currentTick model.animationModel model.level of
                 Animation.Stay animationModel level ->
                     model
-                        |> flip setAnimation animationModel
-                        |> flip setLevel level
-                        |> (\model ->
+                        |> (\a -> setAnimation a animationModel)
+                        |> (\a -> setLevel a level)
+                        |> (\updatedModel ->
                                 LevelUpdate.update
                                     (InputController.getCurrentDirection inputModel)
-                                    model.level
-                                    model.levelConfig
+                                    updatedModel.level
+                                    updatedModel.levelConfig
                                     -- We won't handle events
                                     |> EventManager.clearEvents
                                     -- Prevents view movement
-                                    |> Common.setView model.level.view
-                                    |> setLevel model
+                                    |> Common.setView updatedModel.level.view
+                                    |> setLevel updatedModel
                            )
                         |> Stay
 
@@ -90,4 +87,4 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.level model.images
+    LevelRenderer.renderLevel currentTick model.config model.level model.levelConfig.images

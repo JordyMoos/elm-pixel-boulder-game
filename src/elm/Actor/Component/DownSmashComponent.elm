@@ -3,17 +3,17 @@ module Actor.Component.DownSmashComponent exposing (updateDownSmashComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Level
-        , Component(DownSmashComponent)
+        , Component(..)
         , DownSmashComponentData
+        , Level
         , MovingDownState(..)
         )
+import Actor.Cheats as Cheats
 import Actor.Common as Common
 import Actor.Component.ExplodableComponent as Explodable
 import Actor.Component.TransformComponent as Transform
-import Actor.Cheats as Cheats
-import Data.Position as Position exposing (Position)
 import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
 import Dict
 
 
@@ -33,8 +33,8 @@ updateDownSmashComponent downSmashData actor level =
                             level
                             |> List.filter Explodable.hasExplodableComponent
                             |> List.foldr
-                                (\downActor level ->
-                                    level
+                                (\downActor accLevel ->
+                                    accLevel
                                         |> Cheats.addBigExplosion (Position.addPosition position <| Position.getOffsetFromDirection Direction.Down)
                                         |> Common.removeActor downActor
                                 )
@@ -44,11 +44,11 @@ updateDownSmashComponent downSmashData actor level =
                         level
                 )
                     -- Update the WasMovingDown
-                    |> (\level ->
+                    |> (\accLevel ->
                             updateMovingDownState movingDown downSmashData
                                 |> updateDownSmash
                                     actor
-                                    level
+                                    accLevel
                        )
                     |> Just
             )

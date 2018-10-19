@@ -1,24 +1,23 @@
-module Actor.Component.PhysicsComponent
-    exposing
-        ( getPhysicsComponent
-        , getStrength
-        , isCircle
-        , isCircleAt
-        , isActorCircle
-        )
+module Actor.Component.PhysicsComponent exposing
+    ( getPhysicsComponent
+    , getStrength
+    , isActorCircle
+    , isCircle
+    , isCircleAt
+    )
 
-import Data.Position exposing (Position)
 import Actor.Actor as Actor
     exposing
-        ( Level
-        , Actor
-        , Component(PhysicsComponent)
+        ( Actor
+        , Component(..)
+        , Level
         , PhysicsComponentData
         , Shape(..)
         )
 import Actor.Common as Common
-import Maybe.Extra
+import Data.Position exposing (Position)
 import Dict
+import Maybe.Extra
 
 
 getPhysicsComponent : Actor -> Maybe PhysicsComponentData

@@ -3,9 +3,9 @@ module Actor.Component.LifetimeComponent exposing (updateLifetimeComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
+        , Component(..)
         , Level
         , LifetimeComponentData
-        , Component(LifetimeComponent)
         )
 import Actor.Common as Common
 import Dict
@@ -21,5 +21,6 @@ updateLifetimeComponent lifetimeData actor level =
             |> Common.updateComponents actor
             |> Common.updateActor level.actors
             |> Common.updateActors level
+
     else
         Common.removeActor actor level

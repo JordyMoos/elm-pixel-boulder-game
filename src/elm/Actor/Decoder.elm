@@ -1,57 +1,55 @@
-module Actor.Decoder exposing (levelConfigDecoder, defaultBackground)
+module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
-        ( LevelConfig
-        , Entities
-        , Signs
-        , Scene
-        , Images
-        , Component(..)
-        , Components
-        , RenderComponentData(..)
-        , KeyedComponent
-        , MovingDownState(..)
-        , PixelRenderComponentData
-        , ImageRenderComponentData
-        , ImagesData
-        , SpawnComponentData
-        , SpawnRepeat
-        , SpawnRepeatTimes(..)
+        ( AnimationSetup
         , CameraComponentData
-        , PhysicsComponentData
-        , LifetimeComponentData
-        , DamageComponentData
-        , TriggerExplodableComponentData
         , CollectibleComponentData
         , CollectorComponentData
-        , Inventory
-        , Shape(..)
+        , Component(..)
+        , Components
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
-        , WalkAroundAiControlData
-        , TagComponentData
-        , Subscriber
+        , DamageComponentData
+        , Entities
         , EventAction(..)
-        , LevelFailedData
+        , ImageRenderComponentData
+        , Images
+        , ImagesData
+        , Inventory
+        , KeyedComponent
         , LevelCompletedData
-        , AnimationSetup
+        , LevelConfig
+        , LevelFailedData
+        , LifetimeComponentData
+        , MovingDownState(..)
+        , PhysicsComponentData
+        , PixelRenderComponentData
+        , RenderComponentData(..)
+        , Scene
+        , Shape(..)
+        , Signs
+        , SpawnComponentData
+        , SpawnRepeat
+        , SpawnRepeatTimes(..)
+        , Subscriber
+        , TagComponentData
+        , TriggerExplodableComponentData
+        , WalkAroundAiControlData
         )
-import Data.Position as Position exposing (Position)
-import Data.Direction as Direction exposing (Direction)
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline as JDP
-import Canvas exposing (Canvas)
-import Color exposing (Color)
-import Color.Convert
-import Dict exposing (Dict)
 import Actor.EventManager as EventManager
-import Util.PrimeSearch as PrimeSearch
+import Color exposing (Color)
+import Data.Direction as Direction exposing (Direction)
+import Data.Position as Position exposing (Position)
+import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as JDP
 import Maybe.Extra
+import Util.PrimeSearch as PrimeSearch
 
 
 defaultCameraBorderSize : Int
@@ -61,7 +59,7 @@ defaultCameraBorderSize =
 
 levelConfigDecoder : Decoder LevelConfig
 levelConfigDecoder =
-    JDP.decode LevelConfig
+    Decode.succeed LevelConfig
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
@@ -175,14 +173,14 @@ renderDataDecoder =
 
 renderPixelDataDecoder : Decoder PixelRenderComponentData
 renderPixelDataDecoder =
-    JDP.decode PixelRenderComponentData
+    Decode.succeed PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
 
 
 renderImageDataDecoder : Decoder ImageRenderComponentData
 renderImageDataDecoder =
-    JDP.decode ImageRenderComponentData
+    Decode.succeed ImageRenderComponentData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
 
@@ -195,7 +193,7 @@ type alias DirectionNames =
 
 imagesDataDecoder : Decoder ImagesData
 imagesDataDecoder =
-    JDP.decode ImagesData
+    Decode.succeed ImagesData
         |> JDP.required "names" (Decode.list Decode.string)
         |> JDP.optional "ticksPerImage" Decode.int 1
 
@@ -219,6 +217,7 @@ decodeDirectionImagesData =
                     |> (\newDict ->
                             if Dict.size dict == Dict.size newDict then
                                 Decode.succeed newDict
+
                             else
                                 Decode.fail "There are invalid directions in the image data"
                        )
@@ -227,20 +226,20 @@ decodeDirectionImagesData =
 
 decodeDirectionNames : Decoder DirectionNames
 decodeDirectionNames =
-    JDP.decode DirectionNames
+    Decode.succeed DirectionNames
         |> JDP.required "direction" directionIdDecoder
         |> JDP.required "names" (Decode.list Decode.string)
 
 
 tagDataDecoder : Decoder TagComponentData
 tagDataDecoder =
-    JDP.decode TagComponentData
+    Decode.succeed TagComponentData
         |> JDP.required "name" Decode.string
 
 
 spawnDataDecoder : Decoder SpawnComponentData
 spawnDataDecoder =
-    JDP.decode SpawnComponentData
+    Decode.succeed SpawnComponentData
         |> JDP.required "entityName" Decode.string
         |> JDP.required "position" positionDecoder
         |> JDP.optional "delayTicks" Decode.int 0
@@ -249,7 +248,7 @@ spawnDataDecoder =
 
 spawnRepeatDecoder : Decoder SpawnRepeat
 spawnRepeatDecoder =
-    JDP.decode SpawnRepeat
+    Decode.succeed SpawnRepeat
         |> JDP.required "times" spawnRepeatTimesDecoder
         |> JDP.required "delayTicks" Decode.int
 
@@ -269,10 +268,10 @@ spawnRepeatTimesDecoder =
 
                         other ->
                             case String.toInt other of
-                                Ok timesInt ->
+                                Just timesInt ->
                                     Decode.succeed <| RepeatTimes timesInt
 
-                                Err error ->
+                                _ ->
                                     Decode.fail <|
                                         "Trying to decode spawn repeat times, but the times "
                                             ++ other
@@ -288,52 +287,52 @@ spawnRepeatTimesDecoder =
 
 positionDecoder : Decoder Position
 positionDecoder =
-    JDP.decode Position
+    Decode.succeed Position
         |> JDP.required "x" Decode.int
         |> JDP.required "y" Decode.int
 
 
 cameraDataDecoder : Decoder CameraComponentData
 cameraDataDecoder =
-    JDP.decode CameraComponentData
+    Decode.succeed CameraComponentData
         |> JDP.optional "borderSize" Decode.int defaultCameraBorderSize
 
 
 physicsDataDecoder : Decoder PhysicsComponentData
 physicsDataDecoder =
-    JDP.decode PhysicsComponentData
+    Decode.succeed PhysicsComponentData
         |> JDP.required "strength" Decode.int
         |> JDP.required "shape" physicsShapeDecoder
 
 
 lifetimeDataDecoder : Decoder LifetimeComponentData
 lifetimeDataDecoder =
-    JDP.decode LifetimeComponentData
+    Decode.succeed LifetimeComponentData
         |> JDP.required "remainingTicks" Decode.int
 
 
 damageDataDecoder : Decoder DamageComponentData
 damageDataDecoder =
-    JDP.decode DamageComponentData
+    Decode.succeed DamageComponentData
         |> JDP.required "damageStrength" Decode.int
 
 
 triggerExplodableDataDecoder : Decoder TriggerExplodableComponentData
 triggerExplodableDataDecoder =
-    JDP.decode TriggerExplodableComponentData
+    Decode.succeed TriggerExplodableComponentData
         |> JDP.required "triggerStrength" Decode.int
 
 
 collectibleDecoder : Decoder CollectibleComponentData
 collectibleDecoder =
-    JDP.decode CollectibleComponentData
+    Decode.succeed CollectibleComponentData
         |> JDP.required "name" Decode.string
         |> JDP.optional "quantity" Decode.int 1
 
 
 collectorDecoder : Decoder CollectorComponentData
 collectorDecoder =
-    JDP.decode CollectorComponentData
+    Decode.succeed CollectorComponentData
         |> JDP.required "interestedIn" (Decode.list Decode.string)
         |> JDP.optional "inventory" inventoryDecoder Dict.empty
 
@@ -365,14 +364,14 @@ physicsShapeDecoder =
 
 controlDataDecoder : Decoder ControlComponentData
 controlDataDecoder =
-    JDP.decode ControlComponentData
+    Decode.succeed ControlComponentData
         |> JDP.optional "settings" controlSettingsDecoder emptyControlSettings
         |> JDP.required "control" controlTypeDecoder
 
 
 controlSettingsDecoder : Decoder ControlSettings
 controlSettingsDecoder =
-    JDP.decode ControlSettings
+    Decode.succeed ControlSettings
         |> JDP.optional "pushStrength" Decode.int emptyControlSettings.pushStrength
         |> JDP.optional "walkOverStrength" Decode.int emptyControlSettings.walkOverStrength
 
@@ -409,7 +408,7 @@ controlTypeDecoder =
 
 walkAroundAiDataDecoder : Decoder WalkAroundAiControlData
 walkAroundAiDataDecoder =
-    JDP.decode WalkAroundAiControlData
+    Decode.succeed WalkAroundAiControlData
         |> JDP.optional "previousDirection" directionDecoder Direction.Left
         |> JDP.required "nextDirectionOffsets" (Decode.list Decode.int)
 
@@ -449,18 +448,16 @@ directionIdDecoder =
             )
 
 
+
+-- @TODO Implement
+
+
 colorDecoder : Decoder Color
 colorDecoder =
-    Decode.string
-        |> Decode.andThen
-            (\stringColor ->
-                case Color.Convert.hexToColor stringColor of
-                    Ok color ->
-                        Decode.succeed color
-
-                    Err _ ->
-                        Decode.fail <| "Failed to decode color: " ++ stringColor
-            )
+    Decode.succeed (\r g b -> Color.rgb255 r g b)
+        |> JDP.required "red" Decode.int
+        |> JDP.required "green" Decode.int
+        |> JDP.required "blue" Decode.int
 
 
 signsDecoder : Decoder Signs
@@ -500,14 +497,14 @@ subscriberDecoder =
 
 onTagDiedSubscriberDecoder : Decoder Subscriber
 onTagDiedSubscriberDecoder =
-    JDP.decode EventManager.onTagDiedSubscriber
+    Decode.succeed EventManager.onTagDiedSubscriber
         |> JDP.required "tagName" Decode.string
         |> JDP.required "action" eventActionDecoder
 
 
 onInventoryUpdatedSubscriberDecoder : Decoder Subscriber
 onInventoryUpdatedSubscriberDecoder =
-    JDP.decode EventManager.onInventoryUpdatedSubscriber
+    Decode.succeed EventManager.onInventoryUpdatedSubscriber
         |> JDP.required "interestedIn" Decode.string
         |> JDP.required "minimumQuantity" Decode.int
         |> JDP.required "action" eventActionDecoder
@@ -535,7 +532,7 @@ eventActionDecoder =
 
 eventActionFailedDataDecoder : Decoder LevelFailedData
 eventActionFailedDataDecoder =
-    JDP.decode LevelFailedData
+    Decode.succeed LevelFailedData
         |> JDP.required "description" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
@@ -543,7 +540,7 @@ eventActionFailedDataDecoder =
 
 eventActionCompletedDataDecoder : Decoder LevelCompletedData
 eventActionCompletedDataDecoder =
-    JDP.decode LevelCompletedData
+    Decode.succeed LevelCompletedData
         |> JDP.required "description" Decode.string
         |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
@@ -584,16 +581,10 @@ pseudoRandomTraversalAnimationSetupDecoder =
 
 coefficientsDecoder : Decoder PrimeSearch.Coefficients
 coefficientsDecoder =
-    JDP.decode PrimeSearch.Coefficients
+    Decode.succeed PrimeSearch.Coefficients
         |> JDP.required "a" Decode.int
         |> JDP.required "b" Decode.int
         |> JDP.required "c" Decode.int
-
-
-emptyImage : Canvas
-emptyImage =
-    Canvas.Size 32 32
-        |> Canvas.initialize
 
 
 spawnNeverRepeat : SpawnRepeat

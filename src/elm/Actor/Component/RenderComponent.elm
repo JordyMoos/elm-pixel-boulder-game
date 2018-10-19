@@ -3,7 +3,7 @@ module Actor.Component.RenderComponent exposing (getRenderComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Component(RenderComponent)
+        , Component(..)
         , RenderComponentData
         )
 import Dict

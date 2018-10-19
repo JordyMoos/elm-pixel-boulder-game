@@ -1,22 +1,22 @@
-module InputController
-    exposing
-        ( Model
-        , Msg
-        , Key(..)
-        , KeyStatus(..)
-        , KeyStatuses
-        , init
-        , update
-        , subscriptions
-        , getCurrentDirection
-        , resetWasPressed
-        , getOrderedPressedKeys
-        )
+module InputController exposing
+    ( Key(..)
+    , KeyStatus(..)
+    , KeyStatuses
+    , Model
+    , Msg
+    , getCurrentDirection
+    , getOrderedPressedKeys
+    , init
+    , resetWasPressed
+    , subscriptions
+    , update
+    )
 
-import Keyboard
+import Data.Direction as Direction exposing (Direction)
 import Dict exposing (Dict)
 import Maybe.Extra
-import Data.Direction as Direction exposing (Direction)
+import Browser.Events
+import Json.Decode as Decode
 
 
 type alias Model =
@@ -25,8 +25,11 @@ type alias Model =
     }
 
 
+type alias KeyCode = String
+
+
 type alias KeyStatuses =
-    Dict Keyboard.KeyCode KeyStatus
+    Dict KeyCode KeyStatus
 
 
 type KeyStatus
@@ -36,12 +39,13 @@ type KeyStatus
 
 
 type Msg
-    = KeyPressed Keyboard.KeyCode
-    | KeyDown Keyboard.KeyCode
-    | KeyUp Keyboard.KeyCode
+    = KeyPressed KeyCode
+    | KeyDown KeyCode
+    | KeyUp KeyCode
 
 
-keyMap : Dict Int Key
+
+keyMap : Dict KeyCode Key
 keyMap =
     Dict.fromList
         [ ( leftArrow, LeftKey )
@@ -56,6 +60,7 @@ keyMap =
         ]
 
 
+
 type Key
     = LeftKey
     | UpKey
@@ -67,56 +72,52 @@ type Key
     | SelectKey
 
 
-leftArrow : Int
+leftArrow : KeyCode
 leftArrow =
-    37
+    "ArrowLeft"
 
 
-upArrow : Int
+upArrow : KeyCode
 upArrow =
-    38
+    "ArrowUp"
 
 
-rightArrow : Int
+rightArrow : KeyCode
 rightArrow =
-    39
+    "ArrowRight"
 
 
-downArrow : Int
+downArrow : KeyCode
 downArrow =
-    40
+    "ArrowDown"
 
 
-escKey : Int
+escKey : KeyCode
 escKey =
-    27
+    "Escape"
 
 
-submitKey : Int
+submitKey : KeyCode
 submitKey =
-    -- a
-    65
+    "a"
 
 
-cancelKey : Int
+cancelKey : KeyCode
 cancelKey =
-    -- s
-    83
+    "s"
 
 
-startKey : Int
+startKey : KeyCode
 startKey =
-    -- z
-    90
+    "z"
 
 
-selectKey : Int
+selectKey : KeyCode
 selectKey =
-    -- x
-    88
+    "x"
 
 
-keyCodeToDirection : Dict Keyboard.KeyCode Direction
+keyCodeToDirection : Dict KeyCode Direction
 keyCodeToDirection =
     Dict.fromList
         [ ( leftArrow, Direction.Left )
@@ -198,19 +199,19 @@ resetWasPressed model =
     }
 
 
-handleIsPressed : Keyboard.KeyCode -> Model -> Model
+handleIsPressed : KeyCode -> Model -> Model
 handleIsPressed keyCode model =
     model
         |> incrementCounter
-        |> (\model ->
-                { model
+        |> (\m ->
+                { m
                     | keys =
-                        updateKey keyCode (IsPressed model.counter) model.keys
+                        updateKey keyCode (IsPressed m.counter) m.keys
                 }
            )
 
 
-handleWasPressed : Keyboard.KeyCode -> Model -> Model
+handleWasPressed : KeyCode -> Model -> Model
 handleWasPressed keyCode model =
     case Dict.get keyCode model.keys of
         Just (IsPressed counter) ->
@@ -227,7 +228,7 @@ incrementCounter model =
     { model | counter = model.counter + 1 }
 
 
-getCounter : Keyboard.KeyCode -> KeyStatuses -> Maybe Int
+getCounter : KeyCode -> KeyStatuses -> Maybe Int
 getCounter keyCode keys =
     Dict.get keyCode keys
         |> Maybe.andThen
@@ -244,11 +245,12 @@ getCounter keyCode keys =
             )
 
 
-updateKey : Keyboard.KeyCode -> KeyStatus -> KeyStatuses -> KeyStatuses
+updateKey : KeyCode -> KeyStatus -> KeyStatuses -> KeyStatuses
 updateKey keyCode status keys =
     -- Do not store keys we do not care about
     if Dict.member keyCode keys then
         Dict.insert keyCode status keys
+
     else
         keys
 
@@ -256,9 +258,9 @@ updateKey keyCode status keys =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.presses KeyPressed
-        , Keyboard.downs KeyDown
-        , Keyboard.ups KeyUp
+        [ Browser.Events.onKeyPress (Decode.map KeyPressed (Decode.field "key" Decode.string))
+        , Browser.Events.onKeyDown (Decode.map KeyDown (Decode.field "key" Decode.string))
+        , Browser.Events.onKeyUp (Decode.map KeyUp (Decode.field "key" Decode.string))
         ]
 
 
@@ -283,5 +285,5 @@ getOrderedPressedKeys model =
                 status /= NotPressed
             )
         |> List.map Tuple.first
-        |> List.map (flip Dict.get keyMap)
+        |> List.map (\a -> Dict.get a keyMap)
         |> Maybe.Extra.values

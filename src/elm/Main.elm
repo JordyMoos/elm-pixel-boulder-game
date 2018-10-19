@@ -1,27 +1,26 @@
 module Main exposing (main)
 
-import Html exposing (Html, text, br, div, button)
-import Html.Events exposing (onClick)
-import Keyboard
-import Time
-import Char
-import List.Extra
-import Dict exposing (Dict)
-import Maybe.Extra
-import Data.Position exposing (Position)
-import Data.Config exposing (Config)
-import InputController
 import Actor.Actor as Actor exposing (Level)
-import Json.Decode
-import Canvas
-import Task
-import AnimationFrame
-import Text
-import GameState.MainMenu as MainMenu
-import GameState.LoadingLevel as LoadingLevel
-import GameState.LoadingAssets as LoadingAssets
-import GameState.PlayingLevel.PlayingLevel as PlayingLevel
 import Actor.Decoder
+import Browser
+import Browser.Events
+import Char
+import Data.Config exposing (Config)
+import Data.Position exposing (Position)
+import Dict exposing (Dict)
+import GameState.LoadingLevel as LoadingLevel
+import GameState.MainMenu as MainMenu
+import GameState.PlayingLevel.PlayingLevel as PlayingLevel
+import Html exposing (Html, br, button, div, text)
+import Html.Events exposing (onClick)
+import InputController
+import Json.Decode
+import List.Extra
+import Maybe.Extra
+import Svg
+import Svg.Attributes
+import Task
+import Text
 
 
 type alias Model =
@@ -40,14 +39,13 @@ type alias Model =
 type GameState
     = MainMenuState MainMenu.Model
     | LoadingLevelState LoadingLevel.Model
-    | LoadingAssetsState LoadingAssets.Model
     | PlayingLevelState PlayingLevel.Model
     | ErrorState String
 
 
 main : Program Json.Decode.Value Model Msg
 main =
-    Html.programWithFlags
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -59,8 +57,7 @@ type Msg
     = GameSpeed (Maybe Int)
     | InputControllerMsg InputController.Msg
     | LoadingLevelMsg LoadingLevel.Msg
-    | LoadingAssetsMsg LoadingAssets.Msg
-    | AnimationFrameUpdate Time.Time
+    | AnimationFrameUpdate Float
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -69,84 +66,82 @@ init flags =
         config =
             { width = 12
             , height = 12
+            , pixelSize = 32
             }
     in
-        { config = config
-        , flags = flags
-        , inputModel = InputController.init
-        , gameState = MainMenuState <| MainMenu.init config
-        , gameSpeed = Just 41
-        , currentTick = 0
-        , timeBuffer = 0
-        , maxUpdatesPerView = 4
-        , debug = True
-        }
-            ! []
+    ( { config = config
+      , flags = flags
+      , inputModel = InputController.init
+      , gameState = MainMenuState <| MainMenu.init config
+      , gameSpeed = Just 41
+      , currentTick = 0
+      , timeBuffer = 0
+      , maxUpdatesPerView = 4
+      , debug = True
+      }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.gameState ) of
         ( GameSpeed gameSpeed, _ ) ->
-            { model | gameSpeed = gameSpeed } ! []
+            ( { model | gameSpeed = gameSpeed }
+            , Cmd.none
+            )
 
         ( InputControllerMsg subMsg, _ ) ->
-            { model
+            ( { model
                 | inputModel =
                     InputController.update subMsg model.inputModel
-            }
-                ! []
+              }
+            , Cmd.none
+            )
 
         ( LoadingLevelMsg subMsg, LoadingLevelState subModel ) ->
             case LoadingLevel.update subMsg subModel of
                 LoadingLevel.Stay newModel ->
-                    { model | gameState = LoadingLevelState newModel } ! []
+                    ( { model | gameState = LoadingLevelState newModel }
+                    , Cmd.none
+                    )
 
                 LoadingLevel.Failed error ->
-                    { model | gameState = ErrorState error } ! []
+                    ( { model | gameState = ErrorState error }
+                    , Cmd.none
+                    )
 
                 LoadingLevel.Success levelConfig ->
-                    if Dict.toList levelConfig.images |> List.isEmpty then
-                        gotoPlayingLevel levelConfig Dict.empty model
-                    else
-                        gotoLoadingAssets levelConfig model
+                    gotoPlayingLevel levelConfig model
 
-        ( LoadingAssetsMsg subMsg, LoadingAssetsState subModel ) ->
-            case LoadingAssets.update subMsg subModel of
-                LoadingAssets.Stay newModel ->
-                    { model | gameState = LoadingAssetsState newModel } ! []
-
-                LoadingAssets.Failed error ->
-                    { model | gameState = ErrorState error } ! []
-
-                LoadingAssets.Success levelConfig images ->
-                    gotoPlayingLevel levelConfig images model
-
-        ( AnimationFrameUpdate time, _ ) ->
-            updateGameState time model
+        ( AnimationFrameUpdate timeDelta, _ ) ->
+            updateGameState timeDelta model
 
         ( _, _ ) ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
 
-gotoPlayingLevel : Actor.LevelConfig -> Actor.CanvasImages -> Model -> ( Model, Cmd Msg )
-gotoPlayingLevel levelConfig images model =
-    PlayingLevel.init model.config levelConfig images
+gotoPlayingLevel : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
+gotoPlayingLevel levelConfig model =
+    PlayingLevel.init model.config levelConfig
         |> PlayingLevelState
         |> setGameState model
-        |> flip (!) []
+        |> (\a ->
+                (\updatedModel cmds ->
+                    ( updatedModel
+                    , Cmd.batch cmds
+                    )
+                )
+                    a
+                    []
+           )
 
 
-gotoLoadingAssets : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
-gotoLoadingAssets levelConfig model =
-    case LoadingAssets.init model.config levelConfig of
-        ( subModel, subCmd ) ->
-            ( setGameState model (LoadingAssetsState subModel), Cmd.map LoadingAssetsMsg subCmd )
-
-
-updateGameState : Time.Time -> Model -> ( Model, Cmd Msg )
-updateGameState time model =
-    case model.gameSpeed of
+updateGameState : Float -> Model -> ( Model, Cmd Msg )
+updateGameState timeDelta givenModel =
+    case givenModel.gameSpeed of
         Just gameSpeed ->
             List.foldr
                 (\_ ( model, cmd ) ->
@@ -159,7 +154,15 @@ updateGameState time model =
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                                 MainMenu.LoadLevel name ->
                                     loadLevel model cmd name
@@ -167,18 +170,23 @@ updateGameState time model =
                                 MainMenu.LoadFlags ->
                                     case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
                                         Err error ->
-                                            ErrorState error
+                                            ErrorState (Debug.toString error)
                                                 |> setGameState model
                                                 |> setInputModel (InputController.resetWasPressed model.inputModel)
                                                 |> increaseCurrentTick
-                                                |> flip (!) [ cmd ]
+                                                |> (\a ->
+                                                        (\updatedModel cmds ->
+                                                            ( updatedModel
+                                                            , Cmd.batch cmds
+                                                            )
+                                                        )
+                                                            a
+                                                            [ cmd ]
+                                                   )
 
                                         Ok levelConfig ->
                                             -- Need to update the ACC here..
-                                            if Dict.toList levelConfig.images |> List.isEmpty then
-                                                gotoPlayingLevel levelConfig Dict.empty model
-                                            else
-                                                gotoLoadingAssets levelConfig model
+                                            gotoPlayingLevel levelConfig model
 
                         PlayingLevelState stateModel ->
                             case PlayingLevel.updateTick model.currentTick model.inputModel stateModel of
@@ -188,7 +196,15 @@ updateGameState time model =
                                         |> setGameState model
                                         |> setInputModel (InputController.resetWasPressed model.inputModel)
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                                 PlayingLevel.LoadLevel name ->
                                     loadLevel model cmd name
@@ -198,20 +214,32 @@ updateGameState time model =
                                         |> MainMenuState
                                         |> setGameState model
                                         |> increaseCurrentTick
-                                        |> flip (!) [ cmd ]
+                                        |> (\a ->
+                                                (\updatedModel cmds ->
+                                                    ( updatedModel
+                                                    , Cmd.batch cmds
+                                                    )
+                                                )
+                                                    a
+                                                    [ cmd ]
+                                           )
 
                         -- Other states do not have updateTick
                         _ ->
                             ( model, cmd )
                 )
-                (model ! [])
-                (List.take model.maxUpdatesPerView <| List.repeat ((model.timeBuffer + (round time)) // gameSpeed) ())
+                ( givenModel
+                , Cmd.none
+                )
+                (List.take givenModel.maxUpdatesPerView <| List.repeat ((givenModel.timeBuffer + round timeDelta) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
-                        ( updateTimeBuffer (round time) gameSpeed newModel, newCmd )
+                        ( updateTimeBuffer (round timeDelta) gameSpeed newModel, newCmd )
                    )
 
         Nothing ->
-            model ! []
+            ( givenModel
+            , Cmd.none
+            )
 
 
 loadLevel : Model -> Cmd Msg -> String -> ( Model, Cmd Msg )
@@ -220,12 +248,20 @@ loadLevel model cmd name =
         ( newModel, newCmd ) =
             LoadingLevel.init model.config name
     in
-        newModel
-            |> LoadingLevelState
-            |> setGameState model
-            |> setInputModel (InputController.resetWasPressed model.inputModel)
-            |> increaseCurrentTick
-            |> flip (!) [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+    newModel
+        |> LoadingLevelState
+        |> setGameState model
+        |> setInputModel (InputController.resetWasPressed model.inputModel)
+        |> increaseCurrentTick
+        |> (\a ->
+                (\updatedModel cmds ->
+                    ( updatedModel
+                    , Cmd.batch cmds
+                    )
+                )
+                    a
+                    [ cmd, Cmd.map LoadingLevelMsg newCmd ]
+           )
 
 
 setGameState : Model -> GameState -> Model
@@ -240,7 +276,7 @@ setInputModel inputModel model =
 
 updateTimeBuffer : Int -> Int -> Model -> Model
 updateTimeBuffer time gameSpeed model =
-    { model | timeBuffer = (model.timeBuffer + time) % gameSpeed }
+    { model | timeBuffer = modBy gameSpeed (model.timeBuffer + time) }
 
 
 increaseCurrentTick : Model -> Model
@@ -252,24 +288,21 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ (case model.gameState of
+        [ case model.gameState of
             MainMenuState subModel ->
                 MainMenu.view subModel
 
             LoadingLevelState subModel ->
                 LoadingLevel.view subModel |> Html.map LoadingLevelMsg
 
-            LoadingAssetsState subModel ->
-                LoadingAssets.view subModel |> Html.map LoadingAssetsMsg
-
             PlayingLevelState subModel ->
                 PlayingLevel.view model.currentTick subModel
 
             ErrorState error ->
                 text <| "ERROR: " ++ error
-          )
         , if model.debug then
             debugView
+
           else
             text ""
         ]
@@ -311,14 +344,14 @@ subscriptions model =
         gameSpeedSub =
             case model.gameSpeed of
                 Just _ ->
-                    [ AnimationFrame.diffs AnimationFrameUpdate
+                    [ Browser.Events.onAnimationFrameDelta AnimationFrameUpdate
                     ]
 
                 Nothing ->
                     []
     in
-        List.append
-            [ Sub.map InputControllerMsg (InputController.subscriptions model.inputModel)
-            ]
-            gameSpeedSub
-            |> Sub.batch
+    List.append
+        [ Sub.map InputControllerMsg (InputController.subscriptions model.inputModel)
+        ]
+        gameSpeedSub
+        |> Sub.batch

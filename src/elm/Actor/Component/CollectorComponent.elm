@@ -3,15 +3,15 @@ module Actor.Component.CollectorComponent exposing (updateCollectorComponent)
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Level
-        , Components
-        , CollectorComponentData
         , CollectibleComponentData
+        , CollectorComponentData
+        , Components
+        , Level
         )
 import Actor.Common as Common
-import Maybe.Extra
 import Actor.Component.CollectibleComponent as CollectibleComponent
 import Dict
+import Maybe.Extra
 
 
 updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
@@ -40,13 +40,13 @@ updateCollectorComponent collectorData collectorActor level =
                 canCollect collectibleData collectorData.interestedIn
             )
         |> List.foldr
-            (\( position, actor, collectibleData ) level ->
+            (\( position, actor, collectibleData ) accLevel ->
                 updateCollectorComponentData collectorData collectibleData
                     |> (\newCollectorComponentData ->
                             setCollectorComponent collectorActor.components newCollectorComponentData
                                 |> Common.updateComponents collectorActor
-                                |> Common.updateActor level.actors
-                                |> Common.updateActors level
+                                |> Common.updateActor accLevel.actors
+                                |> Common.updateActors accLevel
                                 |> Common.removeActor actor
                                 |> Common.addEvent (Actor.InventoryUpdated newCollectorComponentData.inventory)
                        )
@@ -60,7 +60,7 @@ updateCollectorComponentData collector collectible =
         |> Dict.update
             collectible.name
             (\maybeCurrentQuantity ->
-                Just <| (Maybe.withDefault 0 maybeCurrentQuantity) + collectible.quantity
+                Just <| Maybe.withDefault 0 maybeCurrentQuantity + collectible.quantity
             )
         |> updateCollectorInventory collector
 

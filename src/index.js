@@ -1,13 +1,15 @@
 'use strict';
 
 require('./static/style.css');
-const Elm = require('./elm/Main.elm');
-const levelPixel = require('./static/levels/test/pixel');
-const levelNesSmall = require('./static/levels/test/nes-small');
-const levelNes = require('./static/levels/test/nes');
-const levelImage = require('./static/levels/test/images');
-const levelPacman = require('./static/levels/test/pacman');
-const levelTank = require('./static/levels/test/tank');
+const {Elm} = require('./elm/Main.elm');
+const levelPixel = require('./static/levels/test/pixel.json');
+const levelNesSmall = require('./static/levels/test/nes-small.json');
+const levelNes = require('./static/levels/test/nes.json');
+const levelImage = require('./static/levels/test/images.json');
+const levelPacman = require('./static/levels/test/pacman.json');
+const levelTank = require('./static/levels/test/tank.json');
+
+console.log(Elm);
 
 
 document.getElementById('textarea-level').value =
@@ -47,10 +49,11 @@ document.getElementById('submit-level')
 
       try {
 
-        Elm.Main.embed(
-          document.getElementById('elm'),
-          JSON.parse(document.getElementById('textarea-level').value)
-        );
+        console.log(Elm);
+        Elm.Main.init({
+            node: document.getElementById('elm'),
+            flags: JSON.parse(document.getElementById('textarea-level').value)
+        });
       } catch (e) {
         console.dir(e);
         document.getElementById('elm').innerText = 'Error: ' + e.message;

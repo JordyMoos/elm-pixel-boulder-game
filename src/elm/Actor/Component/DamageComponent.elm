@@ -1,6 +1,6 @@
 module Actor.Component.DamageComponent exposing (updateDamageComponent)
 
-import Actor.Actor as Actor exposing (Actor, Level, DamageComponentData)
+import Actor.Actor as Actor exposing (Actor, DamageComponentData, Level)
 import Actor.Common as Common
 import Actor.Component.PhysicsComponent as Physics
 import Maybe.Extra
@@ -28,7 +28,7 @@ updateDamageComponent damageData damageDealingActor level =
                     |> Maybe.withDefault True
             )
         |> List.foldr
-            (\actor level ->
-                Common.removeActor actor level
+            (\actor accLevel ->
+                Common.removeActor actor accLevel
             )
             level

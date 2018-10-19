@@ -1,9 +1,9 @@
 module LevelInitializer exposing (initLevel)
 
-import Data.Config exposing (Config)
 import Actor.Actor as Actor
 import Actor.Common as Common
 import Actor.Decoder
+import Data.Config exposing (Config)
 import Dict
 
 
@@ -37,15 +37,15 @@ setBackground background level =
 setActors : Actor.LevelConfig -> Actor.Level -> Actor.Level
 setActors levelConfig level =
     List.indexedMap
-        (,)
+        (\a b -> ( a, b ))
         levelConfig.scene
         |> List.foldr
-            (\( y, line ) level ->
+            (\( y, line ) accLevel ->
                 List.indexedMap
-                    (,)
+                    (\a b -> ( a, b ))
                     (String.toList line)
                     |> List.foldr
-                        (\( x, char ) level ->
+                        (\( x, char ) innerAccLevel ->
                             Dict.get
                                 (String.fromChar char)
                                 levelConfig.signs
@@ -61,11 +61,11 @@ setActors levelConfig level =
                                                 (Actor.TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving })
                                                 entity
                                             )
-                                            level
+                                            innerAccLevel
                                             |> Just
                                     )
-                                |> Maybe.withDefault level
+                                |> Maybe.withDefault innerAccLevel
                         )
-                        level
+                        accLevel
             )
             level

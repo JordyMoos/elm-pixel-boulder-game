@@ -70,7 +70,7 @@
       {"type": "smash-down"}
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -131,7 +131,7 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
@@ -151,7 +151,7 @@
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
       {"type": "damage", "data": {"damageStrength": 1000}}

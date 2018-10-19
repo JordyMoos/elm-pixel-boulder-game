@@ -4,7 +4,7 @@ import Actor.Actor as Actor
     exposing
         ( Actor
         , CollectibleComponentData
-        , Component(CollectibleComponent)
+        , Component(..)
         )
 import Dict
 
