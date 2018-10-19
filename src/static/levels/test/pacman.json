@@ -2,7 +2,7 @@
   "entities": {
     "player": [
       {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffff00"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 255, "blue": 0}]}}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
         "control": {
@@ -16,12 +16,12 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 195, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy1": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ff0000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -38,7 +38,7 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "enemy2": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffb8ff"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 184, "blue": 255}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -55,7 +55,7 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "enemy3": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#00ffff"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 255, "blue": 255}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -72,7 +72,7 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "enemy4": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffb852"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 184, "blue": 82}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "control", "data": {
@@ -89,22 +89,22 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "wall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#1919a6"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 25, "green": 25, "blue": 166}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#fff1af", "#f8ffaf", "#ebf2a2"], "ticksPerColor": 8}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 241, "blue": 175}, {"red": 248, "green": 255, "blue": 175}, {"red": 235, "green": 242, "blue": 162}], "ticksPerColor": 8}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "candy": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#ffbeaf", "#000000"], "ticksPerColor": 6}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 190, "blue": 175}, {"red": 0, "green": 0, "blue": 0}], "ticksPerColor": 6}}},
       {"type": "collectible", "data": {"name": "candy"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
       {"type": "damage", "data": {"damageStrength": 1000}}
@@ -123,7 +123,7 @@
   "background": {
     "type": "pixel",
     "data": {
-      "colors": ["#000000"]
+      "colors": [{"red": 0, "green": 0, "blue": 0}]
     }
   },
   "scene": [

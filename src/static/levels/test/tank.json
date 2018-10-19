@@ -20,7 +20,7 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "shell": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "control", "data": {
         "control": {
@@ -56,17 +56,17 @@
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#cc0000", "#ce5c00", "#edd400"], "ticksPerColor": 2}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
       {"type": "lifetime", "data": {"remainingTicks": 8}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "tank": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#4e9a06"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 78, "green": 154, "blue": 6}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "tire": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#637057"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 99, "green": 112, "blue": 87}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
@@ -97,7 +97,7 @@
       }
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": ["#000000"]}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
       {"type": "damage", "data": {"damageStrength": 1000}}
@@ -121,7 +121,7 @@
   "background": {
     "type": "pixel",
     "data": {
-      "colors": ["#ffffff"]
+      "colors": [{"red": 255, "green": 255, "blue": 255}]
     }
   },
   "scene": [
