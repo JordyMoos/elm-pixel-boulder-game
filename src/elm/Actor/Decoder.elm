@@ -67,6 +67,8 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
+        |> JDP.optional "viewPosition" positionDecoder defaultViewPosition
+        |> JDP.optional "updateBorder" Decode.int defaultUpdateBorder
         |> JDP.optional "images" imagesDecoder Dict.empty
         |> JDP.optional "background" renderDataDecoder defaultBackground
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
@@ -636,3 +638,15 @@ spawnNeverRepeat =
     { times = RepeatNever
     , delayTicks = 0
     }
+
+
+defaultViewPosition : Position
+defaultViewPosition =
+    { x = 0
+    , y = 0
+    }
+
+
+defaultUpdateBorder : Int
+defaultUpdateBorder =
+    5

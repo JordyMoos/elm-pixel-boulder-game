@@ -21,8 +21,7 @@
         }
       }},
       {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "camera", "data": {"borderSize": 4}}
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "dead": [
       {"type": "tag", "data": {"name": "dead"}},
@@ -39,8 +38,7 @@
         }
       }},
       {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "camera", "data": {"borderSize": 4}}
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ]
   },
   "signs": {
@@ -53,15 +51,22 @@
       "colors": [{"red": 255, "green": 0, "blue": 0}]
     }
   },
+  "viewPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "updateBorder": 40,
   "scene": [
     "                                        ",
-    "                                        ",
-    "   ooo                                  ",
-    "  ooo                                   ",
-    "                                        ",
-    "                                        ",
-    "                                        ",
-    "                                        ",
+    "                         o              ",
+    "                       o o              ",
+    "             oo      oo            oo   ",
+    "            o   o    oo            oo   ",
+    " oo        o     o   oo                 ",
+    " oo        o   o oo    o o              ",
+    "           o     o       o              ",
+    "            o   o                       ",
+    "             oo                         ",
     "                                        ",
     "                                        ",
     "                                        ",

@@ -16,11 +16,6 @@ import Data.Direction exposing (Direction)
 import Dict
 
 
-updateBorder : Int
-updateBorder =
-    5
-
-
 update : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
 update maybeDirection levelBeforeUpdate levelConfig =
     List.foldr
@@ -87,7 +82,7 @@ update maybeDirection levelBeforeUpdate levelConfig =
                             levelB
                 )
                 levelA
-                (List.range (levelA.view.position.x - updateBorder) (levelA.view.position.x + levelA.view.width + updateBorder))
+                (List.range (levelA.view.position.x - levelConfig.updateBorder) (levelA.view.position.x + levelA.view.width + levelConfig.updateBorder))
         )
         levelBeforeUpdate
-        (List.range (levelBeforeUpdate.view.position.y - updateBorder) (levelBeforeUpdate.view.position.y + levelBeforeUpdate.view.height + updateBorder))
+        (List.range (levelBeforeUpdate.view.position.y - levelConfig.updateBorder) (levelBeforeUpdate.view.position.y + levelBeforeUpdate.view.height + levelConfig.updateBorder))

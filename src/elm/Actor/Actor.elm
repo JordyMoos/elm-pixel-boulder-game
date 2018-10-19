@@ -119,6 +119,8 @@ type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
+    , viewPosition : Position
+    , updateBorder : Int
     , images : Images
     , background : RenderComponentData
     , subscribers : Subscribers
