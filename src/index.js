@@ -8,6 +8,7 @@ const levelNes = require('./static/levels/test/nes.json');
 const levelImage = require('./static/levels/test/images.json');
 const levelPacman = require('./static/levels/test/pacman.json');
 const levelTank = require('./static/levels/test/tank.json');
+const levelGameOfLife = require('./static/levels/test/game-of-life.json');
 
 console.log(Elm);
 
@@ -38,6 +39,10 @@ document.getElementById('level-pacman')
 document.getElementById('level-tank')
   .addEventListener('click', function () {
     document.getElementById('textarea-level').value = JSON.stringify(levelTank, null, 2);
+  });
+document.getElementById('level-game-of-life')
+  .addEventListener('click', function () {
+    document.getElementById('textarea-level').value = JSON.stringify(levelGameOfLife, null, 2);
   });
 
 document.getElementById('submit-level')

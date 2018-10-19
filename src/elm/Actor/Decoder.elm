@@ -2,7 +2,9 @@ module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
-        ( AnimationSetup
+        ( AiComponentData
+        , AiType(..)
+        , AnimationSetup
         , CameraComponentData
         , CollectibleComponentData
         , CollectorComponentData
@@ -14,6 +16,8 @@ import Actor.Actor as Actor
         , DamageComponentData
         , Entities
         , EventAction(..)
+        , GameOfLifeAiAction
+        , GameOfLifeAiData
         , ImageRenderComponentData
         , Images
         , ImagesData
@@ -96,6 +100,9 @@ componentDecoder =
         |> Decode.andThen
             (\theType ->
                 (case theType of
+                    "ai" ->
+                        Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+
                     "control" ->
                         Decode.map ControlComponent <| Decode.field "data" controlDataDecoder
 
@@ -360,6 +367,43 @@ physicsShapeDecoder =
                                 ++ shape
                                 ++ " is not supported."
             )
+
+
+aiDataDecoder : Decoder AiComponentData
+aiDataDecoder =
+    Decode.succeed AiComponentData
+        |> JDP.required "ai" aiTypeDecoder
+
+
+aiTypeDecoder : Decoder AiType
+aiTypeDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "gameOfLifeAi" ->
+                        Decode.map GameOfLifeAi <| Decode.field "data" gameOfLifeAiDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode ai components ai type, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+gameOfLifeAiDataDecoder : Decoder GameOfLifeAiData
+gameOfLifeAiDataDecoder =
+    Decode.succeed GameOfLifeAiData
+        |> JDP.required "tagToSearch" Decode.string
+        |> JDP.required "actions" (Decode.list gameOfLifeAiActionDecoder)
+
+
+gameOfLifeAiActionDecoder : Decoder GameOfLifeAiAction
+gameOfLifeAiActionDecoder =
+    Decode.succeed GameOfLifeAiAction
+        |> JDP.required "count" Decode.int
+        |> JDP.required "become" Decode.string
 
 
 controlDataDecoder : Decoder ControlComponentData
