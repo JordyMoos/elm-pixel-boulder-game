@@ -398,7 +398,13 @@ gameOfLifeAiDataDecoder : Decoder GameOfLifeAiData
 gameOfLifeAiDataDecoder =
     Decode.succeed GameOfLifeAiData
         |> JDP.required "tagToSearch" Decode.string
-        |> JDP.optional "delay" Decode.int 4
+        |> JDP.optional "delayTicks" Decode.int 4
+        |> JDP.custom
+            (Decode.oneOf
+                [ Decode.at [ "delayTicks" ] Decode.int
+                , Decode.succeed 4
+                ]
+            )
         |> JDP.required "actions" (Decode.list gameOfLifeAiActionDecoder)
 
 

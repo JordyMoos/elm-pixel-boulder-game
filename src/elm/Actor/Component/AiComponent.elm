@@ -27,16 +27,16 @@ updateAiComponent aiData actor entities levelBeforeUpdate level =
 
 updateGameOfLifeAi : AiComponentData -> GameOfLifeAiData -> Actor -> Actor.Entities -> Level -> Level -> Level
 updateGameOfLifeAi aiData gameOfLifeData actor entities levelBeforeUpdate level =
-    if gameOfLifeData.delay > 0 then
-        updateDelay (gameOfLifeData.delay - 1) aiData gameOfLifeData actor level
+    if gameOfLifeData.delayTicks > 0 then
+        updateDelay (gameOfLifeData.delayTicks - 1) aiData gameOfLifeData actor level
 
     else
         timeToBecome aiData gameOfLifeData actor entities levelBeforeUpdate level
 
 
 updateDelay : Int -> AiComponentData -> GameOfLifeAiData -> Actor -> Level -> Level
-updateDelay delay aiData gameOfLifeData actor level =
-    setDelay gameOfLifeData delay
+updateDelay delayTicks aiData gameOfLifeData actor level =
+    setDelay gameOfLifeData delayTicks
         |> GameOfLifeAi
         |> setAiComponent aiData
         |> Actor.AiComponent
@@ -55,7 +55,7 @@ timeToBecome aiData gameOfLifeData actor entities levelBeforeUpdate level =
         |> Maybe.map (doBecome actor)
         |> Maybe.map (Common.updateActor level.actors)
         |> Maybe.map (Common.updateActors level)
-        |> Maybe.withDefault (updateDelay 4 aiData gameOfLifeData actor level)
+        |> Maybe.withDefault (updateDelay gameOfLifeData.delayTicksInitially aiData gameOfLifeData actor level)
 
 
 getSearchTagCount : Level -> String -> Position -> Int
@@ -85,8 +85,8 @@ doBecome actor newComponents =
 
 
 setDelay : GameOfLifeAiData -> Int -> GameOfLifeAiData
-setDelay gameOfLifeData delay =
-    { gameOfLifeData | delay = delay }
+setDelay gameOfLifeData delayTicks =
+    { gameOfLifeData | delayTicks = delayTicks }
 
 
 setAiComponent : AiComponentData -> AiType -> AiComponentData
