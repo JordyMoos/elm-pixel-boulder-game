@@ -18,9 +18,9 @@ const levels = {
 
 
 const urlParams = new URLSearchParams(window.location.search);
-const startLevel = urlParams.get('startLevel');
+const startLevel = urlParams.get('startLevel') || null;
 
-function runElm(startLevel) {
+function runElm() {
   document.getElementById('editor-container').style.display = 'none';
   document.getElementById('game-container').style.display = '';
 
@@ -62,8 +62,6 @@ document.getElementById('edit-level')
     }
   );
 
-console.log('The start level: ');
-console.log(startLevel);
 if (startLevel !== null) {
   runElm();
 }

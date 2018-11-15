@@ -69,12 +69,6 @@ type Msg
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
-        _ =
-            Debug.log "startLevel" (Debug.toString flags.startLevel)
-
-        _ =
-            Debug.todo "implment"
-
         config =
             { width = 12
             , height = 12
@@ -95,7 +89,7 @@ init flags =
     in
     case flags.startLevel of
         Just name ->
-            loadLevel model Cmd.none name
+            loadLevel model Cmd.none ("test/" ++ name)
 
         Nothing ->
             ( model, Cmd.none )
