@@ -1,55 +1,37 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
-const levelPixel = require('./static/levels/test/pixel.json');
-const levelNesSmall = require('./static/levels/test/nes-small.json');
-const levelNes = require('./static/levels/test/nes.json');
-const levelImage = require('./static/levels/test/images.json');
-const levelPacman = require('./static/levels/test/pacman.json');
-const levelTank = require('./static/levels/test/tank.json');
-const levelGameOfLife = require('./static/levels/test/game-of-life.json');
 
-console.log(Elm);
 
+const cacheKey = 'level-cache-1';
+
+const defaultLevel = require('./static/levels/test/pixel.json');
+const levels = {
+  'level-pixel': defaultLevel,
+  'level-nes-small': require('./static/levels/test/nes-small.json'),
+  'level-nes': require('./static/levels/test/nes.json'),
+  'level-image': require('./static/levels/test/images.json'),
+  'level-pacman': require('./static/levels/test/pacman.json'),
+  'level-tank': require('./static/levels/test/tank.json'),
+  'level-game-of-life': require('./static/levels/test/game-of-life.json')
+};
 
 document.getElementById('textarea-level').value =
-  localStorage.getItem('advanced-level') || JSON.stringify(levelPixel, null, 2);
+  localStorage.getItem(cacheKey) || JSON.stringify(defaultLevel, null, 2);
 
-document.getElementById('level-pixel')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelPixel, null, 2);
-  });
-document.getElementById('level-nes-small')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelNesSmall, null, 2);
-  });
-document.getElementById('level-nes')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelNes, null, 2);
-  });
-document.getElementById('level-image')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelImage, null, 2);
-  });
-document.getElementById('level-pacman')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelPacman, null, 2);
-  });
-document.getElementById('level-tank')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelTank, null, 2);
-  });
-document.getElementById('level-game-of-life')
-  .addEventListener('click', function () {
-    document.getElementById('textarea-level').value = JSON.stringify(levelGameOfLife, null, 2);
-  });
+Object.keys(levels).forEach(function(id) {
+  document.getElementById(id)
+    .addEventListener('click', function () {
+      document.getElementById('textarea-level').value = JSON.stringify(levels[id], null, 2);
+    });
+});
 
 document.getElementById('submit-level')
   .addEventListener('click', function () {
       document.getElementById('editor-container').style.display = 'none';
       document.getElementById('game-container').style.display = '';
 
-      localStorage.setItem('advanced-level', document.getElementById('textarea-level').value);
+      localStorage.setItem(cacheKey, document.getElementById('textarea-level').value);
 
       try {
 
@@ -64,7 +46,6 @@ document.getElementById('submit-level')
       }
     }
   );
-
 
 document.getElementById('edit-level')
   .addEventListener('click', function () {
