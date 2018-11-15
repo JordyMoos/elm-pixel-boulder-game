@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "alive": [
+      {"type": "tag", "data": {"name": "alive"}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "gameOfLifeAi",
+          "data": {
+            "tagToSearch": "alive",
+            "actions": [
+              {"count": 0, "become": "dead"},
+              {"count": 1, "become": "dead"},
+              {"count": 4, "become": "dead"},
+              {"count": 5, "become": "dead"},
+              {"count": 6, "become": "dead"},
+              {"count": 7, "become": "dead"},
+              {"count": 8, "become": "dead"}
+            ]
+          }
+        }
+      }},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "dead": [
+      {"type": "tag", "data": {"name": "dead"}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 255, "blue": 255}]}}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "gameOfLifeAi",
+          "data": {
+            "tagToSearch": "alive",
+            "actions": [
+              {"count": 3, "become": "alive"}
+            ]
+          }
+        }
+      }},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ]
+  },
+  "signs": {
+    "o": "alive",
+    " ": "dead"
+  },
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": [{"red": 255, "green": 0, "blue": 0}]
+    }
+  },
+  "viewPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "updateBorder": 40,
+  "scene": [
+    "                                        ",
+    "                         o              ",
+    "                       o o              ",
+    "             oo      oo            oo   ",
+    "            o   o    oo            oo   ",
+    " oo        o     o   oo                 ",
+    " oo        o   o oo    o o              ",
+    "           o     o       o              ",
+    "            o   o                       ",
+    "             oo                         ",
+    "                                        ",
+    "                                        ",
+    "                                        ",
+    "                                        ",
+    "                                        ",
+    "                                        ",
+    "                                        "
+  ]
+}
