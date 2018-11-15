@@ -25,7 +25,7 @@ import Text
 
 type alias Model =
     { config : Config
-    , flags : Json.Decode.Value
+    , flags : Flags
     , inputModel : InputController.Model
     , gameState : GameState
     , gameSpeed : Maybe Int
@@ -36,6 +36,12 @@ type alias Model =
     }
 
 
+type alias Flags =
+    { jsonLevel : Json.Decode.Value
+    , startLevel : Maybe String
+    }
+
+
 type GameState
     = MainMenuState MainMenu.Model
     | LoadingLevelState LoadingLevel.Model
@@ -43,7 +49,7 @@ type GameState
     | ErrorState String
 
 
-main : Program Json.Decode.Value Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { init = init
@@ -60,27 +66,39 @@ type Msg
     | AnimationFrameUpdate Float
 
 
-init : Json.Decode.Value -> ( Model, Cmd Msg )
+init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
+        _ =
+            Debug.log "startLevel" (Debug.toString flags.startLevel)
+
+        _ =
+            Debug.todo "implment"
+
         config =
             { width = 12
             , height = 12
             , pixelSize = 32
             }
+
+        model =
+            { config = config
+            , flags = flags
+            , inputModel = InputController.init
+            , gameState = MainMenuState <| MainMenu.init config
+            , gameSpeed = Just 41
+            , currentTick = 0
+            , timeBuffer = 0
+            , maxUpdatesPerView = 4
+            , debug = True
+            }
     in
-    ( { config = config
-      , flags = flags
-      , inputModel = InputController.init
-      , gameState = MainMenuState <| MainMenu.init config
-      , gameSpeed = Just 41
-      , currentTick = 0
-      , timeBuffer = 0
-      , maxUpdatesPerView = 4
-      , debug = True
-      }
-    , Cmd.none
-    )
+    case flags.startLevel of
+        Just name ->
+            loadLevel model Cmd.none name
+
+        Nothing ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -168,7 +186,7 @@ updateGameState timeDelta givenModel =
                                     loadLevel model cmd name
 
                                 MainMenu.LoadFlags ->
-                                    case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
+                                    case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags.jsonLevel of
                                         Err error ->
                                             ErrorState (Json.Decode.errorToString error)
                                                 |> setGameState model

@@ -16,6 +16,29 @@ const levels = {
   'level-game-of-life': require('./static/levels/test/game-of-life.json')
 };
 
+
+const urlParams = new URLSearchParams(window.location.search);
+const startLevel = urlParams.get('startLevel');
+
+function runElm(startLevel) {
+  document.getElementById('editor-container').style.display = 'none';
+  document.getElementById('game-container').style.display = '';
+
+  try {
+
+    Elm.Main.init({
+      node: document.getElementById('elm'),
+      flags: {
+        jsonLevel: JSON.parse(document.getElementById('textarea-level').value),
+        startLevel: startLevel
+      }
+    });
+  } catch (e) {
+    console.dir(e);
+    document.getElementById('elm').innerText = 'Error: ' + e.message;
+  }
+}
+
 document.getElementById('textarea-level').value =
   localStorage.getItem(cacheKey) || JSON.stringify(defaultLevel, null, 2);
 
@@ -28,22 +51,8 @@ Object.keys(levels).forEach(function(id) {
 
 document.getElementById('submit-level')
   .addEventListener('click', function () {
-      document.getElementById('editor-container').style.display = 'none';
-      document.getElementById('game-container').style.display = '';
-
       localStorage.setItem(cacheKey, document.getElementById('textarea-level').value);
-
-      try {
-
-        console.log(Elm);
-        Elm.Main.init({
-            node: document.getElementById('elm'),
-            flags: JSON.parse(document.getElementById('textarea-level').value)
-        });
-      } catch (e) {
-        console.dir(e);
-        document.getElementById('elm').innerText = 'Error: ' + e.message;
-      }
+      runElm();
     }
   );
 
@@ -52,3 +61,9 @@ document.getElementById('edit-level')
       location.reload();
     }
   );
+
+console.log('The start level: ');
+console.log(startLevel);
+if (startLevel !== null) {
+  runElm();
+}
