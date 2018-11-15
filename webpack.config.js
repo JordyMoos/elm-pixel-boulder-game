@@ -18,7 +18,7 @@ var common = {
   entry: "./src/index.js",
   output: {
     path: path.join(__dirname, "dist"),
-    publicPath: "/",
+    publicPath: "./",
     // webpack -p automatically adds hash when building for production
     filename: filename
   },
