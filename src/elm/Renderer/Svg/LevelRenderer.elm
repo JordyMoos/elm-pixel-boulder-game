@@ -88,7 +88,7 @@ drawLevel : Int -> Config -> Level -> Actor.Images -> List (Svg msg)
 drawLevel tick config level images =
     List.foldr
         (\y acc ->
-            List.range level.view.position.x (level.view.position.x + level.view.height - 1)
+            List.range level.view.position.x (level.view.position.x + level.view.width - 1)
                 |> List.foldr
                     (\x innerAcc ->
                         getDrawOps tick config level.view.position { x = x, y = y } level images innerAcc

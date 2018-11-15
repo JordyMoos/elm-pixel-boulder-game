@@ -30,7 +30,10 @@ function runElm() {
       node: document.getElementById('elm'),
       flags: {
         jsonLevel: JSON.parse(document.getElementById('textarea-level').value),
-        startLevel: startLevel
+        startLevel: startLevel,
+        width: urlParams.get('width')|0 || 12,
+        height: urlParams.get('height')|0 || 12,
+        pixelSize: urlParams.get('pixelSize')|0 || 32
       }
     });
   } catch (e) {

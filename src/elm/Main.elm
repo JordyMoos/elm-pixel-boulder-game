@@ -39,6 +39,9 @@ type alias Model =
 type alias Flags =
     { jsonLevel : Json.Decode.Value
     , startLevel : Maybe String
+    , width : Int
+    , height : Int
+    , pixelSize : Int
     }
 
 
@@ -70,9 +73,9 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         config =
-            { width = 12
-            , height = 12
-            , pixelSize = 32
+            { width = flags.width
+            , height = flags.height
+            , pixelSize = flags.pixelSize
             }
 
         model =
