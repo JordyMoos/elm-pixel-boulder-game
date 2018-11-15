@@ -11,14 +11,15 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 var MODE =
   process.env.npm_lifecycle_event === "prod" ? "production" : "development";
-var filename = MODE == "production" ? "[name]-[hash].js" : "index.js";
+var filename = MODE === "production" ? "[name]-[hash].js" : "index.js";
+var publicPath = MODE === "production" ? "./" : "/";
 
 var common = {
   mode: MODE,
   entry: "./src/index.js",
   output: {
     path: path.join(__dirname, "dist"),
-    publicPath: "./",
+    publicPath: publicPath,
     // webpack -p automatically adds hash when building for production
     filename: filename
   },
