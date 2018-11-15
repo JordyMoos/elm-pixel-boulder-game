@@ -170,7 +170,7 @@ updateGameState timeDelta givenModel =
                                 MainMenu.LoadFlags ->
                                     case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags of
                                         Err error ->
-                                            ErrorState (Debug.toString error)
+                                            ErrorState (Json.Decode.errorToString error)
                                                 |> setGameState model
                                                 |> setInputModel (InputController.resetWasPressed model.inputModel)
                                                 |> increaseCurrentTick

@@ -1,6 +1,5 @@
 'use strict';
 
-require('./static/style.css');
 const {Elm} = require('./elm/Main.elm');
 const levelPixel = require('./static/levels/test/pixel.json');
 const levelNesSmall = require('./static/levels/test/nes-small.json');

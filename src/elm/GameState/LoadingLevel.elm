@@ -6,6 +6,7 @@ import Data.Config exposing (Config)
 import Html exposing (Html, div, text)
 import Http
 import RemoteData
+import Util.HttpError as HttpError
 
 
 type alias Model =
@@ -47,7 +48,7 @@ update msg model =
                     Stay { model | levelConfig = levelConfigResponse }
 
                 RemoteData.Failure error ->
-                    Failed <| Debug.toString error
+                    Failed <| HttpError.errorToString error
 
                 RemoteData.Success levelConfig ->
                     Success levelConfig
