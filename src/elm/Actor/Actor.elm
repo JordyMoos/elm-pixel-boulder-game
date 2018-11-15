@@ -254,6 +254,8 @@ type AiType
 
 type alias GameOfLifeAiData =
     { tagToSearch : String
+    , delayTicks : Int
+    , delayTicksInitially : Int
     , actions : List GameOfLifeAiAction
     }
 
