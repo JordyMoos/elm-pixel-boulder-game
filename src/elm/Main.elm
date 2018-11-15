@@ -4,6 +4,7 @@ import Actor.Actor as Actor exposing (Level)
 import Actor.Decoder
 import Browser
 import Browser.Events
+import Browser.Navigation
 import Char
 import Data.Config exposing (Config)
 import Data.Position exposing (Position)
@@ -181,6 +182,13 @@ updateGameState timeDelta givenModel =
 
                                 MainMenu.LoadLevel name ->
                                     loadLevel model cmd name
+
+                                MainMenu.ShowCredits ->
+                                    ( { givenModel
+                                        | gameSpeed = Nothing
+                                      }
+                                    , Browser.Navigation.load "https://github.com/JordyMoos/elm-pixel-boulder-game"
+                                    )
 
                                 MainMenu.LoadFlags ->
                                     case Json.Decode.decodeValue Actor.Decoder.levelConfigDecoder model.flags.jsonLevel of

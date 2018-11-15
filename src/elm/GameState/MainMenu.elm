@@ -26,6 +26,7 @@ type Action
     = Stay Model
     | LoadLevel String
     | LoadFlags
+    | ShowCredits
 
 
 init : Config -> Model
@@ -53,6 +54,9 @@ init config =
                       }
                     , { text = Text.stringToLetters "Tank"
                       , action = LoadLevel "test/tank"
+                      }
+                    , { text = Text.stringToLetters "Credits"
+                      , action = ShowCredits
                       }
                     ]
                 }
