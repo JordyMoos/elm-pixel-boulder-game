@@ -262,7 +262,7 @@ subscriptions model =
         , Browser.Events.onKeyDown (Decode.map KeyDown (Decode.field "key" Decode.string))
         , Browser.Events.onKeyUp (Decode.map KeyUp (Decode.field "key" Decode.string))
         , Ports.keyDown KeyDown
-        , Ports.keyUp KeyDown
+        , Ports.keyUp KeyUp
         ]
 
 
