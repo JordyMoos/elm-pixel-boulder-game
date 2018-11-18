@@ -1,4 +1,4 @@
-module InputController exposing
+port module InputController exposing
     ( Key(..)
     , KeyStatus(..)
     , KeyStatuses
@@ -12,11 +12,12 @@ module InputController exposing
     , update
     )
 
+import Browser.Events
 import Data.Direction as Direction exposing (Direction)
 import Dict exposing (Dict)
-import Maybe.Extra
-import Browser.Events
 import Json.Decode as Decode
+import Maybe.Extra
+import Ports
 
 
 type alias Model =
@@ -25,7 +26,8 @@ type alias Model =
     }
 
 
-type alias KeyCode = String
+type alias KeyCode =
+    String
 
 
 type alias KeyStatuses =
@@ -44,7 +46,6 @@ type Msg
     | KeyUp KeyCode
 
 
-
 keyMap : Dict KeyCode Key
 keyMap =
     Dict.fromList
@@ -58,7 +59,6 @@ keyMap =
         , ( escKey, StartKey )
         , ( selectKey, SelectKey )
         ]
-
 
 
 type Key
@@ -261,6 +261,8 @@ subscriptions model =
         [ Browser.Events.onKeyPress (Decode.map KeyPressed (Decode.field "key" Decode.string))
         , Browser.Events.onKeyDown (Decode.map KeyDown (Decode.field "key" Decode.string))
         , Browser.Events.onKeyUp (Decode.map KeyUp (Decode.field "key" Decode.string))
+        , Ports.keyDown KeyDown
+        , Ports.keyUp KeyDown
         ]
 
 

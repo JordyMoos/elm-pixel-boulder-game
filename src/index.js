@@ -26,7 +26,7 @@ function runElm() {
 
   try {
 
-    Elm.Main.init({
+    let app = Elm.Main.init({
       node: document.getElementById('elm'),
       flags: {
         jsonLevel: JSON.parse(document.getElementById('textarea-level').value),
@@ -36,6 +36,16 @@ function runElm() {
         pixelSize: urlParams.get('pixelSize')|0 || 32
       }
     });
+
+    ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'].forEach(function (buttonName) {
+      document.getElementById('button-' + buttonName).addEventListener('mousedown', function () {
+        app.ports.keyDown.send(buttonName);
+      });
+      document.getElementById('button-' + buttonName).addEventListener('click', function () {
+        app.ports.keyUp.send(buttonName);
+      })
+    });
+
   } catch (e) {
     console.dir(e);
     document.getElementById('elm').innerText = 'Error: ' + e.message;
