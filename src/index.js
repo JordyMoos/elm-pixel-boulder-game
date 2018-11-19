@@ -38,12 +38,16 @@ function runElm() {
     });
 
     ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'].forEach(function (buttonName) {
-      document.getElementById('button-' + buttonName).addEventListener('mousedown', function () {
-        app.ports.keyDown.send(buttonName);
+      ['mousedown', 'touchstart'].forEach(function (eventName) {
+        document.getElementById('button-' + buttonName).addEventListener(eventName, function () {
+          app.ports.keyDown.send(buttonName);
+        });
       });
-      document.getElementById('button-' + buttonName).addEventListener('click', function () {
-        app.ports.keyUp.send(buttonName);
-      })
+      ['click', 'touchend'].forEach(function (eventName) {
+        document.getElementById('button-' + buttonName).addEventListener(eventName, function () {
+          app.ports.keyUp.send(buttonName);
+        });
+      });
     });
 
   } catch (e) {
