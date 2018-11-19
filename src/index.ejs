@@ -1,21 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
+<DOCTYPE html>                                                                            <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Elm Pixel Boulder Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        .control-container button {
-            padding: 10px;
-            margin: 5px;
-        }
-    </style>
+    body {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+    
+        .control-container button {                                                                                                                                 
+            padding: 20px;
+            margin: 15px;
+        }                                                                                                                                                     </style>
 </head>
 <body>
-    <div>
-        <div id="editor-container">
-            <div>
-                <button id="level-pixel">Pixel</button>
+    <div>                                                                                                                                                         <div id="editor-container">
+            <div>                                                                                                                                                         <button id="level-pixel">Pixel</button>
                 <button id="level-nes-small">Nes Small</button>
                 <button id="level-nes">Nes</button>
                 <button id="level-image">Image</button>
@@ -34,18 +40,28 @@
                 <table class="control-container">
                     <tr>
                         <td></td>
+                        <td></td>
                         <td><button id="button-ArrowUp">Up</button></td>
                         <td></td>
                         <td></td>
-                        <td></td>
-                        <td><button id="button-a">Submit</button></td>
-                        <td><button id="button-s">Cancel</button></td>
                     </tr>
                     <tr>
                         <td><button id="button-ArrowLeft">Left</button></td>
-                        <td><button id="button-ArrowDown">Down</button></td>
-                        <td><button id="button-ArrowRight">Right</button></td>
                         <td></td>
+                        <td><button id="button-ArrowDown">Down</button></td>
+                        <td></td>
+                        <td><button id="button-ArrowRight">Right</button></td>
+                    </tr>
+                    <tr style="height: 20px;">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><button id="button-a">Submit</button></td>
+                        <td><button id="button-s">Cancel</button></td>
                         <td></td>
                         <td><button id="button-z">Start</button></td>
                         <td><button id="button-x">Select</button></td>
