@@ -1,8 +1,6 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
-
-
 const cacheKey = 'level-cache-1';
 
 const defaultLevel = require('./static/levels/test/pixel.json');
@@ -35,7 +33,7 @@ function runElm() {
         width: urlParams.get('width')|0 || 12,
         height: urlParams.get('height')|0 || 12,
         pixelSize: urlParams.get('pixelSize')|0 || 32,
-	debug: ! hideDebug
+	      debug: ! hideDebug
       }
     });
 
