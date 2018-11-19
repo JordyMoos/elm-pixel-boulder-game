@@ -19,6 +19,7 @@ const levels = {
 
 const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
+const hideDebug = !! urlParams.get('hideDebug');
 
 function runElm() {
   document.getElementById('editor-container').style.display = 'none';
@@ -33,7 +34,8 @@ function runElm() {
         startLevel: startLevel,
         width: urlParams.get('width')|0 || 12,
         height: urlParams.get('height')|0 || 12,
-        pixelSize: urlParams.get('pixelSize')|0 || 32
+        pixelSize: urlParams.get('pixelSize')|0 || 32,
+	debug: ! hideDebug
       }
     });
 
