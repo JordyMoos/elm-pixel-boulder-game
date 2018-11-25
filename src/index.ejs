@@ -1,9 +1,23 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Elm Pixel Boulder Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Chrome and Opera */
+        }
+
+        .control-container button {
+            padding: 15px;
+            margin: 10px;
+        }                                                                                                                                                     </style>
 </head>
 <body>
     <div>
@@ -18,12 +32,45 @@
                 <button id="level-game-of-life">GoL</button>
             </div>
             <div><textarea name="textarea-level" id="textarea-level" cols="80" rows="30"></textarea></div>
-            <div><button id="submit-level">Play</button></div>
+            <div>
+                <button id="submit-level">Play</button>
+            </div>
         </div>
         <br>
         <div id="game-container" style="display: none;">
-            <div><button id="edit-level">Edit</button></div>
+            <div>
+                <button id="edit-level">Edit</button>
+            </div>
             <div id="elm"></div>
+            <div>
+                <table class="control-container">
+                    <tr>
+                        <td></td>
+                        <td><button id="button-ArrowUp">Up</button></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><button id="button-ArrowLeft">Left</button></td>
+                        <td><button id="button-ArrowDown">Down</button></td>
+                        <td><button id="button-ArrowRight">Right</button></td>
+                    </tr>
+                    <tr style="height: 20px;">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><button id="button-a">Submit</button></td>
+                        <td><button id="button-s">Cancel</button></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><button id="button-z">Start</button></td>
+                        <td><button id="button-x">Select</button></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>

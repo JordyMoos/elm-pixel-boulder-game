@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Actor.Actor as Actor exposing (Level)
 import Actor.Decoder
@@ -43,6 +43,7 @@ type alias Flags =
     , width : Int
     , height : Int
     , pixelSize : Int
+    , debug : Bool
     }
 
 
@@ -88,7 +89,7 @@ init flags =
             , currentTick = 0
             , timeBuffer = 0
             , maxUpdatesPerView = 4
-            , debug = True
+            , debug = flags.debug
             }
     in
     case flags.startLevel of
