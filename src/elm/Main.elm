@@ -94,7 +94,7 @@ init flags =
     in
     case flags.startLevel of
         Just name ->
-            loadLevel model Cmd.none ("test/" ++ name)
+            loadLevel model Cmd.none name
 
         Nothing ->
             ( model, Cmd.none )
