@@ -23,15 +23,24 @@
     <div>
         <div id="editor-container">
             <div>
-                <button id="level-pixel">Pixel</button>
-                <button id="level-nes-small">Nes Small</button>
-                <button id="level-nes">Nes</button>
-                <button id="level-image">Image</button>
-                <button id="level-pacman">Pac-Man</button>
-                <button id="level-tank">Tank</button>
-                <button id="level-game-of-life">GoL</button>
+                Editor mode <label for="easy-editor-option">Easy</label> <input type="radio" id="easy-editor-option" name="editor-option" value="easy">,
+                <label for="advanced-editor-option">Advanced</label> <input type="radio" id="advanced-editor-option" name="editor-option" value="advanced">
             </div>
-            <div><textarea name="textarea-level" id="textarea-level" cols="80" rows="30"></textarea></div>
+            <div id="advanced-editor">
+                <div>
+                    <button id="level-pixel">Pixel</button>
+                    <button id="level-nes-small">Nes Small</button>
+                    <button id="level-nes">Nes</button>
+                    <button id="level-image">Image</button>
+                    <button id="level-pacman">Pac-Man</button>
+                    <button id="level-tank">Tank</button>
+                    <button id="level-game-of-life">GoL</button>
+                </div>
+                <div><textarea name="advanced-textarea-level" id="advanced-textarea-level" cols="80" rows="30"></textarea></div>
+            </div>
+            <div id="easy-editor">
+                <textarea name="easy-textarea-level" id="easy-textarea-level" cols="80" rows="30"></textarea>
+            </div>
             <div>
                 <button id="submit-level">Play</button>
             </div>

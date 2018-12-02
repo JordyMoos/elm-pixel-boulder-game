@@ -18,6 +18,29 @@ const levels = {
 const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
+const editorMode = urlParams.get('editorMode') === 'easy' ? 'easy' : 'advanced';
+const notEditorMode = getOtherMode(editorMode);
+
+function getOtherMode(mode) {
+  return mode === 'easy' ? 'advanced' : 'easy';
+}
+
+
+['easy', 'advanced'].forEach(function(mode) {
+  document.getElementById(mode + '-editor-option').addEventListener('change', function (data) {
+    let newMode = data.target.value;
+    let newOtherMode = getOtherMode(newMode);
+
+    document.getElementById(newMode + '-editor').style.display = '';
+    document.getElementById( newOtherMode + '-editor').style.display = 'none';
+
+    
+  });
+});
+
+document.getElementById(editorMode + '-editor-option').checked = 'checked';
+document.getElementById(editorMode + '-editor').style.display = '';
+document.getElementById(notEditorMode + '-editor').style.display = 'none';
 
 if (hideDebug) {
   document.getElementById('edit-level-container').style.display = 'none';
@@ -32,7 +55,7 @@ function runElm() {
     let app = Elm.Main.init({
       node: document.getElementById('elm'),
       flags: {
-        jsonLevel: JSON.parse(document.getElementById('textarea-level').value),
+        jsonLevel: JSON.parse(document.getElementById('advanced-textarea-level').value),
         startLevel: startLevel,
         width: urlParams.get('width')|0 || 12,
         height: urlParams.get('height')|0 || 12,
@@ -60,19 +83,19 @@ function runElm() {
   }
 }
 
-document.getElementById('textarea-level').value =
+document.getElementById('advanced-textarea-level').value =
   localStorage.getItem(cacheKey) || JSON.stringify(defaultLevel, null, 2);
 
 Object.keys(levels).forEach(function(id) {
   document.getElementById(id)
     .addEventListener('click', function () {
-      document.getElementById('textarea-level').value = JSON.stringify(levels[id], null, 2);
+      document.getElementById('advanced-textarea-level').value = JSON.stringify(levels[id], null, 2);
     });
 });
 
 document.getElementById('submit-level')
   .addEventListener('click', function () {
-      localStorage.setItem(cacheKey, document.getElementById('textarea-level').value);
+      localStorage.setItem(cacheKey, document.getElementById('advanced-textarea-level').value);
       runElm();
     }
   );
