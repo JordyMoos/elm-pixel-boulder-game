@@ -23,15 +23,82 @@
     <div>
         <div id="editor-container">
             <div>
-                <button id="level-pixel">Pixel</button>
-                <button id="level-nes-small">Nes Small</button>
-                <button id="level-nes">Nes</button>
-                <button id="level-image">Image</button>
-                <button id="level-pacman">Pac-Man</button>
-                <button id="level-tank">Tank</button>
-                <button id="level-game-of-life">GoL</button>
+                Editor mode <label for="easy-editor-option">Easy</label> <input type="radio" id="easy-editor-option" name="editor-option" value="easy">,
+                <label for="advanced-editor-option">Advanced</label> <input type="radio" id="advanced-editor-option" name="editor-option" value="advanced">
             </div>
-            <div><textarea name="textarea-level" id="textarea-level" cols="80" rows="30"></textarea></div>
+            <div id="advanced-editor">
+                <div>
+                    <button id="level-pixel">Pixel</button>
+                    <button id="level-nes-small">Nes Small</button>
+                    <button id="level-nes">Nes</button>
+                    <button id="level-image">Image</button>
+                    <button id="level-pacman">Pac-Man</button>
+                    <button id="level-tank">Tank</button>
+                    <button id="level-game-of-life">GoL</button>
+                </div>
+                <div><textarea name="advanced-textarea-level" id="advanced-textarea-level" cols="80" rows="30"></textarea></div>
+            </div>
+            <div id="easy-editor">
+                <table>
+                    <tr>
+                        <td>
+                            <textarea name="easy-textarea-level" id="easy-textarea-level" cols="80" rows="30"></textarea>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <th>Sign</th>
+                                    <th>Meaning</th>
+                                </tr>
+                                <tr>
+                                    <td>p</td>
+                                    <td>Player</td>
+                                </tr>
+                                <tr>
+                                    <td>.</td>
+                                    <td>Dirt</td>
+                                </tr>
+                                <tr>
+                                    <td>o</td>
+                                    <td>Rock</td>
+                                </tr>
+                                <tr>
+                                    <td>*</td>
+                                    <td>Diamond</td>
+                                </tr>
+                                <tr>
+                                    <td>e</td>
+                                    <td>Enemy</td>
+                                </tr>
+                                <tr>
+                                    <td>c</td>
+                                    <td>Pet</td>
+                                </tr>
+                                <tr>
+                                    <td>|</td>
+                                    <td>Wall</td>
+                                </tr>
+                                <tr>
+                                    <td>#</td>
+                                    <td>Strong Wall</td>
+                                </tr>
+                                <tr>
+                                    <td>=</td>
+                                    <td>Dynamite</td>
+                                </tr>
+                                <tr>
+                                    <td>x</td>
+                                    <td>explosion</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>(Space) Nothing</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
             <div>
                 <button id="submit-level">Play</button>
             </div>
@@ -73,5 +140,5 @@
             </div>
         </div>
     </div>
-<script type="text/javascript" src="./main-e274a10483689d7274d5.js"></script></body>
+<script type="text/javascript" src="./main-a5f8461ded6e4dd3df06.js"></script></body>
 </html>

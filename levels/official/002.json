@@ -112,6 +112,26 @@
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
+    "pet": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"],
+          "ticksPerImage": 3
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
+        }
+      }},
+      {"type": "explodable"}
+    ],
     "dirt": [
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
@@ -195,6 +215,10 @@
     "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
     "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
     "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
+    "pet-a-0": "./images/spriters-resource.com/pet-a-0.png",
+    "pet-a-1": "./images/spriters-resource.com/pet-a-1.png",
+    "pet-a-2": "./images/spriters-resource.com/pet-a-2.png",
+    "pet-a-3": "./images/spriters-resource.com/pet-a-3.png",
     "rock-0": "./images/spriters-resource.com/rock-0.png",
     "wall": "./images/spriters-resource.com/wall.png",
     "background-big": "./images/spriters-resource.com/background-big.png"
