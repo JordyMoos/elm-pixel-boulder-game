@@ -3,6 +3,14 @@ Pixel Boulder Game in Elm
 
 ## Demo
 
+https://jordymoos.github.io/elm-pixel-boulder-game/?startLevel=official%2F001&hideDebug=1
+
+## Easy level editor
+
+https://jordymoos.github.io/elm-pixel-boulder-game/?editor=easy
+
+## Advanced level editor
+
 https://jordymoos.github.io/elm-pixel-boulder-game/
 
 ## Install
