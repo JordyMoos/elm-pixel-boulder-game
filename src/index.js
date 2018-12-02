@@ -19,6 +19,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
 
+if (hideDebug) {
+  document.getElementById('edit-level-container').style.display = 'none';
+}
+
 function runElm() {
   document.getElementById('editor-container').style.display = 'none';
   document.getElementById('game-container').style.display = '';
