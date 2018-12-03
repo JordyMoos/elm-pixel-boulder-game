@@ -16,12 +16,10 @@ const levels = {
 };
 
 const sampleLevel = require('./static/levels/test/sample.json');
-const defaultEasyScene = `..o......
-.p...**..
-.........
-.........
-.........
-.........`;
+const defaultEasyScene = `
+ ..o......
+ .p...**..
+ .........`;
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -78,13 +76,18 @@ document.getElementById(editorMode + '-editor-option').checked = 'checked';
 document.getElementById(editorMode + '-editor').style.display = '';
 document.getElementById(notEditorMode + '-editor').style.display = 'none';
 
-if (hideDebug) {
-  document.getElementById('edit-level-container').style.display = 'none';
-}
-
+let imageLoadedInfo = {};
 let activeSpriteElement = undefined;
 let spriteElements = Array.from(document.getElementById('sprite-container').getElementsByTagName('img'));
 spriteElements.forEach(function (element) {
+  let elementId = element.id;
+  imageLoadedInfo[elementId] = element.complete;
+  element.addEventListener('load', function() {
+    imageLoadedInfo[elementId] = true;
+
+    drawIfEverythingIsLoaded();
+  });
+
   element.addEventListener('click', function (event) {
     spriteElements.forEach(function (aSpriteElement) {
       aSpriteElement.className = '';
@@ -161,8 +164,19 @@ function fullRedraw() {
   });
 }
 
+function drawIfEverythingIsLoaded() {
+  let allLoaded = Object.keys(imageLoadedInfo).every(function (id) {
+    return imageLoadedInfo[id];
+  });
+
+  if (allLoaded) {
+    document.getElementById('easy-editor-loader').style.display = 'none';
+    fullRedraw();
+  }
+}
+
 showProperSubMode();
-fullRedraw();
+drawIfEverythingIsLoaded();
 
 document.getElementById('easy-to-ascii').addEventListener('click', function () {
   let scene = asciiScene.map(row => {
@@ -250,6 +264,14 @@ Object.keys(levels).forEach(function(id) {
 
 document.getElementById('submit-level')
   .addEventListener('click', function () {
+      if (subMode === 'image') {
+        let scene = asciiScene.map(row => {
+          return row.join('').trimRight();
+        }).join("\n");
+
+        document.getElementById('easy-textarea-level').value = scene;
+      }
+
       localStorage.setItem(advancedCacheKey, document.getElementById('advanced-textarea-level').value);
       localStorage.setItem(easyCacheKey, document.getElementById('easy-textarea-level').value);
       runElm();

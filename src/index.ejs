@@ -49,6 +49,9 @@
                 <div><textarea name="advanced-textarea-level" id="advanced-textarea-level" cols="80" rows="30"></textarea></div>
             </div>
             <div id="easy-editor">
+                <div id="easy-editor-loader">
+                    <h2>Loading please wait</h2>
+                </div>
                 <div id="canvas-mode">
                     <div id="sprite-container">
                         <img id="sprite-p" data-sign="p" src="./images/spriters-resource.com/hero/hero-00.png" title="Player" alt="Player">
@@ -148,9 +151,6 @@
         </div>
         <br>
         <div id="game-container" style="display: none;">
-            <div id="edit-level-container">
-                <button id="edit-level">Edit</button>
-            </div>
             <div id="elm"></div>
             <div>
                 <table class="control-container">
@@ -180,6 +180,9 @@
                         <td></td>
                     </tr>
                 </table>
+            </div>
+            <div id="edit-level-container">
+                <button id="edit-level">Edit</button>
             </div>
         </div>
     </div>

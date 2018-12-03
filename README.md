@@ -7,11 +7,11 @@ https://jordymoos.github.io/elm-pixel-boulder-game/?startLevel=official%2F001&hi
 
 ## Easy level editor
 
-https://jordymoos.github.io/elm-pixel-boulder-game/?editorMode=easy&hideDebug=1
+https://jordymoos.github.io/elm-pixel-boulder-game/?hideDebug=1
 
 ## Advanced level editor
 
-https://jordymoos.github.io/elm-pixel-boulder-game/
+https://jordymoos.github.io/elm-pixel-boulder-game/?editorMode=advanced
 
 ## Install
 
