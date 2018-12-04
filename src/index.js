@@ -95,10 +95,16 @@ spriteElements.forEach(function (element) {
 
     element.className = 'active';
     activeSpriteElement = element;
+    updateSpriteDescription();
   });
 });
 spriteElements[0].className = 'active';
 activeSpriteElement = spriteElements[0];
+updateSpriteDescription();
+
+function updateSpriteDescription() {
+  document.getElementById('active-sprite-description').innerText = activeSpriteElement.dataset.description;
+}
 
 let backgroundSpriteElement = document.getElementById('sprite- ');
 let canvasContainerElement = document.getElementById('canvas-editor-container');

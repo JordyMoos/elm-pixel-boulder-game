@@ -40,20 +40,8 @@ init config =
                     , action = LoadFlags
                     }
                 , after =
-                    [ { text = Text.stringToLetters "Pixel"
-                      , action = LoadLevel "test/pixel"
-                      }
-                    , { text = Text.stringToLetters "Nes"
-                      , action = LoadLevel "test/nes-small"
-                      }
-                    , { text = Text.stringToLetters "Images"
-                      , action = LoadLevel "test/images"
-                      }
-                    , { text = Text.stringToLetters "Pac-Man"
-                      , action = LoadLevel "test/pacman"
-                      }
-                    , { text = Text.stringToLetters "Tank"
-                      , action = LoadLevel "test/tank"
+                    [ { text = Text.stringToLetters "Official levels"
+                      , action = LoadLevel "official/001"
                       }
                     , { text = Text.stringToLetters "Credits"
                       , action = ShowCredits
