@@ -1,4 +1,17 @@
-module Actor.Component.TransformComponent exposing (calculateCompletionPercentage, getMovingTowardsData, getNewPosition, isActorMoving, isMoving, isMovingAt, isMovingDown, isNotMoving, isNotMovingAt, movingTicks, startMovingTowards, updateTransformComponent)
+module Actor.Component.TransformComponent exposing
+    ( calculateCompletionPercentage
+    , getMovingTowardsData
+    , getNewPosition
+    , isActorMoving
+    , isMoving
+    , isMovingAt
+    , isMovingDown
+    , isNotMoving
+    , isNotMovingAt
+    , movingTicks
+    , startMovingTowards
+    , updateTransformComponent
+    )
 
 import Actor.Actor as Actor
     exposing

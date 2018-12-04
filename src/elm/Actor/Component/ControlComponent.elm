@@ -121,6 +121,7 @@ getGravityAiDirection controlData actor level =
                             (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Left, Position.getOffsetFromDirection Direction.Down ])
                             level
                     , \() -> Physics.isCircleAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
+                    , \() -> Transform.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
                     , \() -> canGoInDirection actor Direction.Left level
                     ]
                   )
@@ -130,6 +131,7 @@ getGravityAiDirection controlData actor level =
                             (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Right, Position.getOffsetFromDirection Direction.Down ])
                             level
                     , \() -> Physics.isCircleAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
+                    , \() -> Transform.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
                     , \() -> canGoInDirection actor Direction.Right level
                     ]
                   )
