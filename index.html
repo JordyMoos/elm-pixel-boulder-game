@@ -54,18 +54,21 @@
                 </div>
                 <div id="canvas-mode">
                     <div id="sprite-container">
-                        <img id="sprite-p" data-sign="p" src="./images/spriters-resource.com/hero/hero-00.png" title="Player" alt="Player">
-                        <img id="sprite-." data-sign="." src="./images/spriters-resource.com/dirt.png" title="Dirt" alt="Dirt">
-                        <img id="sprite-o" data-sign="o" src="./images/spriters-resource.com/rock-0.png" title="Rock" alt="Rock">
-                        <img id="sprite-*" data-sign="*" src="./images/spriters-resource.com/diamond-0.png" title="Diamond" alt="Diamond">
-                        <img id="sprite-e" data-sign="e" src="./images/spriters-resource.com/enemy-a-0.png" title="Enemy" alt="Enemy">
-                        <img id="sprite-c" data-sign="c" src="./images/spriters-resource.com/pet-a-0.png" title="Pet" alt="Pet">
-                        <img id="sprite-|" data-sign="|" src="./images/spriters-resource.com/wall.png" title="Wall" alt="Wall">
-                        <img id="sprite-#" data-sign="#" src="./images/spriters-resource.com/strong-wall.png" title="Strong wall" alt="Strong wall">
-                        <img id="sprite-=" data-sign="=" src="./images/spriters-resource.com/dynamite.png" title="Dynamite" alt="Dynamite">
-                        <img id="sprite-x" data-sign="x" src="./images/spriters-resource.com/explosion-0.png" title="Explosion" alt="Explosion">
-                        <img id="sprite- " data-sign=" " src="./images/spriters-resource.com/background.png" title="(Space) Nothing" alt="(Space) Nothing">
+                        <img id="sprite-p" data-sign="p" data-description="The player. You will control this cool fellow." src="./images/spriters-resource.com/hero/hero-00.png" title="Player" alt="Player">
+                        <img id="sprite-." data-sign="." data-description="Dirt which the Player can walk through (and destroy) dirt. But enemies and pets can not." src="./images/spriters-resource.com/dirt.png" title="Dirt" alt="Dirt">
+                        <img id="sprite-o" data-sign="o" data-description="You can push rocks if the destination tile is free. Be careful that you do not try to catch one with your head! You could use gravity to make the rock fall on an enemy. Fun guaranteed!" src="./images/spriters-resource.com/rock-0.png" title="Rock" alt="Rock">
+                        <img id="sprite-*" data-sign="*" data-description="These you need to collect to win the level!" src="./images/spriters-resource.com/diamond-0.png" title="Diamond" alt="Diamond">
+                        <img id="sprite-e" data-sign="e" data-description="Enemies will try to kill you when they are near you." src="./images/spriters-resource.com/enemy-a-0.png" title="Enemy" alt="Enemy">
+                        <img id="sprite-t" data-sign="t" data-description="Though Enemy will not die from its own explosions. They are here to stay. ;(" src="./images/spriters-resource.com/enemy-c-0.png" title="Tough Enemy" alt="Tough Enemy">
+                        <img id="sprite-f" data-sign="f" data-description="Funny Enemy which has the same strength as the Enemy, but will walk in the opposite direction." src="./images/spriters-resource.com/enemy-d-0.png" title="Funny Enemy" alt="Funny Enemy">
+                        <img id="sprite-c" data-sign="c" data-description="A Pet, they are really good in getting killed by enemies. Which will also kill the Enemy. Really handy fellows! Except the Tough Enemy... they just don't die..." src="./images/spriters-resource.com/pet-a-0.png" title="Pet" alt="Pet">
+                        <img id="sprite-|" data-sign="|" data-description="A Wall which can be destroyed." src="./images/spriters-resource.com/wall.png" title="Wall" alt="Wall">
+                        <img id="sprite-#" data-sign="#" data-description="A Strong Wall which can not be destroyed." src="./images/spriters-resource.com/strong-wall.png" title="Strong wall" alt="Strong wall">
+                        <img id="sprite-=" data-sign="=" data-description="Dynamite which is handy to destroy stuff. Let a Rock fall on the Dynamite to trigger the explosion." src="./images/spriters-resource.com/dynamite.png" title="Dynamite" alt="Dynamite">
+                        <img id="sprite-x" data-sign="x" data-description="An Explosion, I'm not sure why you would like to place it but who cares." src="./images/spriters-resource.com/explosion-0.png" title="Explosion" alt="Explosion">
+                        <img id="sprite- " data-sign=" " data-description="The 'empty' tile which does nothing." src="./images/spriters-resource.com/background.png" title="(Space) Nothing" alt="(Space) Nothing">
                     </div>
+                    <p id="active-sprite-description"></p>
                     <div id="canvas-editor-container" style="width: 520px; height: 520px; overflow: auto;">
                         <canvas id="canvas-editor-canvas" width="500" height="500" style="border: 1px solid black;"></canvas>
                     </div>
@@ -186,5 +189,5 @@
             </div>
         </div>
     </div>
-<script type="text/javascript" src="./main-3ebc7fe1bbd9c6e66403.js"></script></body>
+<script type="text/javascript" src="./main-8f0d48892d4918c7e030.js"></script></body>
 </html>

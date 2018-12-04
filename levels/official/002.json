@@ -112,6 +112,48 @@
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
+    "tough-enemy": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["enemy-c-0", "enemy-c-1", "enemy-c-2", "enemy-c-3"],
+          "ticksPerImage": 3
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
+        }
+      }},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 80}}
+    ],
+    "funny-enemy": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["enemy-d-0", "enemy-d-1", "enemy-d-2", "enemy-d-3"],
+          "ticksPerImage": 3
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [1, 0, -1, 2]
+          }
+        }
+      }},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
     "pet": [
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
@@ -120,7 +162,7 @@
         }
       }}},
       {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
       {"type": "control", "data": {
         "control": {
           "type": "walkAroundAi",
@@ -151,7 +193,11 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 50, "green": 50, "blue": 50}]}}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["strong-wall"]
+        }
+      }}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
@@ -183,6 +229,8 @@
     "=": "dynamite",
     "x": "explosion",
     "e": "enemy",
+    "t": "tough-enemy",
+    "f": "funny-enemy",
     "c": "pet",
     ".": "dirt",
     "|": "wall",
@@ -215,12 +263,25 @@
     "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
     "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
     "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
+    "enemy-b-0": "./images/spriters-resource.com/enemy-b-0.png",
+    "enemy-b-1": "./images/spriters-resource.com/enemy-b-1.png",
+    "enemy-b-2": "./images/spriters-resource.com/enemy-b-2.png",
+    "enemy-b-3": "./images/spriters-resource.com/enemy-b-3.png",
+    "enemy-c-0": "./images/spriters-resource.com/enemy-c-0.png",
+    "enemy-c-1": "./images/spriters-resource.com/enemy-c-1.png",
+    "enemy-c-2": "./images/spriters-resource.com/enemy-c-2.png",
+    "enemy-c-3": "./images/spriters-resource.com/enemy-c-3.png",
+    "enemy-d-0": "./images/spriters-resource.com/enemy-d-0.png",
+    "enemy-d-1": "./images/spriters-resource.com/enemy-d-1.png",
+    "enemy-d-2": "./images/spriters-resource.com/enemy-d-2.png",
+    "enemy-d-3": "./images/spriters-resource.com/enemy-d-3.png",
     "pet-a-0": "./images/spriters-resource.com/pet-a-0.png",
     "pet-a-1": "./images/spriters-resource.com/pet-a-1.png",
     "pet-a-2": "./images/spriters-resource.com/pet-a-2.png",
     "pet-a-3": "./images/spriters-resource.com/pet-a-3.png",
     "rock-0": "./images/spriters-resource.com/rock-0.png",
     "wall": "./images/spriters-resource.com/wall.png",
+    "strong-wall": "./images/spriters-resource.com/strong-wall.png",
     "background-big": "./images/spriters-resource.com/background-big.png"
   },
   "background": {
@@ -233,31 +294,21 @@
   },
   "scene": [
     "#########################################",
-    "#.   ........o..........................#",
-    "#...o....*...oo.........................#",
-    "#...*...................................#",
-    "#..*p*.. .o....o........................#",
-    "#...*.....o. .**o.......................#",
-    "#...... ..o....o........................#",
-    "#...  ......*...........................#",
-    "#..ooooo*...............................#",
-    "#*.....ooo.ooo..........................#",
-    "#........*..............................#",
-    "#....*..................................#",
     "#.......................................#",
+    "#.................******e   ............#",
+    "#|||||||||........******    ............#",
+    "#|**| o  o..............................#",
+    "#|**| || |....ooooooooo.p...............#",
+    "#|**| || |....ooooooooo.......*.........#",
+    "#|**| || |....oooooooo..................#",
+    "#|**| ||=|...................*..........#",
+    "#|**| ||||...           ................#",
+    "#|**| ||*|...           .........*......#",
+    "#|**|e||*|...           ................#",
+    "#|||||||||...           ................#",
     "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
-    "#.......................................#",
+    "#....*......    e       .......*........#",
+    "#............*..........................#",
     "#.......................................#",
     "#########################################"
   ],
@@ -282,7 +333,7 @@
       "type": "onInventoryUpdated",
       "data": {
         "interestedIn": "diamond",
-        "minimumQuantity": 100,
+        "minimumQuantity": 36,
         "action": {
           "type": "completed",
           "data": {
