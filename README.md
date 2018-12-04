@@ -49,28 +49,28 @@ https://jordymoos.github.io/elm-pixel-boulder-game/?editorMode=advanced
 
 ## Development
 
-Clone the repo
+Clone the repository.
 ```
 git clone https://github.com/JordyMoos/elm-pixel-boulder-game.git
 ```
-Go into the directory
+Go into the directory.
 ```
 cd elm-pixel-boulder-game
 ```
-Install the dependencies
+Install the dependencies.
 ```
 npm install
 ```
-Run the local version
+Run the local version.
 ```
 npm start
 ```
 And play it in your browser at localhost:3000
 
 ## Create a prod build
-After installing the depenencies you can also create a production build
+After installing the dependencies you can also create a production build.
 ```
 npm run prod
 ```
 
-Which will create the production version in the `./dist` folder
+Which will create the production version in the `./dist` folder.
