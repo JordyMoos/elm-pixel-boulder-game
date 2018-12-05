@@ -22,7 +22,7 @@ Suddenly it really looked like the old Boulder Dash!
 
 ## Play the game!
 
-You can play the at github pages.
+You can play the game at github pages.
 
 https://jordymoos.github.io/elm-pixel-boulder-game/?startLevel=official%2F001&hideDebug=1
 
