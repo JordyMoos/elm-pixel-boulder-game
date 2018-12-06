@@ -195,6 +195,26 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
             in
             getImageNamesDataByDirection towardsData.direction imageRenderData
                 |> getImageName tick
+                {-
+                   // This should fix the world!
+                   // Or at leas the flicking in firefox
+                   // But I should wait until the bug report is closed to give my friends at firefox
+                   // time to view the issue
+                   (\imageName ->
+                       ( backOps
+                       , List.append frontOps
+                           [ Svg.use
+                               [ Attributes.xlinkHref <| "#image-" ++ imageName
+                               , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
+                               , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
+                               , Attributes.width <| String.fromInt config.pixelSize
+                               , Attributes.height <| String.fromInt config.pixelSize
+                               ]
+                               []
+                           ]
+                       )
+                   )
+                -}
                 |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
                     (\image ->
