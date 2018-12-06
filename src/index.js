@@ -286,7 +286,8 @@ document.getElementById('submit-level')
 
 document.getElementById('edit-level')
   .addEventListener('click', function () {
-      location.reload();
+    urlParams.delete('startLevel');
+      location.replace(location.origin + '/?' + urlParams.toString());
     }
   );
 
