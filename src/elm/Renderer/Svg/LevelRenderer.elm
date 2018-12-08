@@ -128,17 +128,6 @@ drawLevel tick config level images =
 
         yEndPosition =
             yBasePosition + level.view.height
-
-        _ =
-            Debug.log "data"
-                (Debug.toString
-                    { viewPosition = viewPosition
-                    , viewPixelOffset = viewPixelOffset
-                    , xBasePosition = xBasePosition
-                    , xEndPosition = xEndPosition
-                    , coordinate = view.coordinate
-                    }
-                )
     in
     List.foldr
         (\y acc ->
