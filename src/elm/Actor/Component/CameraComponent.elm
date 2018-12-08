@@ -19,56 +19,6 @@ updateCameraComponent camera actor level =
         |> Maybe.andThen
             (\transformData ->
                 let
-                    --
-                    --                    view =
-                    --                        level.view
-                    --
-                    --                    pixelSize =
-                    --                        view.pixelSize
-                    --
-                    --                    width =
-                    --                        view.width * pixelSize
-                    --
-                    --                    height =
-                    --                        view.height * pixelSize
-                    --
-                    --                    position =
-                    --                        transformData.position
-                    --
-                    --                    movementOffset =
-                    --                        movementToPixels pixelSize transformData
-                    --
-                    --                    givenX =
-                    --                        position.x * pixelSize
-                    --
-                    --                    givenY =
-                    --                        position.y * pixelSize
-                    --
-                    --                    viewCoordinate =
-                    --                        view.coordinate
-                    --
-                    --                    borderSize =
-                    --                        camera.borderSize * pixelSize
-                    --
-                    --                    x =
-                    --                        if givenX - borderSize <= viewCoordinate.x then
-                    --                            givenX - borderSize + movementOffset.x
-                    --
-                    --                        else if givenX - width + borderSize > viewCoordinate.x - pixelSize then
-                    --                            givenX - width + borderSize + pixelSize - movementOffset.x
-                    --
-                    --                        else
-                    --                            viewCoordinate.x
-                    --
-                    --                    y =
-                    --                        if givenY - borderSize <= viewCoordinate.y then
-                    --                            givenY - borderSize + movementOffset.y
-                    --
-                    --                        else if givenY - height + borderSize >= viewCoordinate.y - pixelSize then
-                    --                            givenY - height + borderSize + pixelSize + movementOffset.y
-                    --
-                    --                        else
-                    --                            viewCoordinate.y
                     view =
                         level.view
 
