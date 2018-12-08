@@ -44,6 +44,7 @@ import Actor.Actor as Actor
         )
 import Actor.EventManager as EventManager
 import Color exposing (Color)
+import Data.Coordinate as Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
@@ -67,7 +68,7 @@ levelConfigDecoder =
         |> JDP.required "entities" entitiesDecoder
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
-        |> JDP.optional "viewPosition" positionDecoder defaultViewPosition
+        |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
         |> JDP.optional "updateBorder" Decode.int defaultUpdateBorder
         |> JDP.optional "images" imagesDecoder Dict.empty
         |> JDP.optional "background" renderDataDecoder defaultBackground
@@ -292,6 +293,13 @@ spawnRepeatTimesDecoder =
                     Decode.succeed <| RepeatTimes times
                 )
         ]
+
+
+coordinateDecoder : Decoder Coordinate
+coordinateDecoder =
+    Decode.succeed Coordinate
+        |> JDP.required "x" Decode.int
+        |> JDP.required "y" Decode.int
 
 
 positionDecoder : Decoder Position
@@ -647,8 +655,8 @@ spawnNeverRepeat =
     }
 
 
-defaultViewPosition : Position
-defaultViewPosition =
+defaultViewCoordinate : Coordinate
+defaultViewCoordinate =
     { x = 0
     , y = 0
     }

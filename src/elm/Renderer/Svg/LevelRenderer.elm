@@ -5,6 +5,7 @@ import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Color exposing (Color)
 import Data.Config exposing (Config)
+import Data.Coordinate as Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
@@ -86,17 +87,70 @@ drawBackground tick config images backgroundData =
 
 drawLevel : Int -> Config -> Level -> Actor.Images -> List (Svg msg)
 drawLevel tick config level images =
+    let
+        view =
+            level.view
+
+        xPixelOffset =
+            modBy view.pixelSize view.coordinate.x
+
+        yPixelOffset =
+            modBy view.pixelSize view.coordinate.y
+
+        viewPixelOffset =
+            { x = xPixelOffset * -1
+            , y = yPixelOffset * -1
+            }
+
+        xBasePosition =
+            Coordinate.pixelToTile view.pixelSize view.coordinate.x
+
+        yBasePosition =
+            Coordinate.pixelToTile view.pixelSize view.coordinate.y
+
+        viewPosition =
+            { x =
+                if view.coordinate.x < 0 && viewPixelOffset.x /= 0 then
+                    xBasePosition - 1
+
+                else
+                    xBasePosition
+            , y =
+                if view.coordinate.y < 0 && viewPixelOffset.y /= 0 then
+                    yBasePosition - 1
+
+                else
+                    yBasePosition
+            }
+
+        xEndPosition =
+            xBasePosition + level.view.width
+
+        yEndPosition =
+            yBasePosition + level.view.height
+
+        _ =
+            Debug.log "data"
+                (Debug.toString
+                    { viewPosition = viewPosition
+                    , viewPixelOffset = viewPixelOffset
+                    , xBasePosition = xBasePosition
+                    , xEndPosition = xEndPosition
+                    , coordinate = view.coordinate
+                    }
+                )
+    in
     List.foldr
         (\y acc ->
-            List.range level.view.position.x (level.view.position.x + level.view.width - 1)
+            List.range xBasePosition xEndPosition
                 |> List.foldr
                     (\x innerAcc ->
-                        getDrawOps tick config level.view.position { x = x, y = y } level images innerAcc
+                        getDrawOps tick config viewPosition { x = x, y = y } viewPixelOffset level images innerAcc
                     )
                     acc
         )
         ( [], [] )
-        (List.range level.view.position.y (level.view.position.y + level.view.height - 1))
+        (List.range yBasePosition yEndPosition)
         |> (\( back, front ) ->
                 List.append
                     back
@@ -104,8 +158,8 @@ drawLevel tick config level images =
            )
 
 
-getImage : Int -> Config -> Position -> Position -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
-getImage tick config viewPosition position level images acc =
+getImage : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getImage tick config viewPosition position pixelOffset level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor ( backOps, frontOps ) ->
@@ -132,7 +186,7 @@ getImage tick config viewPosition position level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp tick config imageRenderData transformData viewPosition images actor.id acc
+                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor.id acc
                                     )
                         )
                     |> Maybe.withDefault acc
@@ -146,11 +200,12 @@ getImageOp :
     -> Actor.ImageRenderComponentData
     -> Actor.TransformComponentData
     -> Position
+    -> Coordinate
     -> Actor.Images
     -> Actor.ActorId
     -> ( List (Svg msg), List (Svg msg) )
     -> ( List (Svg msg), List (Svg msg) )
-getImageOp tick config imageRenderData transformData viewPosition images actorId ( backOps, frontOps ) =
+getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actorId ( backOps, frontOps ) =
     case transformData.movingState of
         Actor.NotMoving ->
             getImageName tick imageRenderData.default
@@ -159,8 +214,8 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
                         ( List.append backOps
                             [ Svg.use
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize
-                                , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize
+                                , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
+                                , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
                                 , Attributes.width <| String.fromInt config.pixelSize
                                 , Attributes.height <| String.fromInt config.pixelSize
                                 ]
@@ -195,38 +250,16 @@ getImageOp tick config imageRenderData transformData viewPosition images actorId
             in
             getImageNamesDataByDirection towardsData.direction imageRenderData
                 |> getImageName tick
-                {-
-                   // This should fix the world!
-                   // Or at leas the flicking in firefox
-                   // But I should wait until the bug report is closed to give my friends at firefox
-                   // time to view the issue
-                   (\imageName ->
-                       ( backOps
-                       , List.append frontOps
-                           [ Svg.use
-                               [ Attributes.xlinkHref <| "#image-" ++ imageName
-                               , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                               , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                               , Attributes.width <| String.fromInt config.pixelSize
-                               , Attributes.height <| String.fromInt config.pixelSize
-                               ]
-                               []
-                           ]
-                       )
-                   )
-                -}
-                |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
-                    (\image ->
+                    (\imageName ->
                         ( backOps
                         , List.append frontOps
-                            [ Svg.image
-                                [ Attributes.width <| String.fromInt config.pixelSize
+                            [ Svg.use
+                                [ Attributes.xlinkHref <| "#image-" ++ imageName
+                                , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
+                                , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + pixelOffset.y
+                                , Attributes.width <| String.fromInt config.pixelSize
                                 , Attributes.height <| String.fromInt config.pixelSize
-                                , Attributes.xlinkHref image
-                                , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x)
-                                , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y)
-                                , Attributes.id <| "actor-" ++ String.fromInt actorId
                                 ]
                                 []
                             ]
@@ -242,15 +275,15 @@ getImageNamesDataByDirection direction imageRenderData =
         |> Maybe.withDefault imageRenderData.default
 
 
-getDrawOps : Int -> Config -> Position -> Position -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
-getDrawOps tick config viewPosition position level images acc =
+getDrawOps : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getDrawOps tick config viewPosition position pixelOffset level images acc =
     acc
-        |> getPixel tick config viewPosition position level
-        |> getImage tick config viewPosition position level images
+        |> getPixel tick config viewPosition position pixelOffset level
+        |> getImage tick config viewPosition position pixelOffset level images
 
 
-getPixel : Int -> Config -> Position -> Position -> Level -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
-getPixel tick config viewPosition position level ( backOps, frontOps ) =
+getPixel : Int -> Config -> Position -> Position -> Coordinate -> Level -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getPixel tick config viewPosition position pixelOffset level ( backOps, frontOps ) =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
@@ -307,7 +340,7 @@ getPixel tick config viewPosition position level ( backOps, frontOps ) =
             Nothing
         |> Maybe.andThen
             (\color ->
-                Just <| ( List.append backOps [ asPixel config viewPosition position color ], frontOps )
+                Just <| ( List.append backOps [ asPixel config viewPosition position pixelOffset color ], frontOps )
             )
         |> Maybe.withDefault ( backOps, frontOps )
 
@@ -365,13 +398,13 @@ calculateColor color percentage =
     Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
-asPixel : Config -> Position -> Position -> Color -> Svg msg
-asPixel config viewPosition position color =
+asPixel : Config -> Position -> Position -> Coordinate -> Color -> Svg msg
+asPixel config viewPosition position pixelOffset color =
     Svg.rect
         [ Attributes.width <| String.fromInt config.pixelSize
         , Attributes.height <| String.fromInt config.pixelSize
-        , Attributes.x <| String.fromInt <| (position.x - viewPosition.x) * config.pixelSize
-        , Attributes.y <| String.fromInt <| (position.y - viewPosition.y) * config.pixelSize
+        , Attributes.x <| String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
+        , Attributes.y <| String.fromInt <| (position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
         , Attributes.fill <| Color.toCssString color
         ]
         []

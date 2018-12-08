@@ -57,6 +57,7 @@ module Actor.Actor exposing
 
 import Color exposing (Color)
 import Data.Config exposing (Config)
+import Data.Coordinate exposing (Coordinate)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Dict exposing (Dict)
@@ -81,7 +82,8 @@ type alias Actors =
 
 
 type alias View =
-    { position : Position
+    { coordinate : Coordinate
+    , pixelSize : Int
     , width : Int
     , height : Int
     }
@@ -119,7 +121,7 @@ type alias LevelConfig =
     { entities : Entities
     , signs : Signs
     , scene : Scene
-    , viewPosition : Position
+    , viewCoordinate : Coordinate
     , updateBorder : Int
     , images : Images
     , background : RenderComponentData

@@ -12,12 +12,23 @@ import Actor.Component.LifetimeComponent as Lifetime
 import Actor.Component.SpawnComponent as Spawn
 import Actor.Component.TransformComponent as Transform
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
+import Data.Coordinate as Coordinate
 import Data.Direction exposing (Direction)
 import Dict
 
 
 update : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
 update maybeDirection levelBeforeUpdate levelConfig =
+    let
+        view =
+            levelBeforeUpdate.view
+
+        xPosition =
+            Coordinate.pixelToTile view.pixelSize view.coordinate.x
+
+        yPosition =
+            Coordinate.pixelToTile view.pixelSize view.coordinate.y
+    in
     List.foldr
         (\y levelA ->
             List.foldr
@@ -82,7 +93,7 @@ update maybeDirection levelBeforeUpdate levelConfig =
                             levelB
                 )
                 levelA
-                (List.range (levelA.view.position.x - levelConfig.updateBorder) (levelA.view.position.x + levelA.view.width + levelConfig.updateBorder))
+                (List.range (xPosition - levelConfig.updateBorder) (xPosition + view.width + levelConfig.updateBorder))
         )
         levelBeforeUpdate
-        (List.range (levelBeforeUpdate.view.position.y - levelConfig.updateBorder) (levelBeforeUpdate.view.position.y + levelBeforeUpdate.view.height + levelConfig.updateBorder))
+        (List.range (yPosition - levelConfig.updateBorder) (yPosition + view.height + levelConfig.updateBorder))

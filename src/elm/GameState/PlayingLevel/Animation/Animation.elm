@@ -9,6 +9,7 @@ import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
 import Color
 import Data.Config as Config exposing (Config)
+import Data.Coordinate as Coordinate
 import Data.Position as Position exposing (Position)
 import Dict
 import List.Extra
@@ -47,7 +48,7 @@ updateTick currentTick model level =
                 (addActor
                     currentTick
                     model
-                    (Position.addPosition position level.view.position)
+                    (Position.addPosition position (Coordinate.asPosition level.view.pixelSize level.view.coordinate))
                     level
                 )
 

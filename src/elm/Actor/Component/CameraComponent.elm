@@ -9,7 +9,7 @@ import Actor.Actor as Actor
         , View
         )
 import Actor.Common as Common
-import Data.Position as Position exposing (Position)
+import Data.Coordinate as Coordinate exposing (Coordinate)
 import Dict
 
 
@@ -19,41 +19,161 @@ updateCameraComponent camera actor level =
         |> Maybe.andThen
             (\transformData ->
                 let
+                    --
+                    --                    view =
+                    --                        level.view
+                    --
+                    --                    pixelSize =
+                    --                        view.pixelSize
+                    --
+                    --                    width =
+                    --                        view.width * pixelSize
+                    --
+                    --                    height =
+                    --                        view.height * pixelSize
+                    --
+                    --                    position =
+                    --                        transformData.position
+                    --
+                    --                    movementOffset =
+                    --                        movementToPixels pixelSize transformData
+                    --
+                    --                    givenX =
+                    --                        position.x * pixelSize
+                    --
+                    --                    givenY =
+                    --                        position.y * pixelSize
+                    --
+                    --                    viewCoordinate =
+                    --                        view.coordinate
+                    --
+                    --                    borderSize =
+                    --                        camera.borderSize * pixelSize
+                    --
+                    --                    x =
+                    --                        if givenX - borderSize <= viewCoordinate.x then
+                    --                            givenX - borderSize + movementOffset.x
+                    --
+                    --                        else if givenX - width + borderSize > viewCoordinate.x - pixelSize then
+                    --                            givenX - width + borderSize + pixelSize - movementOffset.x
+                    --
+                    --                        else
+                    --                            viewCoordinate.x
+                    --
+                    --                    y =
+                    --                        if givenY - borderSize <= viewCoordinate.y then
+                    --                            givenY - borderSize + movementOffset.y
+                    --
+                    --                        else if givenY - height + borderSize >= viewCoordinate.y - pixelSize then
+                    --                            givenY - height + borderSize + pixelSize + movementOffset.y
+                    --
+                    --                        else
+                    --                            viewCoordinate.y
                     view =
                         level.view
 
-                    viewPosition =
-                        view.position
+                    viewCoordinate =
+                        view.coordinate
 
-                    position =
-                        transformData.position
+                    pixelSize =
+                        view.pixelSize
 
-                    x =
-                        if position.x - camera.borderSize <= viewPosition.x then
-                            position.x - camera.borderSize
+                    movementOffset =
+                        movementToPixels pixelSize transformData
 
-                        else if position.x - view.width + camera.borderSize > viewPosition.x - 1 then
-                            position.x - view.width + camera.borderSize + 1
+                    borderSize =
+                        camera.borderSize * pixelSize
+
+                    width =
+                        view.width * pixelSize
+
+                    height =
+                        view.height * pixelSize
+
+                    xMin =
+                        view.coordinate.x + borderSize
+
+                    xMax =
+                        view.coordinate.x + width - borderSize
+
+                    entityX =
+                        transformData.position.x * pixelSize + movementOffset.x
+
+                    yMin =
+                        view.coordinate.y + borderSize
+
+                    yMax =
+                        view.coordinate.y + width - borderSize
+
+                    entityY =
+                        transformData.position.y * pixelSize + movementOffset.y
+
+                    clampXResult =
+                        clamp xMin xMax entityX
+
+                    clampYResult =
+                        clamp yMin yMax entityY
+
+                    -- If the entity is within the limits then we do not move the screen
+                    newX =
+                        if clampXResult == xMin then
+                            entityX - borderSize
+
+                        else if clampXResult == xMax then
+                            entityX + borderSize - width
 
                         else
-                            viewPosition.x
+                            viewCoordinate.x
 
-                    y =
-                        if position.y - camera.borderSize <= viewPosition.y then
-                            position.y - camera.borderSize
+                    newY =
+                        if clampYResult == yMin then
+                            entityY - borderSize
 
-                        else if position.y - view.height + camera.borderSize >= viewPosition.y - 1 then
-                            position.y - view.height + camera.borderSize + 1
+                        else if clampYResult == yMax then
+                            entityY + borderSize - width
 
                         else
-                            viewPosition.y
+                            viewCoordinate.y
 
-                    newViewPosition =
-                        { viewPosition
-                            | x = x
-                            , y = y
+                    newViewCoordinate =
+                        { viewCoordinate
+                            | x = newX
+                            , y = newY
                         }
                 in
-                Just { level | view = Common.updateViewPosition newViewPosition view }
+                Just { level | view = Common.updateViewCoordinate newViewCoordinate view }
             )
         |> Maybe.withDefault level
+
+
+movementToPixels : Int -> Actor.TransformComponentData -> Coordinate
+movementToPixels pixelSize transformData =
+    case transformData.movingState of
+        Actor.NotMoving ->
+            { x = 0, y = 0 }
+
+        Actor.MovingTowards towardsData ->
+            let
+                calculateWithCompletion : Int -> Int -> Int
+                calculateWithCompletion a b =
+                    let
+                        aFloat =
+                            toFloat (a * pixelSize)
+
+                        bFloat =
+                            toFloat (b * pixelSize)
+
+                        diffFloat =
+                            bFloat - aFloat
+
+                        offset =
+                            diffFloat * (towardsData.completionPercentage / 100)
+
+                        result =
+                            round <| offset
+                    in
+                    result
+            in
+            { x = calculateWithCompletion transformData.position.x towardsData.position.x
+            , y = calculateWithCompletion transformData.position.y towardsData.position.y
+            }

@@ -1,8 +1,6 @@
 module Actor.Common exposing
     ( addActor
-    ,  addActorToIndex
-       -- Query
-
+    , addActorToIndex
     , addEvent
     , getActorById
     , getActorIdsByPosition
@@ -10,32 +8,20 @@ module Actor.Common exposing
     , getActorsByPosition
     , getActorsThatAffect
     , getActorsThatAffectNeighborPosition
-    ,  getCameraComponent
-       -- TagComponent
-
-    ,  getPosition
-       -- CameraComponent
-
-    ,  getTagComponent
-       -- EventManager
-
+    , getCameraComponent
+    , getPosition
+    , getTagComponent
     , getTransformComponent
     , isDestinationEmpty
-    ,  isDestinationEmptyByOffset
-       -- TransformComponent
-
+    , isDestinationEmptyByOffset
     , isEmpty
     , removeActor
-    ,  removeActorFromIndexByPosition
-       -- Add
-
+    , removeActorFromIndexByPosition
     , setView
     , updateActor
     , updateActors
     , updateComponents
-    ,  updateViewPosition
-       -- Remove
-
+    , updateViewCoordinate
     )
 
 import Actor.Actor as Actor
@@ -51,16 +37,14 @@ import Actor.Actor as Actor
         , Level
         , MovingState(..)
         , MovingTowardsData
-          -- For TagComponent
         , PositionIndex
-          -- For TransformComponent
         , Subscriber
         , Subscribers
         , TagComponentData
-          -- For EventManager
         , TransformComponentData
         , View
         )
+import Data.Coordinate as Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict
@@ -105,9 +89,9 @@ setView view level =
     { level | view = view }
 
 
-updateViewPosition : Position -> View -> View
-updateViewPosition position view =
-    { view | position = position }
+updateViewCoordinate : Coordinate -> View -> View
+updateViewCoordinate coordinate view =
+    { view | coordinate = coordinate }
 
 
 
@@ -200,9 +184,9 @@ addActor components givenLevel =
                         )
                     |> Maybe.andThen
                         (\transform ->
-                            updateViewPosition
-                                { x = transform.position.x - round (toFloat level.view.width / 2)
-                                , y = transform.position.y - round (toFloat level.view.height / 2)
+                            updateViewCoordinate
+                                { x = (transform.position.x - round (toFloat level.view.width / 2)) * level.view.pixelSize
+                                , y = (transform.position.y - round (toFloat level.view.height / 2)) * level.view.pixelSize
                                 }
                                 level.view
                                 |> (\b a -> setView a b) level

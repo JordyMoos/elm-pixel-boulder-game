@@ -4,26 +4,28 @@ import Actor.Actor as Actor
 import Actor.Common as Common
 import Actor.Decoder
 import Data.Config exposing (Config)
+import Data.Coordinate exposing (Coordinate)
 import Data.Position exposing (Position)
 import Dict
 
 
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
 initLevel config levelConfig =
-    emptyLevel config.width config.height levelConfig.viewPosition
+    emptyLevel config levelConfig.viewCoordinate
         |> setBackground levelConfig.background
         |> setActors levelConfig
 
 
-emptyLevel : Int -> Int -> Position -> Actor.Level
-emptyLevel width height position =
+emptyLevel : Config -> Coordinate -> Actor.Level
+emptyLevel config coordinate =
     { nextActorId = 1
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , view =
-        { position = position
-        , width = width
-        , height = height
+        { coordinate = coordinate
+        , pixelSize = config.pixelSize
+        , width = config.width
+        , height = config.height
         }
     , background = Actor.Decoder.defaultBackground
     , events = []
