@@ -51,7 +51,7 @@
       "colors": [{"red": 255, "green": 0, "blue": 0}]
     }
   },
-  "viewPosition": {
+  "viewCoordinate": {
     "x": 0,
     "y": 0
   },
