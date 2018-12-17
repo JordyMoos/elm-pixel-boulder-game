@@ -5,6 +5,7 @@ module Actor.Actor exposing
     , AiComponentData
     , AiType(..)
     , AnimationSetup
+    , AttackComponentData
     , CameraComponentData
     , CollectibleComponentData
     , CollectorComponentData
@@ -22,6 +23,7 @@ module Actor.Actor exposing
     , Events
     , GameOfLifeAiAction
     , GameOfLifeAiData
+    , HealthComponentData
     , ImageRenderComponentData
     , Images
     , ImagesData
@@ -156,6 +158,8 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
     | SpawnComponent SpawnComponentData
     | TagComponent TagComponentData
+    | HealthComponent HealthComponentData
+    | AttackComponent AttackComponentData
 
 
 
@@ -439,6 +443,32 @@ type alias ImageRenderComponentData =
 
 type alias TagComponentData =
     { name : String
+    }
+
+
+
+{-
+
+   HealthComponent
+
+-}
+
+
+type alias HealthComponentData =
+    { health : Int
+    }
+
+
+
+{-
+
+   AttackComponent
+
+-}
+
+
+type alias AttackComponentData =
+    { power : Int
     }
 
 
