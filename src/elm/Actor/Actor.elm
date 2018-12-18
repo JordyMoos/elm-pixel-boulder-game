@@ -14,6 +14,7 @@ module Actor.Actor exposing
     , ControlComponentData
     , ControlSettings
     , ControlType(..)
+    , CounterComponentData
     , DamageComponentData
     , DownSmashComponentData
     , Entities
@@ -160,6 +161,7 @@ type Component
     | TagComponent TagComponentData
     | HealthComponent HealthComponentData
     | AttackComponent AttackComponentData
+    | CounterComponent CounterComponentData
 
 
 
@@ -469,6 +471,19 @@ type alias HealthComponentData =
 
 type alias AttackComponentData =
     { power : Int
+    }
+
+
+
+{-
+
+   CounterComponent
+
+-}
+
+
+type alias CounterComponentData =
+    { count : Int
     }
 
 
