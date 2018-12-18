@@ -5,6 +5,7 @@ import Actor.Actor as Actor
         ( AiComponentData
         , AiType(..)
         , AnimationSetup
+        , AttackComponentData
         , CameraComponentData
         , CollectibleComponentData
         , CollectorComponentData
@@ -13,11 +14,13 @@ import Actor.Actor as Actor
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
+        , CounterComponentData
         , DamageComponentData
         , Entities
         , EventAction(..)
         , GameOfLifeAiAction
         , GameOfLifeAiData
+        , HealthComponentData
         , ImageRenderComponentData
         , Images
         , ImagesData
@@ -148,6 +151,15 @@ componentDecoder =
                     "tag" ->
                         Decode.map TagComponent <| Decode.field "data" tagDataDecoder
 
+                    "health" ->
+                        Decode.map HealthComponent <| Decode.field "data" healthDataDecoder
+
+                    "attack" ->
+                        Decode.map AttackComponent <| Decode.field "data" attackDataDecoder
+
+                    "counter" ->
+                        Decode.map CounterComponent <| Decode.field "data" counterDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -245,6 +257,24 @@ tagDataDecoder : Decoder TagComponentData
 tagDataDecoder =
     Decode.succeed TagComponentData
         |> JDP.required "name" Decode.string
+
+
+healthDataDecoder : Decoder HealthComponentData
+healthDataDecoder =
+    Decode.succeed HealthComponentData
+        |> JDP.required "health" Decode.int
+
+
+attackDataDecoder : Decoder AttackComponentData
+attackDataDecoder =
+    Decode.succeed AttackComponentData
+        |> JDP.required "power" Decode.int
+
+
+counterDataDecoder : Decoder CounterComponentData
+counterDataDecoder =
+    Decode.succeed CounterComponentData
+        |> JDP.optional "count" Decode.int 0
 
 
 spawnDataDecoder : Decoder SpawnComponentData
