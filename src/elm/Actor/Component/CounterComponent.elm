@@ -1,9 +1,9 @@
-module Actor.Component.CounterComponetn exposing (getCounterComponent)
+module Actor.Component.CounterComponent exposing (getCounterComponent, updateCounterComponent)
 
 import Actor.Actor as Actor
     exposing
         ( Actor
-        , Component(CounterComponent)
+        , Component(..)
         , CounterComponentData
         , Level
         )
@@ -29,7 +29,7 @@ updateCounterComponent : CounterComponentData -> Actor -> Level -> Level
 updateCounterComponent counterData actor level =
     Dict.insert
         "counter"
-        (CounterComponent { counterData | counter = counterData.counter + 1 })
+        (CounterComponent { counterData | count = counterData.count + 1 })
         actor.components
         |> Common.updateComponents actor
         |> Common.updateActor level.actors

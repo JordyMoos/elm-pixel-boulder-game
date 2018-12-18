@@ -2,6 +2,7 @@ module Actor.Actor exposing
     ( Actor
     , ActorId
     , Actors
+    , AdventAiData
     , AiComponentData
     , AiType(..)
     , AnimationSetup
@@ -258,6 +259,7 @@ type alias AiComponentData =
 
 type AiType
     = GameOfLifeAi GameOfLifeAiData
+    | AdventAi AdventAiData
 
 
 type alias GameOfLifeAiData =
@@ -271,6 +273,11 @@ type alias GameOfLifeAiData =
 type alias GameOfLifeAiAction =
     { count : Int
     , become : String
+    }
+
+
+type alias AdventAiData =
+    { target : String
     }
 
 

@@ -6,6 +6,7 @@ import Actor.Component.AiComponent as Ai
 import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
+import Actor.Component.CounterComponent as Counter
 import Actor.Component.DamageComponent as Damage
 import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
@@ -64,6 +65,9 @@ update maybeDirection levelBeforeUpdate levelConfig =
 
                                                                             Actor.LifetimeComponent lifetimeData ->
                                                                                 Lifetime.updateLifetimeComponent lifetimeData updatedActor levelD
+
+                                                                            Actor.CounterComponent counterData ->
+                                                                                Counter.updateCounterComponent counterData updatedActor levelD
 
                                                                             Actor.DamageComponent damageData ->
                                                                                 Damage.updateDamageComponent damageData updatedActor levelD

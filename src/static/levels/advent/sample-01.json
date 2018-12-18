@@ -7,9 +7,9 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 255}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "adventAi",
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
           "data": {
             "target": "goblin"
           }
@@ -23,9 +23,9 @@
       {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 255, "blue": 0}]}}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "adventAi",
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
           "data": {
             "target": "elf"
           }
@@ -38,12 +38,12 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "counter": [
-      {"type": "counter"}
+      {"type": "counter", "data":  {}}
     ]
   },
   "signs": {
     "E": "elf",
-    "G": "Goblin",
+    "G": "goblin",
     "#": "wall",
     "c": "counter"
   },

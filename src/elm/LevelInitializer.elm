@@ -18,7 +18,7 @@ initLevel config levelConfig =
 
 emptyLevel : Config -> Coordinate -> Actor.Level
 emptyLevel config coordinate =
-    { nextActorId = 1
+    { nextActorId = 0
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , view =
@@ -39,15 +39,13 @@ setBackground background level =
 
 setActors : Actor.LevelConfig -> Actor.Level -> Actor.Level
 setActors levelConfig level =
-    List.indexedMap
-        (\a b -> ( a, b ))
-        levelConfig.scene
-        |> List.foldr
+    levelConfig.scene
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
             (\( y, line ) accLevel ->
-                List.indexedMap
-                    (\a b -> ( a, b ))
-                    (String.toList line)
-                    |> List.foldr
+                String.toList line
+                    |> List.indexedMap Tuple.pair
+                    |> List.foldl
                         (\( x, char ) innerAccLevel ->
                             Dict.get
                                 (String.fromChar char)
@@ -56,16 +54,19 @@ setActors levelConfig level =
                                     (\entityName ->
                                         Dict.get entityName levelConfig.entities
                                     )
-                                |> Maybe.andThen
+                                |> Maybe.map
                                     (\entity ->
                                         Common.addActor
                                             (Dict.insert
                                                 "transform"
-                                                (Actor.TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving })
+                                                (Actor.TransformComponent
+                                                    { position = { x = x, y = y }
+                                                    , movingState = Actor.NotMoving
+                                                    }
+                                                )
                                                 entity
                                             )
                                             innerAccLevel
-                                            |> Just
                                     )
                                 |> Maybe.withDefault innerAccLevel
                         )

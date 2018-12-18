@@ -2,7 +2,8 @@ module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
-        ( AiComponentData
+        ( AdventAiData
+        , AiComponentData
         , AiType(..)
         , AnimationSetup
         , AttackComponentData
@@ -424,6 +425,9 @@ aiTypeDecoder =
                     "gameOfLifeAi" ->
                         Decode.map GameOfLifeAi <| Decode.field "data" gameOfLifeAiDataDecoder
 
+                    "advent" ->
+                        Decode.map AdventAi <| Decode.field "data" adventAiDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode ai components ai type, but the type "
@@ -451,6 +455,12 @@ gameOfLifeAiActionDecoder =
     Decode.succeed GameOfLifeAiAction
         |> JDP.required "count" Decode.int
         |> JDP.required "become" Decode.string
+
+
+adventAiDataDecoder : Decoder AdventAiData
+adventAiDataDecoder =
+    Decode.succeed AdventAiData
+        |> JDP.required "target" Decode.string
 
 
 controlDataDecoder : Decoder ControlComponentData
