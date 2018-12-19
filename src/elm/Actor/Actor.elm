@@ -25,6 +25,7 @@ module Actor.Actor exposing
     , Events
     , GameOfLifeAiAction
     , GameOfLifeAiData
+    , Health
     , HealthComponentData
     , ImageRenderComponentData
     , Images
@@ -463,8 +464,12 @@ type alias TagComponentData =
 -}
 
 
+type alias Health =
+    Int
+
+
 type alias HealthComponentData =
-    { health : Int
+    { health : Health
     }
 
 

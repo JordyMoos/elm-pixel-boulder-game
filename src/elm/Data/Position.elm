@@ -4,6 +4,7 @@ module Data.Position exposing
     , addPositions
     , aroundNeighborOffsets
     , directNeighborOffsets
+    , fromTuple
     , getOffsetFromDirection
     )
 
@@ -13,6 +14,13 @@ import Data.Direction as Direction exposing (Direction)
 type alias Position =
     { x : Int
     , y : Int
+    }
+
+
+fromTuple : ( Int, Int ) -> Position
+fromTuple ( x, y ) =
+    { x = x
+    , y = y
     }
 
 
