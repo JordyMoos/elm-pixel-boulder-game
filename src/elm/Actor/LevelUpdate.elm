@@ -20,6 +20,16 @@ import Dict
 
 update : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
 update maybeDirection levelBeforeUpdate levelConfig =
+    case levelConfig.updateStrategy of
+        Actor.PositionReadingOrderUpdateStrategy ->
+            updatePositionReadingOrderUpdateStrategy maybeDirection levelBeforeUpdate levelConfig
+
+        Actor.ActorIdAscUpdateStrategy ->
+            updateActorIdAscUpdateStrategy maybeDirection levelBeforeUpdate levelConfig
+
+
+updatePositionReadingOrderUpdateStrategy : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
+updatePositionReadingOrderUpdateStrategy maybeDirection levelBeforeUpdate levelConfig =
     let
         view =
             levelBeforeUpdate.view
@@ -101,3 +111,73 @@ update maybeDirection levelBeforeUpdate levelConfig =
         )
         levelBeforeUpdate
         (List.range (yPosition - levelConfig.updateBorder) (yPosition + view.height + levelConfig.updateBorder))
+
+
+updateActorIdAscUpdateStrategy : Maybe Direction -> Actor.Level -> Actor.LevelConfig -> Actor.Level
+updateActorIdAscUpdateStrategy maybeDirection levelBeforeUpdate levelConfig =
+    let
+        view =
+            levelBeforeUpdate.view
+
+        actors =
+            levelBeforeUpdate.actors
+                |> Dict.toList
+                |> List.map Tuple.second
+                |> List.sortBy
+                    (\actor -> actor.id)
+    in
+    actors
+        |> List.foldl
+            (\actor levelC ->
+                Dict.foldr
+                    (\_ component levelD ->
+                        Common.getActorById actor.id levelD
+                            |> Maybe.andThen
+                                (\updatedActor ->
+                                    let
+                                        updatedLevel =
+                                            case component of
+                                                Actor.TransformComponent transformData ->
+                                                    Transform.updateTransformComponent transformData updatedActor levelD
+
+                                                Actor.CollectorComponent data ->
+                                                    Collector.updateCollectorComponent data updatedActor levelD
+
+                                                Actor.ControlComponent control ->
+                                                    Control.updateControlComponent maybeDirection control updatedActor levelD
+
+                                                Actor.CameraComponent camera ->
+                                                    Camera.updateCameraComponent camera updatedActor levelD
+
+                                                Actor.DownSmashComponent downSmash ->
+                                                    DownSmash.updateDownSmashComponent downSmash updatedActor levelD
+
+                                                Actor.LifetimeComponent lifetimeData ->
+                                                    Lifetime.updateLifetimeComponent lifetimeData updatedActor levelD
+
+                                                Actor.CounterComponent counterData ->
+                                                    Counter.updateCounterComponent counterData updatedActor levelD
+
+                                                Actor.DamageComponent damageData ->
+                                                    Damage.updateDamageComponent damageData updatedActor levelD
+
+                                                Actor.TriggerExplodableComponent triggerData ->
+                                                    TriggerExplodable.updateTriggerExplodableComponent triggerData updatedActor levelD
+
+                                                Actor.SpawnComponent spawnData ->
+                                                    Spawn.updateSpawnComponent levelConfig.entities spawnData updatedActor levelD
+
+                                                Actor.AiComponent aiData ->
+                                                    Ai.updateAiComponent aiData updatedActor levelConfig.entities levelBeforeUpdate levelD
+
+                                                _ ->
+                                                    levelD
+                                    in
+                                    Just updatedLevel
+                                )
+                            |> Maybe.withDefault levelD
+                    )
+                    levelC
+                    actor.components
+            )
+            levelBeforeUpdate

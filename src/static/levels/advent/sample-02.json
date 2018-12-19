@@ -62,5 +62,6 @@
     "#..G#E#",
     "#.....#",
     "#######"
-  ]
+  ],
+  "updateStrategy": "actorIdAsc"
 }
