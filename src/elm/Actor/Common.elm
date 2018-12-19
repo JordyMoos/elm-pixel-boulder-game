@@ -15,6 +15,7 @@ module Actor.Common exposing
     , isDestinationEmpty
     , isDestinationEmptyByOffset
     , isEmpty
+    , isNotEmpty
     , removeActor
     , removeActorFromIndexByPosition
     , setView
@@ -326,6 +327,12 @@ isEmpty : Position -> Level -> Bool
 isEmpty position level =
     getActorsThatAffect position level
         |> List.isEmpty
+
+
+isNotEmpty : Position -> Level -> Bool
+isNotEmpty position level =
+    isEmpty position level
+        |> not
 
 
 isDestinationEmpty : Actor -> Direction -> Level -> Bool

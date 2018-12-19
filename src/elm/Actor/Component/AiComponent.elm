@@ -27,4 +27,4 @@ updateAiComponent aiData actor entities levelBeforeUpdate level =
             GameOfLifeAiComponent.updateGameOfLifeAi aiData gameOfLifeData actor entities levelBeforeUpdate level
 
         AdventAi adventData ->
-            AdventAiComponent.updateAdventAi aiData adventData actor level
+            AdventAiComponent.updateAdventAi adventData actor level

@@ -34,7 +34,7 @@ update maybeDirection levelBeforeUpdate levelConfig =
         (\y levelA ->
             List.foldr
                 (\x levelB ->
-                    Common.getActorIdsByXY x y levelB
+                    Common.getActorIdsByXY x y levelBeforeUpdate
                         |> List.foldr
                             (\actorId levelC ->
                                 Common.getActorById actorId levelC

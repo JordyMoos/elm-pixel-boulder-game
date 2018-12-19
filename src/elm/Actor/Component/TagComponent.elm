@@ -1,6 +1,11 @@
 module Actor.Component.TagComponent exposing (isTag)
 
-import Actor.Actor as Actor exposing (Actor, Component(..), TagComponentData)
+import Actor.Actor as Actor
+    exposing
+        ( Actor
+        , Component(..)
+        , TagComponentData
+        )
 import Actor.Common as Common
 import Dict
 import Maybe.Extra

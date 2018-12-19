@@ -1,5 +1,8 @@
 module Data.Position exposing
     ( Position
+    , X
+    , Y
+    , addDirection
     , addPosition
     , addPositions
     , aroundNeighborOffsets
@@ -11,13 +14,21 @@ module Data.Position exposing
 import Data.Direction as Direction exposing (Direction)
 
 
+type alias X =
+    Int
+
+
+type alias Y =
+    Int
+
+
 type alias Position =
-    { x : Int
-    , y : Int
+    { x : X
+    , y : Y
     }
 
 
-fromTuple : ( Int, Int ) -> Position
+fromTuple : ( X, Y ) -> Position
 fromTuple ( x, y ) =
     { x = x
     , y = y
@@ -38,6 +49,11 @@ addPosition pos1 pos2 =
     { x = pos1.x + pos2.x
     , y = pos1.y + pos2.y
     }
+
+
+addDirection : Position -> Direction -> Position
+addDirection position direction =
+    addPosition position (getOffsetFromDirection direction)
 
 
 getOffsetFromDirection : Direction -> Position

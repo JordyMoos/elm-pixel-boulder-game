@@ -1,6 +1,11 @@
 module Actor.Component.HealthComponent exposing (getHealthComponent)
 
-import Actor.Actor as Actor exposing (Actor, Component(HealthComponent), HealthComponentData)
+import Actor.Actor as Actor
+    exposing
+        ( Actor
+        , Component(..)
+        , HealthComponentData
+        )
 import Dict
 
 
