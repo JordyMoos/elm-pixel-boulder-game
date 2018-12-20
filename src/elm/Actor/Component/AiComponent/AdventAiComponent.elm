@@ -8,6 +8,7 @@ import Actor.Actor as Actor
         , AiType(..)
         , AttackComponentData
         , Components
+        , Health
         , HealthComponentData
         , Level
         )
@@ -63,7 +64,7 @@ type SearchAcc
 
 type alias Enemy =
     { path : Path
-    , health : HealthComponentData
+    , health : Health
     , actor : Actor
     }
 
@@ -127,9 +128,6 @@ doAttack level enemyActor attackData =
     let
         remainingHealth =
             attackData.enemyHealth.health - attackData.myAttack.power
-
-        --        _ =
-        --            Debug.log "remaining health" (Debug.toString remainingHealth)
     in
     if remainingHealth < 1 then
         handleEnemyDied level enemyActor
@@ -246,8 +244,15 @@ move level enemyTag step acc =
                     enemies
                         |> List.sortBy
                             (\enemy ->
-                                ( enemy.path.currentPosition.y, enemy.path.currentPosition.x )
+                                ( enemy.health, enemy.path.currentPosition.y, enemy.path.currentPosition.x )
                             )
+                        --                        |> (\sortedEnemies ->
+                        --                                let
+                        --                                    _ =
+                        --                                        Debug.log "Sorted enemies" (Debug.toString sortedEnemies)
+                        --                                in
+                        --                                sortedEnemies
+                        --                           )
                         |> List.head
                         |> Maybe.map (\enemy -> Stop (Attack enemy.actor))
                         -- Should not happen
@@ -281,18 +286,18 @@ getEnemiesOnPath level enemyTag path =
         |> List.map (asEnemy path)
 
 
-asEnemy : Path -> ( Actor, HealthComponentData ) -> Enemy
-asEnemy path ( actor, healthData ) =
+asEnemy : Path -> ( Actor, Health ) -> Enemy
+asEnemy path ( actor, health ) =
     { path = path
-    , health = healthData
+    , health = health
     , actor = actor
     }
 
 
-withHealth : Actor -> Maybe ( Actor, HealthComponentData )
+withHealth : Actor -> Maybe ( Actor, Health )
 withHealth actor =
     HealthComponent.getHealthComponent actor
-        |> Maybe.map (\healthData -> ( actor, healthData ))
+        |> Maybe.map (\healthData -> ( actor, healthData.health ))
 
 
 
