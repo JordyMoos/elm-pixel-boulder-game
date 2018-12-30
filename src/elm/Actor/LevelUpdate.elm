@@ -40,10 +40,14 @@ updatePositionReadingOrderUpdateStrategy maybeDirection levelBeforeUpdate levelC
         yPosition =
             Coordinate.pixelToTile view.pixelSize view.coordinate.y
     in
-    List.foldr
+    List.foldl
         (\y levelA ->
-            List.foldr
+            List.foldl
                 (\x levelB ->
+                    --                    let
+                    --                        _ =
+                    --                            Debug.log (Debug.toString y) (Debug.toString x)
+                    --                    in
                     Common.getActorIdsByXY x y levelBeforeUpdate
                         |> List.foldr
                             (\actorId levelC ->

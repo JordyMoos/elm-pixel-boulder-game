@@ -289,6 +289,7 @@ healthDataDecoder : Decoder HealthComponentData
 healthDataDecoder =
     Decode.succeed HealthComponentData
         |> JDP.required "health" Decode.int
+        |> JDP.custom (Decode.at [ "health" ] Decode.int)
 
 
 attackDataDecoder : Decoder AttackComponentData
@@ -625,6 +626,8 @@ onTagDiedSubscriberDecoder : Decoder Subscriber
 onTagDiedSubscriberDecoder =
     Decode.succeed EventManager.onTagDiedSubscriber
         |> JDP.required "tagName" Decode.string
+        |> JDP.optional "limit" Decode.int 1
+        |> JDP.hardcoded 0
         |> JDP.required "action" eventActionDecoder
 
 

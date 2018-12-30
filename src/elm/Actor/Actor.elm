@@ -477,6 +477,7 @@ type alias Health =
 
 type alias HealthComponentData =
     { health : Health
+    , maxHealth : Health
     }
 
 
@@ -557,8 +558,22 @@ type alias Events =
     List Event
 
 
-type alias Subscriber =
-    Event -> Level -> EventAction
+type Subscriber
+    = TagDiedSubscriber EventAction TagDiedSubscriberData
+    | InventoryUpdatedSubscriber EventAction InventoryUpdatedSubscriberData
+
+
+type alias TagDiedSubscriberData =
+    { tag : String
+    , limit : Int
+    , counter : Int
+    }
+
+
+type alias InventoryUpdatedSubscriberData =
+    { interestedIn : String
+    , minimumQuantity : Int
+    }
 
 
 type alias Subscribers =
