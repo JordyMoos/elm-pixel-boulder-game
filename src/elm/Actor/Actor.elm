@@ -31,6 +31,7 @@ module Actor.Actor exposing
     , Images
     , ImagesData
     , Inventory
+    , InventoryUpdatedSubscriberData
     , KeyedComponent
     , Level
     , LevelCompletedData
@@ -50,9 +51,10 @@ module Actor.Actor exposing
     , SpawnComponentData
     , SpawnRepeat
     , SpawnRepeatTimes(..)
-    , Subscriber
+    , Subscriber(..)
     , Subscribers
     , TagComponentData
+    , TagDiedSubscriberData
     , TransformComponentData
     , TriggerExplodableComponentData
     , UpdateStrategy(..)
@@ -147,6 +149,7 @@ type alias Level =
     , positionIndex : PositionIndex
     , view : View
     , background : RenderComponentData
+    , eventManager : EventManager
     , events : Events
     }
 
@@ -534,7 +537,7 @@ type Event
 
 
 type EventAction
-    = LevelContinue Level
+    = LevelContinue
     | LevelFailed LevelFailedData
     | LevelCompleted LevelCompletedData
 

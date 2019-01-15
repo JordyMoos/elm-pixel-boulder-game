@@ -26,6 +26,7 @@ import Actor.Actor as Actor
         , Images
         , ImagesData
         , Inventory
+        , InventoryUpdatedSubscriberData
         , KeyedComponent
         , LevelCompletedData
         , LevelConfig
@@ -43,6 +44,7 @@ import Actor.Actor as Actor
         , SpawnRepeatTimes(..)
         , Subscriber
         , TagComponentData
+        , TagDiedSubscriberData
         , TriggerExplodableComponentData
         , UpdateStrategy(..)
         , WalkAroundAiControlData
@@ -609,10 +611,14 @@ subscriberDecoder =
             (\theType ->
                 case theType of
                     "onTagDied" ->
-                        Decode.field "data" onTagDiedSubscriberDecoder
+                        Decode.succeed Actor.TagDiedSubscriber
+                            |> JDP.required "eventActionData" eventActionDecoder
+                            |> JDP.required "tagDiedData" onTagDiedSubscriberDecoder
 
                     "onInventoryUpdated" ->
-                        Decode.field "data" onInventoryUpdatedSubscriberDecoder
+                        Decode.succeed Actor.InventoryUpdatedSubscriber
+                            |> JDP.required "eventActionData" eventActionDecoder
+                            |> JDP.required "inventoryUpdatedData" onInventoryUpdatedSubscriberDecoder
 
                     _ ->
                         Decode.fail <|
@@ -622,21 +628,19 @@ subscriberDecoder =
             )
 
 
-onTagDiedSubscriberDecoder : Decoder Subscriber
+onTagDiedSubscriberDecoder : Decoder TagDiedSubscriberData
 onTagDiedSubscriberDecoder =
-    Decode.succeed EventManager.onTagDiedSubscriber
+    Decode.succeed TagDiedSubscriberData
         |> JDP.required "tagName" Decode.string
         |> JDP.optional "limit" Decode.int 1
         |> JDP.hardcoded 0
-        |> JDP.required "action" eventActionDecoder
 
 
-onInventoryUpdatedSubscriberDecoder : Decoder Subscriber
+onInventoryUpdatedSubscriberDecoder : Decoder InventoryUpdatedSubscriberData
 onInventoryUpdatedSubscriberDecoder =
-    Decode.succeed EventManager.onInventoryUpdatedSubscriber
+    Decode.succeed InventoryUpdatedSubscriberData
         |> JDP.required "interestedIn" Decode.string
         |> JDP.required "minimumQuantity" Decode.int
-        |> JDP.required "action" eventActionDecoder
 
 
 eventActionDecoder : Decoder EventAction

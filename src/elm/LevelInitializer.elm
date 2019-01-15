@@ -28,6 +28,7 @@ emptyLevel config coordinate =
         , height = config.height
         }
     , background = Actor.Decoder.defaultBackground
+    , eventManager = Actor.emptyEventManager
     , events = []
     }
 

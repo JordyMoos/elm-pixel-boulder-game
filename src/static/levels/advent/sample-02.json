@@ -67,22 +67,21 @@
   "subscribers": [
     {
       "type": "onTagDied",
-      "data": {
-        "eventActionData": {
-          "type": "completed",
-          "data": {
-            "description": "Level Completed",
-            "nextLevel": "advent/sample-03",
-            "entityNames": ["elf"],
-            "animation": {
-              "type": "currentTick"
-            }
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "description": "Level Completed",
+          "nextLevel": "advent/sample-03",
+          "entityNames": ["elf"],
+          "animation": {
+            "type": "currentTick"
           }
-        },
-        "tagDiedData": {
-          "tagName": "goblin",
-          "limit": 4
         }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 4
       }
     }
+  ]
 }
