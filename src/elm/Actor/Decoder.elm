@@ -50,15 +50,15 @@ import Actor.Actor as Actor
         , UpdateStrategy(..)
         , WalkAroundAiControlData
         )
-import Actor.EventManager as EventManager
 import Color exposing (Color)
-import Data.Coordinate as Coordinate exposing (Coordinate)
+import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import GameState.PlayingLevel.Animation.Skip as SkipAnimation
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Maybe.Extra
@@ -720,6 +720,9 @@ animationSetupDecoder =
 
                     "currentTick" ->
                         Decode.succeed CurrentTickAnimation.init
+
+                    "skip" ->
+                        Decode.succeed SkipAnimation.init
 
                     _ ->
                         Decode.fail <|

@@ -93,7 +93,7 @@
           "nextLevel": "advent/sample-03",
           "entityNames": ["explosion"],
           "animation": {
-            "type": "currentTick"
+            "type": "skip"
           }
         }
       },
