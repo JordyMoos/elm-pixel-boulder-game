@@ -24,7 +24,6 @@ type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
     , level : Actor.Level
-    , eventManager : Actor.EventManager
     }
 
 
@@ -40,9 +39,6 @@ init config levelConfig =
     { config = config
     , levelConfig = levelConfig
     , level = LevelInitializer.initLevel config levelConfig
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
     }
 
 
@@ -51,9 +47,6 @@ resume config levelConfig level =
     { config = config
     , levelConfig = levelConfig
     , level = level
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
     }
 
 
@@ -95,6 +88,9 @@ handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
 
                                 Actor.InventoryUpdatedSubscriber onResolveAction data ->
                                     EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
+
+                        _ =
+                            Debug.log "eventAction" (Debug.toString eventAction)
                     in
                     ( updatedSubscriber :: updatedSubscribers, eventAction )
 

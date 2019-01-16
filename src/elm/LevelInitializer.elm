@@ -5,7 +5,6 @@ import Actor.Common as Common
 import Actor.Decoder
 import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
-import Data.Position exposing (Position)
 import Dict
 
 
@@ -14,6 +13,7 @@ initLevel config levelConfig =
     emptyLevel config levelConfig.viewCoordinate
         |> setBackground levelConfig.background
         |> setActors levelConfig
+        |> setEventManager levelConfig
 
 
 emptyLevel : Config -> Coordinate -> Actor.Level
@@ -36,6 +36,15 @@ emptyLevel config coordinate =
 setBackground : Actor.RenderComponentData -> Actor.Level -> Actor.Level
 setBackground background level =
     { level | background = background }
+
+
+setEventManager : Actor.LevelConfig -> Actor.Level -> Actor.Level
+setEventManager levelConfig level =
+    { level
+        | eventManager =
+            { subscribers = levelConfig.subscribers
+            }
+    }
 
 
 setActors : Actor.LevelConfig -> Actor.Level -> Actor.Level

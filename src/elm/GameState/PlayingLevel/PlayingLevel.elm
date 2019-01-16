@@ -9,10 +9,10 @@ module GameState.PlayingLevel.PlayingLevel exposing
 import Actor.Actor as Actor
 import Data.Config exposing (Config)
 import GameState.PlayingLevel.Animation.Animation as Animation
-import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversal
 import GameState.PlayingLevel.Completed.CompletedAnimation as CompletedAnimation
 import GameState.PlayingLevel.Completed.CompletedDescription as CompletedDescription
 import GameState.PlayingLevel.Completed.CompletedMenu as CompletedMenu
+import GameState.PlayingLevel.DescriptionProvider as DescriptionProvider
 import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
 import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
 import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
@@ -84,7 +84,7 @@ updateTick currentTick inputModel model =
                                             model.levelConfig.entities
                                             data.entityNames
                                         )
-                                        data.description
+                                        (DescriptionProvider.createDescription data.descriptionProvider level)
                                         level
                         }
 
@@ -104,7 +104,7 @@ updateTick currentTick inputModel model =
                                             model.levelConfig.entities
                                             data.entityNames
                                         )
-                                        data.description
+                                        (DescriptionProvider.createDescription data.descriptionProvider level)
                                         data.nextLevel
                                         level
                         }

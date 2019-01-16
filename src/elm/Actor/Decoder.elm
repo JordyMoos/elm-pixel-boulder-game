@@ -31,6 +31,7 @@ import Actor.Actor as Actor
         , LevelCompletedData
         , LevelConfig
         , LevelFailedData
+        , LevelFinishedDescriptionProvider(..)
         , LifetimeComponentData
         , MovingDownState(..)
         , PhysicsComponentData
@@ -666,7 +667,7 @@ eventActionDecoder =
 eventActionFailedDataDecoder : Decoder LevelFailedData
 eventActionFailedDataDecoder =
     Decode.succeed LevelFailedData
-        |> JDP.required "description" Decode.string
+        |> JDP.required "descriptionProvider" descriptionProviderDecoder
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
 
@@ -674,10 +675,35 @@ eventActionFailedDataDecoder =
 eventActionCompletedDataDecoder : Decoder LevelCompletedData
 eventActionCompletedDataDecoder =
     Decode.succeed LevelCompletedData
-        |> JDP.required "description" Decode.string
+        |> JDP.required "descriptionProvider" descriptionProviderDecoder
         |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
+
+
+descriptionProviderDecoder : Decoder LevelFinishedDescriptionProvider
+descriptionProviderDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "static" ->
+                        Decode.map StaticDescriptionProvider <| Decode.field "data" staticDescriptionProviderDecoder
+
+                    "advent" ->
+                        Decode.succeed AdventOfCodeDescriptionProvider
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode description, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+staticDescriptionProviderDecoder : Decoder String
+staticDescriptionProviderDecoder =
+    Decode.field "text" Decode.string
 
 
 animationSetupDecoder : Decoder AnimationSetup

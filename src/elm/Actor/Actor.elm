@@ -37,6 +37,7 @@ module Actor.Actor exposing
     , LevelCompletedData
     , LevelConfig
     , LevelFailedData
+    , LevelFinishedDescriptionProvider(..)
     , LifetimeComponentData
     , MovingDownState(..)
     , MovingState(..)
@@ -543,18 +544,23 @@ type EventAction
 
 
 type alias LevelFailedData =
-    { description : String
+    { descriptionProvider : LevelFinishedDescriptionProvider
     , entityNames : List String
     , animationSetup : AnimationSetup
     }
 
 
 type alias LevelCompletedData =
-    { description : String
+    { descriptionProvider : LevelFinishedDescriptionProvider
     , nextLevel : String
     , entityNames : List String
     , animationSetup : AnimationSetup
     }
+
+
+type LevelFinishedDescriptionProvider
+    = StaticDescriptionProvider String
+    | AdventOfCodeDescriptionProvider
 
 
 type alias Events =
