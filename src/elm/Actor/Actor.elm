@@ -58,7 +58,6 @@ module Actor.Actor exposing
     , TagDiedSubscriberData
     , TransformComponentData
     , TriggerExplodableComponentData
-    , UpdateStrategy(..)
     , View
     , WalkAroundAiControlData
     , emptyEventManager
@@ -135,13 +134,7 @@ type alias LevelConfig =
     , images : Images
     , background : RenderComponentData
     , subscribers : Subscribers
-    , updateStrategy : UpdateStrategy
     }
-
-
-type UpdateStrategy
-    = PositionReadingOrderUpdateStrategy
-    | ActorIdAscUpdateStrategy
 
 
 type alias Level =

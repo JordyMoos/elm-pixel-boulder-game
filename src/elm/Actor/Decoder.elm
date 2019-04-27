@@ -47,7 +47,6 @@ import Actor.Actor as Actor
         , TagComponentData
         , TagDiedSubscriberData
         , TriggerExplodableComponentData
-        , UpdateStrategy(..)
         , WalkAroundAiControlData
         )
 import Color exposing (Color)
@@ -81,30 +80,6 @@ levelConfigDecoder =
         |> JDP.optional "images" imagesDecoder Dict.empty
         |> JDP.optional "background" renderDataDecoder defaultBackground
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
-        |> JDP.optional "updateStrategy" updateStrategyDecoder PositionReadingOrderUpdateStrategy
-
-
-updateStrategyDecoder : Decoder UpdateStrategy
-updateStrategyDecoder =
-    Decode.string
-        |> Decode.andThen
-            (\times ->
-                case times of
-                    "default" ->
-                        Decode.succeed PositionReadingOrderUpdateStrategy
-
-                    "positionReadingOrder" ->
-                        Decode.succeed PositionReadingOrderUpdateStrategy
-
-                    "actorIdAsc" ->
-                        Decode.succeed ActorIdAscUpdateStrategy
-
-                    other ->
-                        Decode.fail <|
-                            "Trying to decode update strategy, but the update strategy "
-                                ++ other
-                                ++ " does not exist."
-            )
 
 
 defaultBackground : RenderComponentData

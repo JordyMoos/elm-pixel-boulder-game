@@ -29,11 +29,11 @@ adventOfCodeDescriptionProvider level =
     String.join " "
         [ "  "
         , health * turns |> String.fromInt
-        , "[Health = "
+        , "[ Health = "
         , String.fromInt health
         , ", Turns = "
         , String.fromInt turns
-        , "]"
+        , " ]"
         ]
 
 

@@ -105,5 +105,9 @@
         "limit": 1
       }
     }
+  ],
+  "editorsNote": [
+    "This is not really a level from advent of code but a small demo to test the setup.",
+    "Therefor there is no officially known correct score"
   ]
 }
