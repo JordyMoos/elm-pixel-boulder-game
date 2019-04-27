@@ -13,16 +13,12 @@ import Actor.Actor as Actor
         , Level
         )
 import Actor.Common as Common
-import Actor.Component.AiComponent.Common as CommonAi
 import Actor.Component.AttackComponent as AttackComponent
 import Actor.Component.HealthComponent as HealthComponent
 import Actor.Component.TagComponent as TagComponent
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position, X, Y)
 import Dict exposing (Dict)
-import Maybe.Extra
-import Pilf exposing (flip)
-import Set
 
 
 type alias Path =

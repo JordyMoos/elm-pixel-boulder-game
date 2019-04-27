@@ -6,8 +6,6 @@ module Data.Menu exposing
     , moveMenuUp
     )
 
-import Text
-
 
 type alias ListSelector a =
     { before : List a

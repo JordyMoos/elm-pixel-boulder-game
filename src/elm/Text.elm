@@ -1,6 +1,5 @@
 module Text exposing (Letter, Letters, letterHeight, stringToLetters)
 
-import Color exposing (Color)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
 import Maybe.Extra
@@ -361,6 +360,22 @@ dictionary =
         , "oo"
         , "  "
         , "  "
+        ]
+      )
+    , ( '['
+      , [ "oo"
+        , "o "
+        , "o "
+        , "o "
+        , "oo"
+        ]
+      )
+    , ( ']'
+      , [ "oo"
+        , " o"
+        , " o"
+        , " o"
+        , "oo"
         ]
       )
     ]

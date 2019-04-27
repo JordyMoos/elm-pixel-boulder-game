@@ -101,6 +101,26 @@
         "tagName": "elf",
         "limit": 2
       }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-03",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 4
+      }
     }
   ]
 }

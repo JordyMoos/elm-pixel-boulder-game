@@ -6,13 +6,9 @@ module GameState.MainMenu exposing
     , view
     )
 
-import Color
 import Data.Config exposing (Config)
-import Data.Menu as Menu
-import Html exposing (Html, div)
+import Html exposing (Html)
 import InputController
-import List.Extra
-import Maybe.Extra
 import Menu.TextMenu as TextMenu
 import Text
 
@@ -42,6 +38,9 @@ init config =
                 , after =
                     [ { text = Text.stringToLetters "Official levels"
                       , action = LoadLevel "official/001"
+                      }
+                    , { text = Text.stringToLetters "Advent levels"
+                      , action = LoadLevel "advent/sample-01"
                       }
                     , { text = Text.stringToLetters "Credits"
                       , action = ShowCredits

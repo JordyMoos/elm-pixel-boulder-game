@@ -45,7 +45,7 @@ import Actor.Actor as Actor
         , TransformComponentData
         , View
         )
-import Data.Coordinate as Coordinate exposing (Coordinate)
+import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict

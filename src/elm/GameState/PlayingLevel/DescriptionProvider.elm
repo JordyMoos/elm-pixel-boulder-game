@@ -27,12 +27,13 @@ adventOfCodeDescriptionProvider level =
             totalTurns level
     in
     String.join " "
-        [ "Health = "
+        [ "  "
+        , health * turns |> String.fromInt
+        , "[Health = "
         , String.fromInt health
         , ", Turns = "
         , String.fromInt turns
-        , ", Total = "
-        , health * turns |> String.fromInt
+        , "]"
         ]
 
 

@@ -8,12 +8,9 @@ module GameState.PlayingLevel.Playing exposing
     )
 
 import Actor.Actor as Actor
-import Actor.Common as Common
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
 import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
-import Dict
 import Html exposing (Html)
 import InputController
 import LevelInitializer

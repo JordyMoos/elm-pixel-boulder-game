@@ -9,8 +9,7 @@ import Actor.Actor as Actor
         , View
         )
 import Actor.Common as Common
-import Data.Coordinate as Coordinate exposing (Coordinate)
-import Dict
+import Data.Coordinate exposing (Coordinate)
 
 
 updateCameraComponent : CameraComponentData -> Actor -> Level -> Level

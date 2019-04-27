@@ -63,5 +63,47 @@
     "#######",
     "c"
   ],
-  "updateBorder": 30
+  "updateBorder": 30,
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-05",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "elf",
+        "limit": 2
+      }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-05",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 5
+      }
+    }
+  ]
 }

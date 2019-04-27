@@ -12,7 +12,6 @@ import Actor.Actor as Actor
         )
 import Actor.Common as Common
 import Actor.Component.AiComponent.Common as CommonAi
-import Actor.Component.CollectibleComponent as CollectibleComponent
 import Data.Position as Position exposing (Position)
 import Dict
 import Maybe.Extra

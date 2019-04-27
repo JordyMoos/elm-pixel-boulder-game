@@ -15,7 +15,6 @@ import Maybe.Extra
 import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
-import Text
 
 
 renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg

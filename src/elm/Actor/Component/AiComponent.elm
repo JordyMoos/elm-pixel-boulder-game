@@ -10,14 +10,8 @@ import Actor.Actor as Actor
         , GameOfLifeAiData
         , Level
         )
-import Actor.Common as Common
 import Actor.Component.AiComponent.AdventAiComponent as AdventAiComponent
 import Actor.Component.AiComponent.GameOfLifeAiComponent as GameOfLifeAiComponent
-import Actor.Component.CollectibleComponent as CollectibleComponent
-import Data.Position as Position exposing (Position)
-import Dict
-import Maybe.Extra
-import Pilf exposing (flip)
 
 
 updateAiComponent : AiComponentData -> Actor -> Actor.Entities -> Level -> Level -> Level

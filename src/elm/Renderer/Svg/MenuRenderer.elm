@@ -2,7 +2,7 @@ module Renderer.Svg.MenuRenderer exposing (WithText, getLineLength, getXOffset, 
 
 import Color
 import Data.Config exposing (Config)
-import Data.Menu as Menu exposing (Menu)
+import Data.Menu exposing (Menu)
 import Html exposing (Html)
 import List.Extra
 import Maybe.Extra
