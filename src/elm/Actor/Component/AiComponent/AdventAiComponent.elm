@@ -36,6 +36,7 @@ type alias TargetSearch =
 type Action
     = Attack Actor
     | Move Direction
+    | NothingToDo
 
 
 type SearchAcc
@@ -92,6 +93,9 @@ handleAction actor level searchResult =
 
         Move direction ->
             handleMove actor level direction
+
+        NothingToDo ->
+            handleNothingToDo level
 
 
 type alias HandleAttackData =
@@ -156,6 +160,11 @@ handleMove actor level direction =
         |> Maybe.withDefault level
 
 
+handleNothingToDo : Level -> Level
+handleNothingToDo level =
+    Common.addEvent Actor.ActorDidNothing level
+
+
 setNewPosition : Actor -> Level -> Position -> Position -> Level
 setNewPosition actor level oldPosition newPosition =
     Dict.insert
@@ -199,8 +208,9 @@ asActions acc =
         Stop actions ->
             actions
 
+        -- If we are still searching then we decide that there is nothing to do
         Continue _ ->
-            []
+            [ NothingToDo ]
 
 
 move : Level -> String -> Int -> SearchAcc -> SearchAcc
@@ -262,7 +272,7 @@ move level enemyTag step acc =
 
                 -- Enemy is too far
                 -- Sort on position y,x
-                ( x, enemies ) ->
+                ( _, enemies ) ->
                     enemies
                         |> List.sortBy
                             (\enemy ->

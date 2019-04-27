@@ -596,6 +596,10 @@ subscriberDecoder =
                             |> JDP.required "eventActionData" eventActionDecoder
                             |> JDP.required "inventoryUpdatedData" onInventoryUpdatedSubscriberDecoder
 
+                    "onActorDidNothing" ->
+                        Decode.succeed Actor.ActorDidNothingSubscriber
+                            |> JDP.required "eventActionData" eventActionDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode subscriber, but the type "

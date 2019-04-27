@@ -1,4 +1,9 @@
-module Actor.EventManager exposing (clearEvents, onInventoryUpdatedSubscriber, onTagDiedSubscriber)
+module Actor.EventManager exposing
+    ( clearEvents
+    , onActorDidNothingSubscriber
+    , onInventoryUpdatedSubscriber
+    , onTagDiedSubscriber
+    )
 
 import Actor.Actor as Actor
     exposing
@@ -51,6 +56,16 @@ onInventoryUpdatedSubscriber onResolveEventAction data event level =
 
         _ ->
             ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, LevelContinue )
+
+
+onActorDidNothingSubscriber : EventAction -> Event -> Level -> ( Actor.Subscriber, EventAction )
+onActorDidNothingSubscriber onResolveEventAction event _ =
+    case event of
+        ActorDidNothing ->
+            ( Actor.ActorDidNothingSubscriber onResolveEventAction, onResolveEventAction )
+
+        _ ->
+            ( Actor.ActorDidNothingSubscriber onResolveEventAction, LevelContinue )
 
 
 clearEvents : Level -> Level
