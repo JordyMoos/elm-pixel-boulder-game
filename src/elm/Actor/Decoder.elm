@@ -2,9 +2,11 @@ module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
-        ( AiComponentData
+        ( AdventAiData
+        , AiComponentData
         , AiType(..)
         , AnimationSetup
+        , AttackComponentData
         , CameraComponentData
         , CollectibleComponentData
         , CollectorComponentData
@@ -13,19 +15,23 @@ import Actor.Actor as Actor
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
+        , CounterComponentData
         , DamageComponentData
         , Entities
         , EventAction(..)
         , GameOfLifeAiAction
         , GameOfLifeAiData
+        , HealthComponentData
         , ImageRenderComponentData
         , Images
         , ImagesData
         , Inventory
+        , InventoryUpdatedSubscriberData
         , KeyedComponent
         , LevelCompletedData
         , LevelConfig
         , LevelFailedData
+        , LevelFinishedDescriptionProvider(..)
         , LifetimeComponentData
         , MovingDownState(..)
         , PhysicsComponentData
@@ -39,18 +45,19 @@ import Actor.Actor as Actor
         , SpawnRepeatTimes(..)
         , Subscriber
         , TagComponentData
+        , TagDiedSubscriberData
         , TriggerExplodableComponentData
         , WalkAroundAiControlData
         )
-import Actor.EventManager as EventManager
 import Color exposing (Color)
-import Data.Coordinate as Coordinate exposing (Coordinate)
+import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
 import GameState.PlayingLevel.Animation.ReadingDirection as ReadingDirectionAnimation
+import GameState.PlayingLevel.Animation.Skip as SkipAnimation
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as JDP
 import Maybe.Extra
@@ -147,6 +154,15 @@ componentDecoder =
 
                     "tag" ->
                         Decode.map TagComponent <| Decode.field "data" tagDataDecoder
+
+                    "health" ->
+                        Decode.map HealthComponent <| Decode.field "data" healthDataDecoder
+
+                    "attack" ->
+                        Decode.map AttackComponent <| Decode.field "data" attackDataDecoder
+
+                    "counter" ->
+                        Decode.map CounterComponent <| Decode.field "data" counterDataDecoder
 
                     _ ->
                         Decode.fail <|
@@ -245,6 +261,25 @@ tagDataDecoder : Decoder TagComponentData
 tagDataDecoder =
     Decode.succeed TagComponentData
         |> JDP.required "name" Decode.string
+
+
+healthDataDecoder : Decoder HealthComponentData
+healthDataDecoder =
+    Decode.succeed HealthComponentData
+        |> JDP.required "health" Decode.int
+        |> JDP.custom (Decode.at [ "health" ] Decode.int)
+
+
+attackDataDecoder : Decoder AttackComponentData
+attackDataDecoder =
+    Decode.succeed AttackComponentData
+        |> JDP.required "power" Decode.int
+
+
+counterDataDecoder : Decoder CounterComponentData
+counterDataDecoder =
+    Decode.succeed CounterComponentData
+        |> JDP.optional "count" Decode.int 0
 
 
 spawnDataDecoder : Decoder SpawnComponentData
@@ -394,6 +429,9 @@ aiTypeDecoder =
                     "gameOfLifeAi" ->
                         Decode.map GameOfLifeAi <| Decode.field "data" gameOfLifeAiDataDecoder
 
+                    "advent" ->
+                        Decode.map AdventAi <| Decode.field "data" adventAiDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode ai components ai type, but the type "
@@ -421,6 +459,12 @@ gameOfLifeAiActionDecoder =
     Decode.succeed GameOfLifeAiAction
         |> JDP.required "count" Decode.int
         |> JDP.required "become" Decode.string
+
+
+adventAiDataDecoder : Decoder AdventAiData
+adventAiDataDecoder =
+    Decode.succeed AdventAiData
+        |> JDP.required "target" Decode.string
 
 
 controlDataDecoder : Decoder ControlComponentData
@@ -543,10 +587,14 @@ subscriberDecoder =
             (\theType ->
                 case theType of
                     "onTagDied" ->
-                        Decode.field "data" onTagDiedSubscriberDecoder
+                        Decode.succeed Actor.TagDiedSubscriber
+                            |> JDP.required "eventActionData" eventActionDecoder
+                            |> JDP.required "tagDiedData" onTagDiedSubscriberDecoder
 
                     "onInventoryUpdated" ->
-                        Decode.field "data" onInventoryUpdatedSubscriberDecoder
+                        Decode.succeed Actor.InventoryUpdatedSubscriber
+                            |> JDP.required "eventActionData" eventActionDecoder
+                            |> JDP.required "inventoryUpdatedData" onInventoryUpdatedSubscriberDecoder
 
                     _ ->
                         Decode.fail <|
@@ -556,19 +604,19 @@ subscriberDecoder =
             )
 
 
-onTagDiedSubscriberDecoder : Decoder Subscriber
+onTagDiedSubscriberDecoder : Decoder TagDiedSubscriberData
 onTagDiedSubscriberDecoder =
-    Decode.succeed EventManager.onTagDiedSubscriber
+    Decode.succeed TagDiedSubscriberData
         |> JDP.required "tagName" Decode.string
-        |> JDP.required "action" eventActionDecoder
+        |> JDP.optional "limit" Decode.int 1
+        |> JDP.hardcoded 0
 
 
-onInventoryUpdatedSubscriberDecoder : Decoder Subscriber
+onInventoryUpdatedSubscriberDecoder : Decoder InventoryUpdatedSubscriberData
 onInventoryUpdatedSubscriberDecoder =
-    Decode.succeed EventManager.onInventoryUpdatedSubscriber
+    Decode.succeed InventoryUpdatedSubscriberData
         |> JDP.required "interestedIn" Decode.string
         |> JDP.required "minimumQuantity" Decode.int
-        |> JDP.required "action" eventActionDecoder
 
 
 eventActionDecoder : Decoder EventAction
@@ -594,7 +642,7 @@ eventActionDecoder =
 eventActionFailedDataDecoder : Decoder LevelFailedData
 eventActionFailedDataDecoder =
     Decode.succeed LevelFailedData
-        |> JDP.required "description" Decode.string
+        |> JDP.required "descriptionProvider" descriptionProviderDecoder
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
 
@@ -602,10 +650,35 @@ eventActionFailedDataDecoder =
 eventActionCompletedDataDecoder : Decoder LevelCompletedData
 eventActionCompletedDataDecoder =
     Decode.succeed LevelCompletedData
-        |> JDP.required "description" Decode.string
+        |> JDP.required "descriptionProvider" descriptionProviderDecoder
         |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
+
+
+descriptionProviderDecoder : Decoder LevelFinishedDescriptionProvider
+descriptionProviderDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "static" ->
+                        Decode.map StaticDescriptionProvider <| Decode.field "data" staticDescriptionProviderDecoder
+
+                    "advent" ->
+                        Decode.succeed AdventOfCodeDescriptionProvider
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode description, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+staticDescriptionProviderDecoder : Decoder String
+staticDescriptionProviderDecoder =
+    Decode.field "text" Decode.string
 
 
 animationSetupDecoder : Decoder AnimationSetup
@@ -622,6 +695,9 @@ animationSetupDecoder =
 
                     "currentTick" ->
                         Decode.succeed CurrentTickAnimation.init
+
+                    "skip" ->
+                        Decode.succeed SkipAnimation.init
 
                     _ ->
                         Decode.fail <|

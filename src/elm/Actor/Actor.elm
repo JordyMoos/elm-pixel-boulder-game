@@ -2,9 +2,11 @@ module Actor.Actor exposing
     ( Actor
     , ActorId
     , Actors
+    , AdventAiData
     , AiComponentData
     , AiType(..)
     , AnimationSetup
+    , AttackComponentData
     , CameraComponentData
     , CollectibleComponentData
     , CollectorComponentData
@@ -13,6 +15,7 @@ module Actor.Actor exposing
     , ControlComponentData
     , ControlSettings
     , ControlType(..)
+    , CounterComponentData
     , DamageComponentData
     , DownSmashComponentData
     , Entities
@@ -22,15 +25,19 @@ module Actor.Actor exposing
     , Events
     , GameOfLifeAiAction
     , GameOfLifeAiData
+    , Health
+    , HealthComponentData
     , ImageRenderComponentData
     , Images
     , ImagesData
     , Inventory
+    , InventoryUpdatedSubscriberData
     , KeyedComponent
     , Level
     , LevelCompletedData
     , LevelConfig
     , LevelFailedData
+    , LevelFinishedDescriptionProvider(..)
     , LifetimeComponentData
     , MovingDownState(..)
     , MovingState(..)
@@ -45,9 +52,10 @@ module Actor.Actor exposing
     , SpawnComponentData
     , SpawnRepeat
     , SpawnRepeatTimes(..)
-    , Subscriber
+    , Subscriber(..)
     , Subscribers
     , TagComponentData
+    , TagDiedSubscriberData
     , TransformComponentData
     , TriggerExplodableComponentData
     , View
@@ -135,6 +143,7 @@ type alias Level =
     , positionIndex : PositionIndex
     , view : View
     , background : RenderComponentData
+    , eventManager : EventManager
     , events : Events
     }
 
@@ -156,6 +165,9 @@ type Component
     | TriggerExplodableComponent TriggerExplodableComponentData
     | SpawnComponent SpawnComponentData
     | TagComponent TagComponentData
+    | HealthComponent HealthComponentData
+    | AttackComponent AttackComponentData
+    | CounterComponent CounterComponentData
 
 
 
@@ -252,6 +264,7 @@ type alias AiComponentData =
 
 type AiType
     = GameOfLifeAi GameOfLifeAiData
+    | AdventAi AdventAiData
 
 
 type alias GameOfLifeAiData =
@@ -265,6 +278,11 @@ type alias GameOfLifeAiData =
 type alias GameOfLifeAiAction =
     { count : Int
     , become : String
+    }
+
+
+type alias AdventAiData =
+    { target : String
     }
 
 
@@ -445,6 +463,50 @@ type alias TagComponentData =
 
 {-
 
+   HealthComponent
+
+-}
+
+
+type alias Health =
+    Int
+
+
+type alias HealthComponentData =
+    { health : Health
+    , maxHealth : Health
+    }
+
+
+
+{-
+
+   AttackComponent
+
+-}
+
+
+type alias AttackComponentData =
+    { power : Int
+    }
+
+
+
+{-
+
+   CounterComponent
+
+-}
+
+
+type alias CounterComponentData =
+    { count : Int
+    }
+
+
+
+{-
+
    Animation
 
 -}
@@ -469,32 +531,51 @@ type Event
 
 
 type EventAction
-    = LevelContinue Level
+    = LevelContinue
     | LevelFailed LevelFailedData
     | LevelCompleted LevelCompletedData
 
 
 type alias LevelFailedData =
-    { description : String
+    { descriptionProvider : LevelFinishedDescriptionProvider
     , entityNames : List String
     , animationSetup : AnimationSetup
     }
 
 
 type alias LevelCompletedData =
-    { description : String
+    { descriptionProvider : LevelFinishedDescriptionProvider
     , nextLevel : String
     , entityNames : List String
     , animationSetup : AnimationSetup
     }
 
 
+type LevelFinishedDescriptionProvider
+    = StaticDescriptionProvider String
+    | AdventOfCodeDescriptionProvider
+
+
 type alias Events =
     List Event
 
 
-type alias Subscriber =
-    Event -> Level -> EventAction
+type Subscriber
+    = TagDiedSubscriber EventAction TagDiedSubscriberData
+    | InventoryUpdatedSubscriber EventAction InventoryUpdatedSubscriberData
+
+
+type alias TagDiedSubscriberData =
+    { tag : String
+    , limit : Int
+    , counter : Int
+    }
+
+
+type alias InventoryUpdatedSubscriberData =
+    { interestedIn : String
+    , minimumQuantity : Int
+    }
 
 
 type alias Subscribers =

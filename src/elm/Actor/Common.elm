@@ -15,6 +15,7 @@ module Actor.Common exposing
     , isDestinationEmpty
     , isDestinationEmptyByOffset
     , isEmpty
+    , isNotEmpty
     , removeActor
     , removeActorFromIndexByPosition
     , setView
@@ -44,7 +45,7 @@ import Actor.Actor as Actor
         , TransformComponentData
         , View
         )
-import Data.Coordinate as Coordinate exposing (Coordinate)
+import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict
@@ -326,6 +327,12 @@ isEmpty : Position -> Level -> Bool
 isEmpty position level =
     getActorsThatAffect position level
         |> List.isEmpty
+
+
+isNotEmpty : Position -> Level -> Bool
+isNotEmpty position level =
+    isEmpty position level
+        |> not
 
 
 isDestinationEmpty : Actor -> Direction -> Level -> Bool

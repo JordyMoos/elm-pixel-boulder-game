@@ -1,6 +1,5 @@
 module Text exposing (Letter, Letters, letterHeight, stringToLetters)
 
-import Color exposing (Color)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
 import Maybe.Extra
@@ -235,6 +234,86 @@ dictionary =
         , "ooo"
         ]
       )
+    , ( '0'
+      , [ " o "
+        , "o o"
+        , "o o"
+        , "o o"
+        , " o "
+        ]
+      )
+    , ( '1'
+      , [ "o"
+        , "o"
+        , "o"
+        , "o"
+        , "o"
+        ]
+      )
+    , ( '2'
+      , [ " o "
+        , "o o"
+        , "  o"
+        , " o "
+        , "ooo"
+        ]
+      )
+    , ( '3'
+      , [ "ooo"
+        , "  o"
+        , " oo"
+        , "  o"
+        , "oo "
+        ]
+      )
+    , ( '4'
+      , [ "o o"
+        , "o o"
+        , "ooo"
+        , "  o"
+        , "  o"
+        ]
+      )
+    , ( '5'
+      , [ "ooo"
+        , "o  "
+        , "oo "
+        , "  o"
+        , "oo "
+        ]
+      )
+    , ( '6'
+      , [ "o  "
+        , "o  "
+        , "ooo"
+        , "o o"
+        , "ooo"
+        ]
+      )
+    , ( '7'
+      , [ "ooo"
+        , "  o"
+        , "  o"
+        , "  o"
+        , "  o"
+        ]
+      )
+    , ( '8'
+      , [ "ooo"
+        , "o o"
+        , "ooo"
+        , "o o"
+        , "ooo"
+        ]
+      )
+    , ( '9'
+      , [ "ooo"
+        , "o o"
+        , "ooo"
+        , "  o"
+        , "ooo"
+        ]
+      )
     , ( ' '
       , [ " "
         , " "
@@ -251,6 +330,22 @@ dictionary =
         , "o"
         ]
       )
+    , ( ':'
+      , [ " "
+        , "o"
+        , " "
+        , " "
+        , "o"
+        ]
+      )
+    , ( '='
+      , [ "   "
+        , "ooo"
+        , "   "
+        , "ooo"
+        , "   "
+        ]
+      )
     , ( ','
       , [ "  "
         , "  "
@@ -265,6 +360,22 @@ dictionary =
         , "oo"
         , "  "
         , "  "
+        ]
+      )
+    , ( '['
+      , [ "oo"
+        , "o "
+        , "o "
+        , "o "
+        , "oo"
+        ]
+      )
+    , ( ']'
+      , [ "oo"
+        , " o"
+        , " o"
+        , " o"
+        , "oo"
         ]
       )
     ]

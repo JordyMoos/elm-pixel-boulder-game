@@ -11,12 +11,9 @@ import Actor.Common as Common
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
 import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
-import Dict
 import GameState.PlayingLevel.Animation.Animation as Animation
 import Html exposing (Html)
 import InputController
-import LevelInitializer
 import Renderer.Svg.LevelRenderer as LevelRenderer
 
 

@@ -1,7 +1,6 @@
 module Util.PrimeSearch exposing (Coefficients, primeSearch)
 
 import List.Extra
-import Maybe.Extra
 
 
 type alias Coefficients =

@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "elf": [
+      {"type": "tag", "data": {"name": "elf"}},
+      {"type": "health", "data": {"health": 200}},
+      {"type": "attack", "data": {"power": 3}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 255}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
+          "data": {
+            "target": "goblin"
+          }
+        }
+      }}
+    ],
+    "goblin": [
+      {"type": "tag", "data": {"name": "goblin"}},
+      {"type": "health", "data": {"health": 200}},
+      {"type": "attack", "data": {"power": 3}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 255, "blue": 0}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
+          "data": {
+            "target": "elf"
+          }
+        }
+      }}
+    ],
+    "wall": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 98, "green": 100, "blue": 87}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "counter": [
+      {"type": "counter", "data":  {"count": -1}}
+    ]
+  },
+  "signs": {
+    "E": "elf",
+    "G": "goblin",
+    "#": "wall",
+    "c": "counter"
+  },
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": [{"red": 255, "green": 255, "blue": 255}]
+    }
+  },
+  "scene": [
+    "#######",
+    "#G..#E#",
+    "#E#E.E#",
+    "#G.##.#",
+    "#...#E#",
+    "#...E.#",
+    "#######",
+    "c"
+  ],
+  "updateBorder": 30,
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-03",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "elf",
+        "limit": 6
+      }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-03",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 2
+      }
+    }
+  ],
+  "editorsNote": [
+    "37 * 982 = 36334"
+  ]
+}

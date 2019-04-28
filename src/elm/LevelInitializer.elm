@@ -5,7 +5,6 @@ import Actor.Common as Common
 import Actor.Decoder
 import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
-import Data.Position exposing (Position)
 import Dict
 
 
@@ -14,11 +13,12 @@ initLevel config levelConfig =
     emptyLevel config levelConfig.viewCoordinate
         |> setBackground levelConfig.background
         |> setActors levelConfig
+        |> setEventManager levelConfig
 
 
 emptyLevel : Config -> Coordinate -> Actor.Level
 emptyLevel config coordinate =
-    { nextActorId = 1
+    { nextActorId = 0
     , actors = Dict.fromList []
     , positionIndex = Dict.fromList []
     , view =
@@ -28,6 +28,7 @@ emptyLevel config coordinate =
         , height = config.height
         }
     , background = Actor.Decoder.defaultBackground
+    , eventManager = Actor.emptyEventManager
     , events = []
     }
 
@@ -37,17 +38,24 @@ setBackground background level =
     { level | background = background }
 
 
+setEventManager : Actor.LevelConfig -> Actor.Level -> Actor.Level
+setEventManager levelConfig level =
+    { level
+        | eventManager =
+            { subscribers = levelConfig.subscribers
+            }
+    }
+
+
 setActors : Actor.LevelConfig -> Actor.Level -> Actor.Level
 setActors levelConfig level =
-    List.indexedMap
-        (\a b -> ( a, b ))
-        levelConfig.scene
-        |> List.foldr
+    levelConfig.scene
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
             (\( y, line ) accLevel ->
-                List.indexedMap
-                    (\a b -> ( a, b ))
-                    (String.toList line)
-                    |> List.foldr
+                String.toList line
+                    |> List.indexedMap Tuple.pair
+                    |> List.foldl
                         (\( x, char ) innerAccLevel ->
                             Dict.get
                                 (String.fromChar char)
@@ -56,16 +64,19 @@ setActors levelConfig level =
                                     (\entityName ->
                                         Dict.get entityName levelConfig.entities
                                     )
-                                |> Maybe.andThen
+                                |> Maybe.map
                                     (\entity ->
                                         Common.addActor
                                             (Dict.insert
                                                 "transform"
-                                                (Actor.TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving })
+                                                (Actor.TransformComponent
+                                                    { position = { x = x, y = y }
+                                                    , movingState = Actor.NotMoving
+                                                    }
+                                                )
                                                 entity
                                             )
                                             innerAccLevel
-                                            |> Just
                                     )
                                 |> Maybe.withDefault innerAccLevel
                         )

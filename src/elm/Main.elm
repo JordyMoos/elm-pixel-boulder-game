@@ -5,10 +5,7 @@ import Actor.Decoder
 import Browser
 import Browser.Events
 import Browser.Navigation
-import Char
 import Data.Config exposing (Config)
-import Data.Position exposing (Position)
-import Dict exposing (Dict)
 import GameState.LoadingLevel as LoadingLevel
 import GameState.MainMenu as MainMenu
 import GameState.PlayingLevel.PlayingLevel as PlayingLevel
@@ -16,12 +13,6 @@ import Html exposing (Html, br, button, div, text)
 import Html.Events exposing (onClick)
 import InputController
 import Json.Decode
-import List.Extra
-import Maybe.Extra
-import Svg
-import Svg.Attributes
-import Task
-import Text
 
 
 type alias Model =
@@ -85,7 +76,7 @@ init flags =
             , flags = flags
             , inputModel = InputController.init
             , gameState = MainMenuState <| MainMenu.init config
-            , gameSpeed = Just 41
+            , gameSpeed = Nothing -- Just 41
             , currentTick = 0
             , timeBuffer = 0
             , maxUpdatesPerView = 4

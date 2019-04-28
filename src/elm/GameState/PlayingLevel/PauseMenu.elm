@@ -7,13 +7,9 @@ module GameState.PlayingLevel.PauseMenu exposing
     )
 
 import Actor.Actor as Actor
-import Color
 import Data.Config exposing (Config)
-import Data.Menu as Menu
-import Html exposing (Html, div)
+import Html exposing (Html)
 import InputController
-import List.Extra
-import Maybe.Extra
 import Menu.TextMenu as TextMenu
 import Text
 

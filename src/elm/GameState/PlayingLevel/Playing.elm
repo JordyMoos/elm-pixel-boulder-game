@@ -8,12 +8,9 @@ module GameState.PlayingLevel.Playing exposing
     )
 
 import Actor.Actor as Actor
-import Actor.Common as Common
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
 import Data.Config exposing (Config)
-import Data.Direction as Direction exposing (Direction)
-import Dict
 import Html exposing (Html)
 import InputController
 import LevelInitializer
@@ -24,7 +21,6 @@ type alias Model =
     { config : Config
     , levelConfig : Actor.LevelConfig
     , level : Actor.Level
-    , eventManager : Actor.EventManager
     }
 
 
@@ -40,9 +36,6 @@ init config levelConfig =
     { config = config
     , levelConfig = levelConfig
     , level = LevelInitializer.initLevel config levelConfig
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
     }
 
 
@@ -51,9 +44,6 @@ resume config levelConfig level =
     { config = config
     , levelConfig = levelConfig
     , level = level
-    , eventManager =
-        { subscribers = levelConfig.subscribers
-        }
     }
 
 
@@ -75,47 +65,72 @@ updateTick currentTick inputModel model =
 processEvents : Model -> Action
 processEvents model =
     List.foldr
-        (handleEvent model.eventManager)
-        (Actor.LevelContinue model.level)
+        (handleEvent model.level)
+        ( model.level.eventManager, Actor.LevelContinue )
         model.level.events
         |> mapEventActionToAction model
 
 
-mapEventActionToAction : Model -> Actor.EventAction -> Action
-mapEventActionToAction model eventAction =
+handleEvent : Actor.Level -> Actor.Event -> ( Actor.EventManager, Actor.EventAction ) -> ( Actor.EventManager, Actor.EventAction )
+handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
+    List.foldr
+        (\subscriber ( updatedSubscribers, accAction ) ->
+            case accAction of
+                Actor.LevelContinue ->
+                    let
+                        ( updatedSubscriber, eventAction ) =
+                            case subscriber of
+                                Actor.TagDiedSubscriber onResolveAction data ->
+                                    EventManager.onTagDiedSubscriber onResolveAction data event level
+
+                                Actor.InventoryUpdatedSubscriber onResolveAction data ->
+                                    EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
+
+                        _ =
+                            Debug.log "eventAction" (Debug.toString eventAction)
+                    in
+                    ( updatedSubscriber :: updatedSubscribers, eventAction )
+
+                -- Void events if action is already decided
+                _ ->
+                    ( subscriber :: updatedSubscribers, accAction )
+        )
+        ( [], accumulatedAction )
+        accumulatedEventManager.subscribers
+        |> (\( subscribers, eventAction ) ->
+                ( { subscribers = subscribers }, eventAction )
+           )
+
+
+mapEventActionToAction : Model -> ( Actor.EventManager, Actor.EventAction ) -> Action
+mapEventActionToAction model ( eventManager, eventAction ) =
     case eventAction of
-        Actor.LevelContinue level ->
-            level
+        Actor.LevelContinue ->
+            model.level
                 |> clearEvents
+                |> setEventManager eventManager
                 |> setLevel model
                 |> Stay
 
         Actor.LevelFailed data ->
-            Failed model.level data
+            Failed
+                (setEventManager eventManager model.level)
+                data
 
         Actor.LevelCompleted data ->
-            Completed model.level data
-
-
-handleEvent : Actor.EventManager -> Actor.Event -> Actor.EventAction -> Actor.EventAction
-handleEvent eventManager event accumulatedAction =
-    List.foldr
-        (\subscriber action ->
-            case action of
-                Actor.LevelContinue level ->
-                    subscriber event level
-
-                -- Void events if action is already decided
-                _ ->
-                    action
-        )
-        accumulatedAction
-        eventManager.subscribers
+            Completed
+                (setEventManager eventManager model.level)
+                data
 
 
 clearEvents : Actor.Level -> Actor.Level
 clearEvents level =
     { level | events = [] }
+
+
+setEventManager : Actor.EventManager -> Actor.Level -> Actor.Level
+setEventManager eventManager level =
+    { level | eventManager = eventManager }
 
 
 setLevel : Model -> Actor.Level -> Model

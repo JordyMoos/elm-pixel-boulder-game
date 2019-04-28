@@ -1,0 +1,158 @@
+{
+  "entities": {
+    "elf": [
+      {"type": "tag", "data": {"name": "elf"}},
+      {"type": "health", "data": {"health": 200}},
+      {"type": "attack", "data": {"power": 3}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 255}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
+          "data": {
+            "target": "goblin"
+          }
+        }
+      }}
+    ],
+    "goblin": [
+      {"type": "tag", "data": {"name": "goblin"}},
+      {"type": "health", "data": {"health": 200}},
+      {"type": "attack", "data": {"power": 3}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 255, "blue": 0}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "ai", "data": {
+        "ai": {
+          "type": "advent",
+          "data": {
+            "target": "elf"
+          }
+        }
+      }}
+    ],
+    "wall": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 98, "green": 100, "blue": 87}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "counter": [
+      {"type": "counter", "data":  {"count":  -2}}
+    ],
+    "camera": [
+      {"type": "camera", "data": {"borderSize": 4}}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
+          "ticksPerImage": 2
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
+    ]
+  },
+  "images": {
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png"
+  },
+  "signs": {
+    "E": "elf",
+    "G": "goblin",
+    "#": "wall",
+    "c": "counter",
+    "a": "camera"
+  },
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": [{"red": 255, "green": 255, "blue": 255}]
+    }
+  },
+  "scene": [
+    "################################",
+    "##########G###.#################",
+    "##########..G#G.G###############",
+    "##########G......#########...###",
+    "##########...##.##########...###",
+    "##########...##.#########G..####",
+    "###########G....######....######",
+    "#############...............####",
+    "#############...G..G.......#####",
+    "#############.............######",
+    "############.............E######",
+    "######....G..G.........E....####",
+    "####..G..G....#####.E.G.....####",
+    "#####...G...G#######........####",
+    "#####.......#########........###",
+    "####G.......#########.......####",
+    "####...#....####a####.#.....####",
+    "####.#..#...#########E#..E#..###",
+    "####........#########..E.#######",
+    "###......#..G#######....########",
+    "###.......G...#####.....########",
+    "##........#............#########",
+    "#...##.....G......E....#########",
+    "#.#.###..#.....E.......###.#####",
+    "#######................###.#####",
+    "##########.......E.....###.#####",
+    "###########...##........#...####",
+    "###########..#####.............#",
+    "############..#####.....#......#",
+    "##########...######...........##",
+    "#########....######..E#....#####",
+    "################################",
+    "c"
+  ],
+  "updateBorder": 30,
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-00",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "elf",
+        "limit": 10
+      }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-00",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 20
+      }
+    }
+  ],
+  "editorsNote": [
+    ""
+  ]
+}

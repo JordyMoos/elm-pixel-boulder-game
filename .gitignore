@@ -8,3 +8,4 @@ repl-temp-*
 node_modules
 dist
 *.log
+package-lock.json

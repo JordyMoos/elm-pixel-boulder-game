@@ -6,6 +6,7 @@ import Actor.Component.AiComponent as Ai
 import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
+import Actor.Component.CounterComponent as Counter
 import Actor.Component.DamageComponent as Damage
 import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
@@ -29,11 +30,11 @@ update maybeDirection levelBeforeUpdate levelConfig =
         yPosition =
             Coordinate.pixelToTile view.pixelSize view.coordinate.y
     in
-    List.foldr
+    List.foldl
         (\y levelA ->
-            List.foldr
+            List.foldl
                 (\x levelB ->
-                    Common.getActorIdsByXY x y levelB
+                    Common.getActorIdsByXY x y levelBeforeUpdate
                         |> List.foldr
                             (\actorId levelC ->
                                 Common.getActorById actorId levelC
@@ -64,6 +65,9 @@ update maybeDirection levelBeforeUpdate levelConfig =
 
                                                                             Actor.LifetimeComponent lifetimeData ->
                                                                                 Lifetime.updateLifetimeComponent lifetimeData updatedActor levelD
+
+                                                                            Actor.CounterComponent counterData ->
+                                                                                Counter.updateCounterComponent counterData updatedActor levelD
 
                                                                             Actor.DamageComponent damageData ->
                                                                                 Damage.updateDamageComponent damageData updatedActor levelD

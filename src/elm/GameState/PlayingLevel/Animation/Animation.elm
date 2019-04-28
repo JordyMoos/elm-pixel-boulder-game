@@ -7,13 +7,10 @@ module GameState.PlayingLevel.Animation.Animation exposing
 
 import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common
-import Color
-import Data.Config as Config exposing (Config)
 import Data.Coordinate as Coordinate
 import Data.Position as Position exposing (Position)
 import Dict
 import List.Extra
-import Util.PrimeSearch as PrimeSearch
 
 
 type alias Model =
