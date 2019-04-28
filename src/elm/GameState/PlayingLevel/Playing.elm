@@ -85,9 +85,6 @@ handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
 
                                 Actor.InventoryUpdatedSubscriber onResolveAction data ->
                                     EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
-
-                        _ =
-                            Debug.log "eventAction" (Debug.toString eventAction)
                     in
                     ( updatedSubscriber :: updatedSubscribers, eventAction )
 
