@@ -68,44 +68,23 @@
   "updateBorder": 30,
   "subscribers": [
     {
-      "type": "onTagDied",
+      "type": "onActorDidNothing",
       "eventActionData": {
         "type": "completed",
         "data": {
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-01",
+          "nextLevel": "advent/sample-00",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
           }
         }
-      },
-      "tagDiedData": {
-        "tagName": "elf",
-        "limit": 1
-      }
-    },
-    {
-      "type": "onTagDied",
-      "eventActionData": {
-        "type": "completed",
-        "data": {
-          "descriptionProvider": {
-            "type": "advent"
-          },
-          "nextLevel": "advent/sample-01",
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "skip"
-          }
-        }
-      },
-      "tagDiedData": {
-        "tagName": "goblin",
-        "limit": 5
       }
     }
+  ],
+  "editorsNote": [
+    "20 * 937 = 18740"
   ]
 }

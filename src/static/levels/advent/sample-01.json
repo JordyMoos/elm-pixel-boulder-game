@@ -39,7 +39,24 @@
     ],
     "counter": [
       {"type": "counter", "data":  {}}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
+          "ticksPerImage": 2
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
     ]
+  },
+  "images": {
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png"
   },
   "signs": {
     "E": "elf",
@@ -55,10 +72,10 @@
   },
   "scene": [
     "#######",
-    "#.....#",
-    "#G...E#",
-    "#.#.#.#",
-    "#...#.#",
+    "#.G...#",
+    "#...EG#",
+    "#.#.#G#",
+    "#..G#E#",
     "#.....#",
     "#######",
     "c"
@@ -66,24 +83,47 @@
   "updateBorder": 30,
   "subscribers": [
     {
-      "type": "onActorDidNothing",
+      "type": "onTagDied",
       "eventActionData": {
         "type": "completed",
         "data": {
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-02",
+          "nextLevel": "advent/sample-03",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
           }
         }
+      },
+      "tagDiedData": {
+        "tagName": "elf",
+        "limit": 2
+      }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-03",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 4
       }
     }
   ],
   "editorsNote": [
-    "This is not really a level from advent of code but a small demo to test the setup.",
-    "Therefor there is no officially known correct score"
+    "47 * 590 = 27730"
   ]
 }

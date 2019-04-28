@@ -40,7 +40,7 @@ init config =
                       , action = LoadLevel "official/001"
                       }
                     , { text = Text.stringToLetters "Advent levels"
-                      , action = LoadLevel "advent/sample-01"
+                      , action = LoadLevel "advent/official"
                       }
                     , { text = Text.stringToLetters "Credits"
                       , action = ShowCredits

@@ -39,13 +39,34 @@
     ],
     "counter": [
       {"type": "counter", "data":  {}}
+    ],
+    "camera": [
+      {"type": "camera", "data": {"borderSize": 4}}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
+          "ticksPerImage": 2
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
     ]
+  },
+  "images": {
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png"
   },
   "signs": {
     "E": "elf",
     "G": "goblin",
     "#": "wall",
-    "c": "counter"
+    "c": "counter",
+    "a": "camera"
   },
   "background": {
     "type": "pixel",
@@ -54,13 +75,38 @@
     }
   },
   "scene": [
-    "#######",
-    "#G..#E#",
-    "#E#E.E#",
-    "#G.##.#",
-    "#...#E#",
-    "#...E.#",
-    "#######",
+    "################################",
+    "##########G###.#################",
+    "##########..G#G.G###############",
+    "##########G......#########...###",
+    "##########...##.##########...###",
+    "##########...##.#########G..####",
+    "###########G....######....######",
+    "#############...............####",
+    "#############...G..G.......#####",
+    "#############.............######",
+    "############.............E######",
+    "######....G..G.........E....####",
+    "####..G..G....#####.E.G.....####",
+    "#####...G...G#######........####",
+    "#####.......#########........###",
+    "####G.......#########.......####",
+    "####...#....####a####.#.....####",
+    "####.#..#...#########E#..E#..###",
+    "####........#########..E.#######",
+    "###......#..G#######....########",
+    "###.......G...#####.....########",
+    "##........#............#########",
+    "#...##.....G......E....#########",
+    "#.#.###..#.....E.......###.#####",
+    "#######................###.#####",
+    "##########.......E.....###.#####",
+    "###########...##........#...####",
+    "###########..#####.............#",
+    "############..#####.....#......#",
+    "##########...######...........##",
+    "#########....######..E#....#####",
+    "################################",
     "c"
   ],
   "updateBorder": 30,
@@ -73,7 +119,7 @@
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-03",
+          "nextLevel": "advent/sample-00",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
@@ -82,7 +128,7 @@
       },
       "tagDiedData": {
         "tagName": "elf",
-        "limit": 6
+        "limit": 10
       }
     },
     {
@@ -93,7 +139,7 @@
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-03",
+          "nextLevel": "advent/sample-00",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
@@ -102,11 +148,11 @@
       },
       "tagDiedData": {
         "tagName": "goblin",
-        "limit": 2
+        "limit": 20
       }
     }
   ],
   "editorsNote": [
-    "37 * 982 = 36334"
+    ""
   ]
 }

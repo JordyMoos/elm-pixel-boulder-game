@@ -208,9 +208,8 @@ asActions acc =
         Stop actions ->
             actions
 
-        -- If we are still searching then we decide that there is nothing to do
         Continue _ ->
-            [ NothingToDo ]
+            []
 
 
 move : Level -> String -> Int -> SearchAcc -> SearchAcc

@@ -55,58 +55,35 @@
   },
   "scene": [
     "#######",
-    "#G..#E#",
-    "#E#E.E#",
-    "#G.##.#",
-    "#...#E#",
-    "#...E.#",
+    "#.....#",
+    "#G...E#",
+    "#.#.#.#",
+    "#...#.#",
+    "#.....#",
     "#######",
     "c"
   ],
   "updateBorder": 30,
   "subscribers": [
     {
-      "type": "onTagDied",
+      "type": "onActorDidNothing",
       "eventActionData": {
         "type": "completed",
         "data": {
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-03",
+          "nextLevel": "advent/sample-01",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
           }
         }
-      },
-      "tagDiedData": {
-        "tagName": "elf",
-        "limit": 6
-      }
-    },
-    {
-      "type": "onTagDied",
-      "eventActionData": {
-        "type": "completed",
-        "data": {
-          "descriptionProvider": {
-            "type": "advent"
-          },
-          "nextLevel": "advent/sample-03",
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "skip"
-          }
-        }
-      },
-      "tagDiedData": {
-        "tagName": "goblin",
-        "limit": 2
       }
     }
   ],
   "editorsNote": [
-    "37 * 982 = 36334"
+    "This is not really a level from advent of code but a small demo to test the setup.",
+    "Therefor there is no officially known correct score"
   ]
 }
