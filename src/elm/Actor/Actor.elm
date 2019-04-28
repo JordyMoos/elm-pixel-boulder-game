@@ -528,7 +528,6 @@ type Event
     = ActorAdded Actor
     | ActorRemoved Actor
     | InventoryUpdated Inventory
-    | ActorDidNothing
 
 
 type EventAction
@@ -564,7 +563,6 @@ type alias Events =
 type Subscriber
     = TagDiedSubscriber EventAction TagDiedSubscriberData
     | InventoryUpdatedSubscriber EventAction InventoryUpdatedSubscriberData
-    | ActorDidNothingSubscriber EventAction
 
 
 type alias TagDiedSubscriberData =

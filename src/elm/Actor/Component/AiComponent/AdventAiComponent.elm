@@ -36,7 +36,6 @@ type alias TargetSearch =
 type Action
     = Attack Actor
     | Move Direction
-    | NothingToDo
 
 
 type SearchAcc
@@ -80,22 +79,12 @@ handleActions actor level =
 
 handleAction : Actor -> Level -> Action -> Level
 handleAction actor level searchResult =
-    --    let
-    --        _ =
-    --            Debug.log "Actor" (Debug.toString actor)
-    --
-    --        _ =
-    --            Debug.log "Action" (Debug.toString searchResult)
-    --    in
     case searchResult of
         Attack enemyActor ->
             handleAttack actor level enemyActor
 
         Move direction ->
             handleMove actor level direction
-
-        NothingToDo ->
-            handleNothingToDo level
 
 
 type alias HandleAttackData =
@@ -158,11 +147,6 @@ handleMove actor level direction =
                 setNewPosition actor level oldPosition newPosition
             )
         |> Maybe.withDefault level
-
-
-handleNothingToDo : Level -> Level
-handleNothingToDo level =
-    Common.addEvent Actor.ActorDidNothing level
 
 
 setNewPosition : Actor -> Level -> Position -> Position -> Level

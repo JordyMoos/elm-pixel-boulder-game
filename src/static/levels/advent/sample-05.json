@@ -38,7 +38,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "counter": [
-      {"type": "counter", "data":  {}}
+      {"type": "counter", "data":  {"count": -1}}
     ]
   },
   "signs": {
@@ -66,7 +66,7 @@
   "updateBorder": 30,
   "subscribers": [
     {
-      "type": "onActorDidNothing",
+      "type": "onTagDied",
       "eventActionData": {
         "type": "completed",
         "data": {
@@ -79,6 +79,30 @@
             "type": "skip"
           }
         }
+      },
+      "tagDiedData": {
+        "tagName": "elf",
+        "limit": 2
+      }
+    },
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "advent"
+          },
+          "nextLevel": "advent/sample-06",
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "skip"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "goblin",
+        "limit": 4
       }
     }
   ],

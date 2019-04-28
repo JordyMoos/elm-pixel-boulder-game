@@ -90,7 +90,7 @@
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-03",
+          "nextLevel": "advent/sample-02",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"
@@ -110,7 +110,7 @@
           "descriptionProvider": {
             "type": "advent"
           },
-          "nextLevel": "advent/sample-03",
+          "nextLevel": "advent/sample-02",
           "entityNames": ["explosion"],
           "animation": {
             "type": "skip"

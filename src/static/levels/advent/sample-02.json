@@ -38,7 +38,7 @@
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ],
     "counter": [
-      {"type": "counter", "data":  {}}
+      {"type": "counter", "data":  {"count": -1}}
     ]
   },
   "signs": {
