@@ -34,10 +34,6 @@ update maybeDirection levelBeforeUpdate levelConfig =
         (\y levelA ->
             List.foldl
                 (\x levelB ->
-                    --                    let
-                    --                        _ =
-                    --                            Debug.log (Debug.toString y) (Debug.toString x)
-                    --                    in
                     Common.getActorIdsByXY x y levelBeforeUpdate
                         |> List.foldr
                             (\actorId levelC ->

@@ -105,10 +105,6 @@ updateViewCoordinate coordinate view =
 
 removeActor : Actor -> Level -> Level
 removeActor actor level =
-    let
-        _ =
-            Debug.log "removeActor" (Debug.toString actor)
-    in
     level
         |> removeActorFromIndex actor
         |> removeActorFromDict actor.id
