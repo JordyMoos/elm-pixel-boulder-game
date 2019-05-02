@@ -12,7 +12,7 @@
       {"type": "collector", "data": {"interestedIn": ["candy", "diamond"]}},
       {"type": "rigid"},
       {"type": "explodable"},
-      {"type": "camera", "data": {"borderSize": 4}},
+      {"type": "camera", "data": {"borderSize": 5}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "explosion": [
