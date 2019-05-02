@@ -26,6 +26,7 @@ type alias Model =
     , maxUpdatesPerView : Int
     , debug : Bool
     , fps : List Float
+    , view : Html Msg
     }
 
 
@@ -83,6 +84,7 @@ init flags =
             , maxUpdatesPerView = 4
             , debug = flags.debug
             , fps = []
+            , view = text ""
             }
     in
     case flags.startLevel of
@@ -115,23 +117,31 @@ update msg model =
                     ( { model | gameState = LoadingLevelState newModel }
                     , Cmd.none
                     )
+                        |> createView
 
                 LoadingLevel.Failed error ->
                     ( { model | gameState = ErrorState error }
                     , Cmd.none
                     )
+                        |> createView
 
                 LoadingLevel.Success levelConfig ->
-                    gotoPlayingLevel levelConfig model
+                    gotoPlayingLevel levelConfig model |> createView
 
         ( AnimationFrameUpdate timeDelta, _ ) ->
             updateGameState timeDelta model
                 |> updateFps timeDelta
+                |> createView
 
         ( _, _ ) ->
             ( model
             , Cmd.none
             )
+
+
+createView : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+createView ( model, cmd ) =
+    ( { model | view = privateView model }, cmd )
 
 
 updateFps : Float -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -309,6 +319,11 @@ increaseCurrentTick model =
 
 view : Model -> Html Msg
 view model =
+    model.view
+
+
+privateView : Model -> Html Msg
+privateView model =
     div
         []
         [ case model.gameState of
