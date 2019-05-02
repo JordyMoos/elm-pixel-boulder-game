@@ -15,11 +15,12 @@ import Maybe.Extra
 import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
+import Util.Util as Util
 
 
 renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
 renderLevel currentTick config level images =
-    List.concat
+    Util.fastConcat
         [ drawLoadImages config images
         , drawBackground currentTick config images level.background
         , drawLevel currentTick config level images

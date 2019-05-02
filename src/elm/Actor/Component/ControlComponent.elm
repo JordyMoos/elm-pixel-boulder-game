@@ -138,7 +138,7 @@ getGravityAiDirection controlData actor level =
                 ]
             )
         |> Maybe.Extra.toList
-        |> List.concat
+        |> Util.fastConcat
         |> List.Extra.find
             (\( _, predicates ) ->
                 Util.lazyAll predicates

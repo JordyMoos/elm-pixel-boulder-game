@@ -4,13 +4,14 @@ import Actor.Actor as Actor exposing (Actor, DamageComponentData, Level)
 import Actor.Common as Common
 import Actor.Component.PhysicsComponent as Physics
 import Maybe.Extra
+import Util.Util as Util
 
 
 updateDamageComponent : DamageComponentData -> Actor -> Level -> Level
 updateDamageComponent damageData damageDealingActor level =
     Common.getTransformComponent damageDealingActor
         |> Maybe.Extra.toList
-        |> List.concatMap
+        |> Util.fastConcatMap
             (\transformData ->
                 Common.getActorsThatAffect transformData.position level
             )

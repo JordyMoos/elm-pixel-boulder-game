@@ -16,6 +16,7 @@ import Data.Position as Position exposing (Position)
 import Dict
 import Maybe.Extra
 import Pilf exposing (flip)
+import Util.Util as Util
 
 
 updateGameOfLifeAi : AiComponentData -> GameOfLifeAiData -> Actor -> Actor.Entities -> Level -> Level -> Level
@@ -55,7 +56,7 @@ getSearchTagCount : Level -> String -> Position -> Int
 getSearchTagCount levelBeforeUpdate tagName myPosition =
     Position.aroundNeighborOffsets
         |> List.map (Position.addPosition myPosition)
-        |> List.concatMap (flip Common.getActorsByPosition levelBeforeUpdate)
+        |> Util.fastConcatMap (flip Common.getActorsByPosition levelBeforeUpdate)
         |> List.map Common.getTagComponent
         |> Maybe.Extra.values
         |> List.map .name

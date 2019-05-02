@@ -52,6 +52,7 @@ import Dict
 import List.Extra
 import Maybe.Extra
 import Pilf exposing (flip)
+import Util.Util as Util
 
 
 
@@ -297,7 +298,7 @@ getActorsThatAffect position level =
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Right
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Down
         ]
-        |> List.concat
+        |> Util.fastConcat
         |> List.map
             (\actorId ->
                 getActorById actorId level

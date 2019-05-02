@@ -8,6 +8,7 @@ import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import Text
+import Util.Util as Util
 
 
 type alias XOffset =
@@ -42,10 +43,10 @@ renderLines : Config -> List Line -> List (Svg msg)
 renderLines config lines =
     lines
         |> List.indexedMap
-            (\index line ->
+            (\_ line ->
                 renderLine config line
             )
-        |> List.concat
+        |> Util.fastConcat
 
 
 renderLine : Config -> Line -> List (Svg msg)
@@ -56,7 +57,7 @@ renderLine config line =
                 ( xOffset + letter.width + 1
                 , letter.positions
                     |> List.map (Position.addPosition { x = xOffset, y = line.yOffset })
-                    |> List.concatMap
+                    |> Util.fastConcatMap
                         (\position ->
                             [ Svg.rect
                                 [ Attributes.width <| String.fromInt config.pixelSize

@@ -19,6 +19,7 @@ import Actor.Component.TagComponent as TagComponent
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position, X, Y)
 import Dict exposing (Dict)
+import Util.Util as Util
 
 
 type alias Path =
@@ -270,7 +271,7 @@ move level enemyTag step acc =
 
 getEnemiesOnCurrentPositions : Level -> TargetSearch -> String -> List Enemy
 getEnemiesOnCurrentPositions level targetSearch enemyTag =
-    List.concatMap (getEnemiesOnPath level enemyTag) targetSearch.paths
+    Util.fastConcatMap (getEnemiesOnPath level enemyTag) targetSearch.paths
 
 
 getEnemiesOnPath : Level -> String -> Path -> List Enemy

@@ -3,6 +3,7 @@ module Text exposing (Letter, Letters, letterHeight, stringToLetters)
 import Data.Position as Position exposing (Position)
 import Dict exposing (Dict)
 import Maybe.Extra
+import Util.Util as Util
 
 
 letterHeight : Int
@@ -412,9 +413,9 @@ getPositions design =
                                 |> List.filter ((==) ' ' >> not)
                                 |> List.map (always { x = x, y = y })
                         )
-                    |> List.concat
+                    |> Util.fastConcat
             )
-        |> List.concat
+        |> Util.fastConcat
 
 
 stringToLetters : String -> Letters

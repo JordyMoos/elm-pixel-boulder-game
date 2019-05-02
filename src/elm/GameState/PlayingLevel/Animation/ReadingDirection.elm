@@ -2,11 +2,12 @@ module GameState.PlayingLevel.Animation.ReadingDirection exposing (init)
 
 import Data.Config as Config exposing (Config)
 import Data.Position as Position exposing (Position)
+import Util.Util as Util
 
 
 init : Config -> Int -> List Position
-init config currentTick =
-    List.concatMap
+init config _ =
+    Util.fastConcatMap
         (\y ->
             List.map
                 (\x ->

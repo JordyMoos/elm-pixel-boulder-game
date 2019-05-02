@@ -12,6 +12,7 @@ import Actor.Common as Common
 import Actor.Component.CollectibleComponent as CollectibleComponent
 import Dict
 import Maybe.Extra
+import Util.Util as Util
 
 
 updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
@@ -19,7 +20,7 @@ updateCollectorComponent collectorData collectorActor level =
     Common.getTransformComponent collectorActor
         |> Maybe.Extra.toList
         |> List.map .position
-        |> List.concatMap
+        |> Util.fastConcatMap
             (\position ->
                 Common.getActorsByPosition position level
                     |> List.map
