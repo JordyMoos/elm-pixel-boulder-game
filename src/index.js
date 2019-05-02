@@ -1,7 +1,7 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
-const easyCacheKey = 'easy-level-cache-1';
+const easyCacheKey = 'easy-level-cache-2';
 const advancedCacheKey = 'level-cache-1';
 
 const defaultLevel = require('./static/levels/test/pixel.json');
@@ -17,9 +17,10 @@ const levels = {
 
 const sampleLevel = require('./static/levels/test/sample.json');
 const defaultEasyScene = `
- ..o......
- .p...**..
- .........`;
+ ..o...*...
+ .p...***..
+ ......*...
+ ..........`;
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -221,7 +222,7 @@ function runElm() {
       let diamondCount = sceneString.split("*").length - 1;
       jsonLevel = sampleLevel;
       jsonLevel.scene = scene;
-      jsonLevel.subscribers[1].data.minimumQuantity = diamondCount;
+      jsonLevel.subscribers[1].inventoryUpdatedData.minimumQuantity = diamondCount;
     }
 
     let app = Elm.Main.init({

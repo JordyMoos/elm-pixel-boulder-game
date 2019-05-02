@@ -21,7 +21,7 @@ import Util.Util as Util
 renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
 renderLevel currentTick config level images =
     Util.fastConcat
-        [ drawLoadImages config images
+        [ [ drawLoadImages config images ]
         , drawBackground currentTick config images level.background
         , drawLevel currentTick config level images
         ]
@@ -34,19 +34,18 @@ renderLevel currentTick config level images =
             ]
 
 
-drawLoadImages : Config -> Actor.Images -> List (Svg msg)
+drawLoadImages : Config -> Actor.Images -> Svg msg
 drawLoadImages config images =
     Dict.toList images
         |> List.map (drawLoadImage config)
+        |> Svg.defs []
 
 
 drawLoadImage : Config -> ( String, String ) -> Svg msg
 drawLoadImage config ( name, path ) =
     Svg.image
-        [ Attributes.width <| String.fromInt config.pixelSize
-        , Attributes.height <| String.fromInt config.pixelSize
-        , Attributes.x "0"
-        , Attributes.y "0"
+        [ Attributes.width <| String.fromInt <| config.pixelSize
+        , Attributes.height <| String.fromInt <| config.pixelSize
         , Attributes.id <| "image-" ++ name
         , Attributes.xlinkHref path
         ]
@@ -205,8 +204,6 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
                                 , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
                                 , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
-                                , Attributes.width <| String.fromInt config.pixelSize
-                                , Attributes.height <| String.fromInt config.pixelSize
                                 ]
                                 []
                             ]
@@ -247,8 +244,6 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
                                 , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
                                 , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + pixelOffset.y
-                                , Attributes.width <| String.fromInt config.pixelSize
-                                , Attributes.height <| String.fromInt config.pixelSize
                                 ]
                                 []
                             ]
