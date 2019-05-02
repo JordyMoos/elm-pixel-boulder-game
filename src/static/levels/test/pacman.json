@@ -163,18 +163,22 @@
   "subscribers": [
     {
       "type": "onTagDied",
-      "data": {
-        "tagName": "player",
-        "action": {
-          "type": "failed",
-          "data": {
-            "description": "You died",
-            "entityNames": ["failed"],
-            "animation": {
-              "type": "currentTick"
-            }
+      "eventActionData": {
+        "type": "failed",
+        "data": {
+          "descriptionProvider": {
+            "type": "static",
+            "data": {"text": "You died"}
+          },
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "currentTick"
           }
         }
+      },
+      "tagDiedData": {
+        "tagName": "player",
+        "limit": 1
       }
     }
   ]
