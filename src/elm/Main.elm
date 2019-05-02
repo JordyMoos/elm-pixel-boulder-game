@@ -25,6 +25,7 @@ type alias Model =
     , timeBuffer : Int
     , maxUpdatesPerView : Int
     , debug : Bool
+    , fps : List Float
     }
 
 
@@ -81,6 +82,7 @@ init flags =
             , timeBuffer = 0
             , maxUpdatesPerView = 4
             , debug = flags.debug
+            , fps = []
             }
     in
     case flags.startLevel of
@@ -124,11 +126,17 @@ update msg model =
 
         ( AnimationFrameUpdate timeDelta, _ ) ->
             updateGameState timeDelta model
+                |> updateFps timeDelta
 
         ( _, _ ) ->
             ( model
             , Cmd.none
             )
+
+
+updateFps : Float -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+updateFps timeDelta ( model, cmd ) =
+    ( { model | fps = List.take 10 (timeDelta :: model.fps) }, cmd )
 
 
 gotoPlayingLevel : Actor.LevelConfig -> Model -> ( Model, Cmd Msg )
@@ -316,15 +324,15 @@ view model =
             ErrorState error ->
                 text <| "ERROR: " ++ error
         , if model.debug then
-            debugView
+            debugView model
 
           else
             text ""
         ]
 
 
-debugView : Html Msg
-debugView =
+debugView : Model -> Html Msg
+debugView model =
     div
         []
         [ text "GameTick speed:"
@@ -341,15 +349,8 @@ debugView =
             ]
         , div
             []
-            [ text "Movement: Arrow Keys"
-            , br [] []
-            , text "Submit: A"
-            , br [] []
-            , text "Cancel: S"
-            , br [] []
-            , text "Start: Z"
-            , br [] []
-            , text "Select: X"
+            [ text "Fps: "
+            , text <| String.fromInt <| round <| 1000.0 / (List.sum model.fps / (toFloat <| List.length model.fps))
             ]
         ]
 
