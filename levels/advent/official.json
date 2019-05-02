@@ -41,7 +41,7 @@
       {"type": "counter", "data":  {"count":  -2}}
     ],
     "camera": [
-      {"type": "camera", "data": {"borderSize": 4}}
+      {"type": "camera", "data": {"borderSize": 5}}
     ],
     "explosion": [
       {"type": "render", "data": {"type": "image", "data": {
