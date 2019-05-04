@@ -20,7 +20,10 @@ emptyLevel : Config -> Coordinate -> Actor.Level
 emptyLevel config coordinate =
     { nextActorId = 0
     , actors = Dict.fromList []
-    , positionIndex = Dict.fromList []
+    , positionIndices =
+        { static = Dict.fromList []
+        , dynamic = Dict.fromList []
+        }
     , view =
         { coordinate = coordinate
         , pixelSize = config.pixelSize

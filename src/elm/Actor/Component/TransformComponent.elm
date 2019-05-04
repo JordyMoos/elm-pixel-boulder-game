@@ -71,8 +71,8 @@ updateTransformComponent transformData actor level =
                         |> Common.updateComponents actor
                         |> Common.updateActor level.actors
                         |> Common.updateActors level
-                        |> Common.removeActorFromIndexByPosition transformData.position actor.id
-                        |> Common.addActorToIndex towardsData.position actor.id
+                        |> Common.removeActorFromIndicesByPosition transformData.position actor.id
+                        |> Common.addActorToIndices towardsData.position actor
             )
         |> Maybe.withDefault level
 

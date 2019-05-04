@@ -1,4 +1,12 @@
-module Util.Util exposing (fastConcat, fastConcatMap, lazyAll, lazyAny)
+module Util.Util exposing
+    ( dictGetWithDefault
+    , fastConcat
+    , fastConcatMap
+    , lazyAll
+    , lazyAny
+    )
+
+import Dict exposing (Dict)
 
 
 lazyAll : List (() -> Bool) -> Bool
@@ -26,3 +34,9 @@ fastConcat lists =
 fastConcatMap : (a -> List b) -> List a -> List b
 fastConcatMap f list =
     fastConcat (List.map f list)
+
+
+dictGetWithDefault : Dict comparable a -> comparable -> a -> a
+dictGetWithDefault dict key default =
+    Dict.get key dict
+        |> Maybe.withDefault default

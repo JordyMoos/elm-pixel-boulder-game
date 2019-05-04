@@ -1,6 +1,7 @@
 module Actor.Actor exposing
     ( Actor
     , ActorId
+    , ActorType(..)
     , Actors
     , AdventAiData
     , AiComponentData
@@ -45,6 +46,7 @@ module Actor.Actor exposing
     , PhysicsComponentData
     , PixelRenderComponentData
     , PositionIndex
+    , PositionIndices
     , RenderComponentData(..)
     , Scene
     , Shape(..)
@@ -89,6 +91,11 @@ type alias Actors =
     Dict ActorId Actor
 
 
+type ActorType
+    = StaticActor
+    | DynamicActor
+
+
 type alias View =
     { coordinate : Coordinate
     , pixelSize : Int
@@ -99,6 +106,12 @@ type alias View =
 
 type alias PositionIndex =
     Dict ( Int, Int ) (List ActorId)
+
+
+type alias PositionIndices =
+    { static : PositionIndex
+    , dynamic : PositionIndex
+    }
 
 
 type alias EntityName =
@@ -140,7 +153,7 @@ type alias LevelConfig =
 type alias Level =
     { nextActorId : Int
     , actors : Actors
-    , positionIndex : PositionIndex
+    , positionIndices : PositionIndices
     , view : View
     , background : RenderComponentData
     , eventManager : EventManager
