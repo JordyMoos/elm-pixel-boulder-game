@@ -170,9 +170,9 @@ addActor components givenLevel =
         -- Add actor to the index
         |> (\( level, actor ) ->
                 getPosition actor
-                    |> Maybe.andThen
+                    |> Maybe.map
                         (\position ->
-                            Just <| ( addActorToIndex position actor.id level, actor )
+                            ( addActorToIndex position actor.id level, actor )
                         )
                     |> Maybe.withDefault
                         ( level, actor )
@@ -184,7 +184,7 @@ addActor components givenLevel =
                         (\camera ->
                             getTransformComponent actor
                         )
-                    |> Maybe.andThen
+                    |> Maybe.map
                         (\transform ->
                             updateViewCoordinate
                                 { x = (transform.position.x - round (toFloat level.view.width / 2)) * level.view.pixelSize
@@ -192,11 +192,10 @@ addActor components givenLevel =
                                 }
                                 level.view
                                 |> (\b a -> setView a b) level
-                                |> Just
                         )
-                    |> Maybe.andThen
+                    |> Maybe.map
                         (\updatedLevel ->
-                            Just ( updatedLevel, actor )
+                            ( updatedLevel, actor )
                         )
                     |> Maybe.withDefault ( level, actor )
            )
@@ -227,8 +226,7 @@ addActorToIndex position actorId level =
         (\maybeActorIds ->
             case maybeActorIds of
                 Just actorIds ->
-                    actorId
-                        :: actorIds
+                    (actorId :: actorIds)
                         |> List.Extra.unique
                         |> Just
 

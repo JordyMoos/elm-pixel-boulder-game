@@ -37,7 +37,7 @@ movingTicks =
 updateTransformComponent : TransformComponentData -> Actor -> Level -> Level
 updateTransformComponent transformData actor level =
     getMovingTowardsData transformData
-        |> Maybe.andThen
+        |> Maybe.map
             (\towardsData ->
                 if towardsData.tickCountLeft > 0 then
                     -- Still moving
@@ -57,7 +57,6 @@ updateTransformComponent transformData actor level =
                         |> Common.updateComponents actor
                         |> Common.updateActor level.actors
                         |> Common.updateActors level
-                        |> Just
 
                 else
                     -- Finished moving
@@ -74,7 +73,6 @@ updateTransformComponent transformData actor level =
                         |> Common.updateActors level
                         |> Common.removeActorFromIndexByPosition transformData.position actor.id
                         |> Common.addActorToIndex towardsData.position actor.id
-                        |> Just
             )
         |> Maybe.withDefault level
 

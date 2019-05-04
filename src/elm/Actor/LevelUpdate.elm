@@ -90,8 +90,11 @@ updateActorById levelConfig levelBeforeUpdate controllerInput level actorId =
 updateComponent : LevelConfig -> Level -> Maybe Direction -> Component -> Level -> Actor -> Level
 updateComponent levelConfig levelBeforeUpdate controllerInput component level actor =
     case component of
-        Actor.TransformComponent transformData ->
-            Transform.updateTransformComponent transformData actor level
+        Actor.AiComponent aiData ->
+            Ai.updateAiComponent aiData actor levelConfig.entities levelBeforeUpdate level
+
+        Actor.CameraComponent camera ->
+            Camera.updateCameraComponent camera actor level
 
         Actor.CollectorComponent data ->
             Collector.updateCollectorComponent data actor level
@@ -99,8 +102,11 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
         Actor.ControlComponent control ->
             Control.updateControlComponent controllerInput control actor level
 
-        Actor.CameraComponent camera ->
-            Camera.updateCameraComponent camera actor level
+        Actor.CounterComponent counterData ->
+            Counter.updateCounterComponent counterData actor level
+
+        Actor.DamageComponent damageData ->
+            Damage.updateDamageComponent damageData actor level
 
         Actor.DownSmashComponent downSmash ->
             DownSmash.updateDownSmashComponent downSmash actor level
@@ -108,20 +114,14 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
         Actor.LifetimeComponent lifetimeData ->
             Lifetime.updateLifetimeComponent lifetimeData actor level
 
-        Actor.CounterComponent counterData ->
-            Counter.updateCounterComponent counterData actor level
-
-        Actor.DamageComponent damageData ->
-            Damage.updateDamageComponent damageData actor level
-
-        Actor.TriggerExplodableComponent triggerData ->
-            TriggerExplodable.updateTriggerExplodableComponent triggerData actor level
-
         Actor.SpawnComponent spawnData ->
             Spawn.updateSpawnComponent levelConfig.entities spawnData actor level
 
-        Actor.AiComponent aiData ->
-            Ai.updateAiComponent aiData actor levelConfig.entities levelBeforeUpdate level
+        Actor.TransformComponent transformData ->
+            Transform.updateTransformComponent transformData actor level
+
+        Actor.TriggerExplodableComponent triggerData ->
+            TriggerExplodable.updateTriggerExplodableComponent triggerData actor level
 
         _ ->
             level
