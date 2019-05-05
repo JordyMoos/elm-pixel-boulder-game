@@ -11,6 +11,7 @@ import Actor.Actor as Actor
         , SpawnRepeatTimes(..)
         )
 import Actor.Common as Common
+import Actor.Component.MovementComponent as MovementComponent
 import Dict
 
 
@@ -51,10 +52,14 @@ spawnActor entities data level =
             |> Maybe.map
                 (\entity ->
                     Common.addActor
-                        (Dict.insert
-                            "transform"
-                            (Actor.TransformComponent { position = data.position, movingState = Actor.NotMoving })
-                            entity
+                        (entity
+                            |> Dict.insert
+                                "transform"
+                                (Actor.TransformComponent { position = data.position })
+                            -- @todo cheats. We should configure the speed in the spawn component
+                            |> Dict.insert
+                                "movement"
+                                (Actor.MovementComponent <| MovementComponent.init 4)
                         )
                         level
                 )

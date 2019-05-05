@@ -174,7 +174,7 @@ getImage tick config viewPosition position pixelOffset level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor.id acc
+                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor acc
                                     )
                         )
                     |> Maybe.withDefault acc
@@ -190,12 +190,12 @@ getImageOp :
     -> Position
     -> Coordinate
     -> Actor.Images
-    -> Actor.ActorId
+    -> Actor.Actor
     -> ( List (Svg msg), List (Svg msg) )
     -> ( List (Svg msg), List (Svg msg) )
-getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actorId ( backOps, frontOps ) =
-    case transformData.movingState of
-        Actor.NotMoving ->
+getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor ( backOps, frontOps ) =
+    let
+        notMovingOp _ =
             getImageName tick imageRenderData.default
                 |> Maybe.map
                     (\imageName ->
@@ -212,7 +212,7 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                     )
                 |> Maybe.withDefault ( backOps, frontOps )
 
-        Actor.MovingTowards towardsData ->
+        movingOp towardsData =
             let
                 calculateWithCompletion : Int -> Int -> Int
                 calculateWithCompletion a b =
@@ -250,6 +250,11 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                         )
                     )
                 |> Maybe.withDefault ( backOps, frontOps )
+    in
+    Common.getMovementComponent actor
+        |> Maybe.andThen Common.getMovingTowardsData
+        |> Maybe.map movingOp
+        |> Maybe.withDefault (notMovingOp ())
 
 
 getImageNamesDataByDirection : Direction -> Actor.ImageRenderComponentData -> Actor.ImagesData
@@ -287,24 +292,16 @@ getPixel tick config viewPosition position pixelOffset level ( backOps, frontOps
                                 |> Maybe.andThen
                                     (\transformData ->
                                         if transformData.position == position then
-                                            case transformData.movingState of
-                                                Actor.MovingTowards towardsData ->
-                                                    Just <| calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage)
-
-                                                _ ->
-                                                    Just (getColor tick renderData)
+                                            Common.getMovementComponent actor
+                                                |> Maybe.andThen Common.getMovingTowardsData
+                                                |> Maybe.map (\towardsData -> calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage))
+                                                |> Maybe.withDefault (getColor tick renderData)
+                                                |> Maybe.Just
 
                                         else
-                                            case transformData.movingState of
-                                                Actor.MovingTowards towardsData ->
-                                                    if towardsData.position == position then
-                                                        Just <| calculateColor (getColor tick renderData) towardsData.completionPercentage
-
-                                                    else
-                                                        Nothing
-
-                                                _ ->
-                                                    Nothing
+                                            Common.getMovementComponent actor
+                                                |> Maybe.andThen Common.getMovingTowardsData
+                                                |> Maybe.map (\towardsData -> calculateColor (getColor tick renderData) towardsData.completionPercentage)
                                     )
                         )
                 )

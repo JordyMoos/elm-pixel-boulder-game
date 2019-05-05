@@ -216,6 +216,21 @@
       }},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
+    "finish_diamond": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
+          "ticksPerImage": 4
+        }
+      }}},
+      {"type": "collectible", "data": {"name": "diamond"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "gravityAi"
+        }
+      }},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+    ],
     "failed": [
       {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
       {"type": "rigid"},
@@ -341,7 +356,7 @@
             "data": {"text": "Level Completed"}
           },
           "nextLevel": "official/002",
-          "entityNames": ["diamond"],
+          "entityNames": ["finish_diamond"],
           "animation": {
             "type": "currentTick"
           }

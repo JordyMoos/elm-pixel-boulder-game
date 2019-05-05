@@ -17,7 +17,7 @@ addExplosion : Int -> Int -> Level -> Level
 addExplosion x y level =
     Common.addActor
         (Dict.fromList
-            [ ( "transform", TransformComponent { position = { x = x, y = y }, movingState = Actor.NotMoving } )
+            [ ( "transform", TransformComponent { position = { x = x, y = y } } )
             , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
             , ( "lifetime", LifetimeComponent { remainingTicks = 8 } )
             , ( "damage", DamageComponent { damageStrength = 80 } )

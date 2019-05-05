@@ -59,7 +59,7 @@ addActor currentTick model position level =
                 Common.addActor
                     (Dict.insert
                         "transform"
-                        (Actor.TransformComponent { position = position, movingState = Actor.NotMoving })
+                        (Actor.TransformComponent { position = position })
                         entity
                     )
                     level
