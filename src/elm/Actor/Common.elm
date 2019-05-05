@@ -379,7 +379,7 @@ getActorIdsByXY x y level =
 
 getStaticActorIdsByXY : Int -> Int -> Level -> List ActorId
 getStaticActorIdsByXY x y level =
-    Util.dictGetWithDefault level.positionIndices.dynamic ( x, y ) []
+    Util.dictGetWithDefault level.positionIndices.static ( x, y ) []
 
 
 getDynamicActorIdsByXY : Int -> Int -> Level -> List ActorId
