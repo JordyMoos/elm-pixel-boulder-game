@@ -60,7 +60,7 @@ updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput x y level =
         preparedUpdateActorById =
             updateActorById levelConfig levelBeforeUpdate controllerInput
     in
-    Common.getActorIdsByXY x y levelBeforeUpdate
+    Common.getDynamicActorIdsByXY x y levelBeforeUpdate
         |> List.foldr
             (\actorId accLevel -> preparedUpdateActorById accLevel actorId)
             level
