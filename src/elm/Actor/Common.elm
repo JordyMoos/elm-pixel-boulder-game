@@ -20,9 +20,8 @@ module Actor.Common exposing
     , isEmpty
     , isNotEmpty
     , removeActor
+    , removeActorFromIndices
     , removeActorFromIndicesByPosition
-    , removeActorFromIndex
-    , removeActorFromIndexByPosition
     , setView
     , updateActor
     , updateActors
@@ -125,13 +124,13 @@ updateViewCoordinate coordinate view =
 removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
-        |> removeActorFromIndex actor
+        |> removeActorFromIndices actor
         |> removeActorFromDict actor.id
         |> addEvent (Actor.ActorRemoved actor)
 
 
-removeActorFromIndex : Actor -> Level -> Level
-removeActorFromIndex actor level =
+removeActorFromIndices : Actor -> Level -> Level
+removeActorFromIndices actor level =
     getTransformComponent actor
         |> Maybe.map .position
         |> Maybe.map
@@ -326,7 +325,7 @@ getActorType actor =
                         Actor.SpawnComponent _ ->
                             True
 
-                        Actor.TransformComponent _ ->
+                        Actor.MovementComponent _ ->
                             True
 
                         Actor.TriggerExplodableComponent _ ->
