@@ -10,6 +10,8 @@ module Actor.Common exposing
     , getActorsThatAffectNeighborPosition
     , getCameraComponent
     , getDynamicActorIdsByXY
+    , getMovementComponent
+    , getMovingTowardsData
     , getPosition
     , getTagComponent
     , getTransformComponent
@@ -19,6 +21,8 @@ module Actor.Common exposing
     , isNotEmpty
     , removeActor
     , removeActorFromIndicesByPosition
+    , removeActorFromIndex
+    , removeActorFromIndexByPosition
     , setView
     , updateActor
     , updateActors
@@ -38,6 +42,7 @@ import Actor.Actor as Actor
         , EventManager
         , Events
         , Level
+        , MovementComponentData
         , MovingState(..)
         , MovingTowardsData
         , PositionIndex
@@ -409,28 +414,21 @@ getActorsThatAffect position level =
         , Position.addPosition position <| Position.getOffsetFromDirection Direction.Down
         ]
         |> Util.fastConcat
-        |> List.map
-            (\actorId ->
-                getActorById actorId level
-            )
+        |> List.map (\actorId -> getActorById actorId level)
         |> Maybe.Extra.values
         |> List.filter
             (\actor ->
-                getTransformComponent actor
-                    |> Maybe.andThen
-                        (\transformData ->
-                            if transformData.position == position then
-                                Just True
-
-                            else
-                                case transformData.movingState of
-                                    MovingTowards towardsData ->
-                                        Just <| towardsData.position == position
-
-                                    NotMoving ->
-                                        Nothing
-                        )
-                    |> Maybe.withDefault False
+                Util.lazyAny
+                    [ \() ->
+                        getTransformComponent actor
+                            |> Maybe.Extra.filter (\transformData -> transformData.position == position)
+                            |> Maybe.Extra.isJust
+                    , \() ->
+                        getMovementComponent actor
+                            |> Maybe.andThen getMovingTowardsData
+                            |> Maybe.Extra.filter (\movementData -> movementData.position == position)
+                            |> Maybe.Extra.isJust
+                    ]
             )
 
 
@@ -491,6 +489,38 @@ getPosition : Actor -> Maybe Position
 getPosition actor =
     getTransformComponent actor
         |> Maybe.map .position
+
+
+
+{-
+
+   MovementComponent
+
+-}
+
+
+getMovementComponent : Actor -> Maybe MovementComponentData
+getMovementComponent actor =
+    Dict.get "movement" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    MovementComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
+            )
+
+
+getMovingTowardsData : MovementComponentData -> Maybe MovingTowardsData
+getMovingTowardsData movementData =
+    case movementData.movingState of
+        MovingTowards towardsData ->
+            Just towardsData
+
+        NotMoving ->
+            Nothing
 
 
 

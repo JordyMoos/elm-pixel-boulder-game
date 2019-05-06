@@ -1,8 +1,8 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
-const easyCacheKey = 'easy-level-cache-2';
-const advancedCacheKey = 'level-cache-1';
+const easyCacheKey = 'easy-level-cache-3';
+const advancedCacheKey = 'level-cache-3';
 
 const defaultLevel = require('./static/levels/test/pixel.json');
 const levels = {

@@ -6,10 +6,13 @@ import Actor.Actor as Actor
         , CameraComponentData
         , Component(..)
         , Level
+        , MovingTowardsData
         , View
         )
 import Actor.Common as Common
 import Data.Coordinate exposing (Coordinate)
+import Data.Direction as Direction
+import Data.Position as Position exposing (Position)
 
 
 updateCameraComponent : CameraComponentData -> Actor -> Level -> Level
@@ -28,7 +31,7 @@ updateCameraComponent camera actor level =
                         view.pixelSize
 
                     movementOffset =
-                        movementToPixels pixelSize transformData
+                        movementToPixels pixelSize actor
 
                     borderSize =
                         camera.borderSize * pixelSize
@@ -95,34 +98,42 @@ updateCameraComponent camera actor level =
         |> Maybe.withDefault level
 
 
-movementToPixels : Int -> Actor.TransformComponentData -> Coordinate
-movementToPixels pixelSize transformData =
-    case transformData.movingState of
-        Actor.NotMoving ->
-            { x = 0, y = 0 }
+movementToPixels : Int -> Actor -> Coordinate
+movementToPixels pixelSize actor =
+    Common.getMovementComponent actor
+        |> Maybe.andThen Common.getMovingTowardsData
+        |> Maybe.map
+            (\towardsData ->
+                let
+                    originalPositionCalculator : Actor.MovingTowardsData -> Position
+                    originalPositionCalculator movingTowardsData =
+                        Position.addDirection movingTowardsData.position (Direction.invert movingTowardsData.direction)
 
-        Actor.MovingTowards towardsData ->
-            let
-                calculateWithCompletion : Int -> Int -> Int
-                calculateWithCompletion a b =
-                    let
-                        aFloat =
-                            toFloat (a * pixelSize)
+                    originalPosition =
+                        originalPositionCalculator towardsData
 
-                        bFloat =
-                            toFloat (b * pixelSize)
+                    calculateWithCompletion : Int -> Int -> Int
+                    calculateWithCompletion a b =
+                        let
+                            aFloat =
+                                toFloat (a * pixelSize)
 
-                        diffFloat =
-                            bFloat - aFloat
+                            bFloat =
+                                toFloat (b * pixelSize)
 
-                        offset =
-                            diffFloat * (towardsData.completionPercentage / 100)
+                            diffFloat =
+                                bFloat - aFloat
 
-                        result =
-                            round <| offset
-                    in
-                    result
-            in
-            { x = calculateWithCompletion transformData.position.x towardsData.position.x
-            , y = calculateWithCompletion transformData.position.y towardsData.position.y
-            }
+                            offset =
+                                diffFloat * (towardsData.completionPercentage / 100)
+
+                            result =
+                                round <| offset
+                        in
+                        result
+                in
+                { x = calculateWithCompletion originalPosition.x towardsData.position.x
+                , y = calculateWithCompletion originalPosition.y towardsData.position.y
+                }
+            )
+        |> Maybe.withDefault { x = 0, y = 0 }

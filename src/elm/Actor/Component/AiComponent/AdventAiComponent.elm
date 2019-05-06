@@ -155,9 +155,7 @@ setNewPosition actor level oldPosition newPosition =
     Dict.insert
         "transform"
         (Actor.TransformComponent
-            { position = newPosition
-            , movingState = Actor.NotMoving
-            }
+            { position = newPosition }
         )
         actor.components
         |> Common.updateComponents actor
