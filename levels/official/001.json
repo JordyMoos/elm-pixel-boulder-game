@@ -10,7 +10,7 @@
             "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
             "hero-66", "hero-67"
           ],
-          "ticksPerImage": 3
+          "ticksPerImage": 6
         },
         "direction": {
           "left": {
@@ -18,27 +18,27 @@
               "hero-06",
               "hero-07"
             ],
-            "ticksPerImage": 3
+            "ticksPerImage": 6
           },
           "up": {
             "names": [
               "hero-32"
             ],
-            "ticksPerImage": 3
+            "ticksPerImage": 6
           },
           "right": {
             "names": [
               "hero-18",
               "hero-19"
             ],
-            "ticksPerImage": 3
+            "ticksPerImage": 6
           },
           "down": {
             "names": [
               "hero-00",
               "hero-01"
             ],
-            "ticksPerImage": 3
+            "ticksPerImage": 6
           }
         }
       }}},
@@ -48,7 +48,7 @@
           "type": "input"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -67,7 +67,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
@@ -79,7 +79,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
@@ -88,17 +88,17 @@
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
-          "ticksPerImage": 2
+          "ticksPerImage": 4
         }
       }}},
-      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "lifetime", "data": {"remainingTicks": 16}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"],
-          "ticksPerImage": 3
+          "ticksPerImage": 6
         }
       }}},
       {"type": "rigid"},
@@ -112,7 +112,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -120,7 +120,7 @@
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["enemy-c-0", "enemy-c-1", "enemy-c-2", "enemy-c-3"],
-          "ticksPerImage": 3
+          "ticksPerImage": 6
         }
       }}},
       {"type": "rigid"},
@@ -134,7 +134,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 80}}
     ],
@@ -142,7 +142,7 @@
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["enemy-d-0", "enemy-d-1", "enemy-d-2", "enemy-d-3"],
-          "ticksPerImage": 3
+          "ticksPerImage": 6
         }
       }}},
       {"type": "rigid"},
@@ -156,7 +156,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -164,7 +164,7 @@
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"],
-          "ticksPerImage": 3
+          "ticksPerImage": 6
         }
       }}},
       {"type": "rigid"},
@@ -178,7 +178,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"}
     ],
     "dirt": [
@@ -212,7 +212,7 @@
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 4
+          "ticksPerImage": 8
         }
       }}},
       {"type": "collectible", "data": {"name": "diamond"}},
@@ -221,14 +221,14 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "finish_diamond": [
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
           "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 4
+          "ticksPerImage": 8
         }
       }}},
       {"type": "collectible", "data": {"name": "diamond"}},

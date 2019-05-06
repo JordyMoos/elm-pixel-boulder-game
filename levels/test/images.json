@@ -13,7 +13,7 @@
           "type": "input"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -32,7 +32,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
@@ -48,14 +48,14 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
-      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 4}}},
+      {"type": "lifetime", "data": {"remainingTicks": 16}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy": [
@@ -75,7 +75,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -92,7 +92,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "explodable"}
     ],
     "dirt": [
@@ -130,7 +130,7 @@
           "type": "gravityAi"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"ticksPerImage": 8}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "failed": [

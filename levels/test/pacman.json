@@ -9,7 +9,7 @@
           "type": "input"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "collector", "data": {"interestedIn": ["candy", "diamond"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -17,8 +17,8 @@
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 195, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
-      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 195, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 4}}},
+      {"type": "lifetime", "data": {"remainingTicks": 16}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "enemy1": [
@@ -35,7 +35,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -53,7 +53,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -71,7 +71,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -89,7 +89,7 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -99,12 +99,12 @@
       {"type": "physics", "data": {"strength": 50, "shape": "square"}}
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 241, "blue": 175}, {"red": 248, "green": 255, "blue": 175}, {"red": 235, "green": 242, "blue": 162}], "ticksPerColor": 8}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 241, "blue": 175}, {"red": 248, "green": 255, "blue": 175}, {"red": 235, "green": 242, "blue": 162}], "ticksPerColor": 16}}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
     "candy": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 190, "blue": 175}, {"red": 0, "green": 0, "blue": 0}], "ticksPerColor": 6}}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 255, "green": 190, "blue": 175}, {"red": 0, "green": 0, "blue": 0}], "ticksPerColor": 12}}},
       {"type": "collectible", "data": {"name": "candy"}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],

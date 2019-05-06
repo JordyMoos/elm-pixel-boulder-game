@@ -13,7 +13,7 @@
           "type": "input"
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "camera", "data": {"borderSize": 5}},
@@ -32,10 +32,10 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "trigger-explodable", "data": {"triggerStrength": 100}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "lifetime", "data": {"remainingTicks": 150}}
+      {"type": "lifetime", "data": {"remainingTicks": 300}}
     ],
     "enemy": [
       {"type": "render", "data": {"type": "image", "data": {
@@ -54,13 +54,13 @@
           }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 4}},
+      {"type": "movement", "data": {"movingTicks": 8}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 2}}},
-      {"type": "lifetime", "data": {"remainingTicks": 8}},
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 204, "green": 0, "blue": 0}, {"red": 206, "green": 92, "blue": 0}, {"red": 237, "green": 212, "blue": 0}], "ticksPerColor": 4}}},
+      {"type": "lifetime", "data": {"remainingTicks": 16}},
       {"type": "damage", "data": {"damageStrength": 80}}
     ],
     "tank": [
@@ -91,10 +91,10 @@
             "x": 14,
             "y": 16
           },
-          "delayTicks": 52,
+          "delayTicks": 104,
           "repeat": {
             "times": "forever",
-            "delayTicks": 50
+            "delayTicks": 100
           }
         }
       }
