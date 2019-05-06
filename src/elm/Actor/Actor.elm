@@ -39,6 +39,7 @@ module Actor.Actor exposing
     , LevelFailedData
     , LevelFinishedDescriptionProvider(..)
     , LifetimeComponentData
+    , MovementComponentData
     , MovingDownState(..)
     , MovingState(..)
     , MovingTowardsData
@@ -150,6 +151,7 @@ type alias Level =
 
 type Component
     = TransformComponent TransformComponentData
+    | MovementComponent MovementComponentData
     | RenderComponent RenderComponentData
     | CollectorComponent CollectorComponentData
     | CollectibleComponent CollectibleComponentData
@@ -180,6 +182,19 @@ type Component
 
 type alias TransformComponentData =
     { position : Position
+    }
+
+
+
+{-
+
+   MovementComponent
+
+-}
+
+
+type alias MovementComponentData =
+    { movingTicks : Int
     , movingState : MovingState
     }
 

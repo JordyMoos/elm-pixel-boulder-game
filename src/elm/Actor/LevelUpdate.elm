@@ -10,8 +10,8 @@ import Actor.Component.CounterComponent as Counter
 import Actor.Component.DamageComponent as Damage
 import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
+import Actor.Component.MovementComponent as Movement
 import Actor.Component.SpawnComponent as Spawn
-import Actor.Component.TransformComponent as Transform
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Data.Coordinate as Coordinate
 import Data.Direction exposing (Direction)
@@ -117,8 +117,8 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
         Actor.SpawnComponent spawnData ->
             Spawn.updateSpawnComponent levelConfig.entities spawnData actor level
 
-        Actor.TransformComponent transformData ->
-            Transform.updateTransformComponent transformData actor level
+        Actor.MovementComponent movementData ->
+            Movement.updateMovementComponent movementData actor level
 
         Actor.TriggerExplodableComponent triggerData ->
             TriggerExplodable.updateTriggerExplodableComponent triggerData actor level

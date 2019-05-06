@@ -13,6 +13,7 @@
           "type": "input"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -31,6 +32,7 @@
           "type": "gravityAi"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
     ],
@@ -46,6 +48,7 @@
           "type": "gravityAi"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "smash-down"}
@@ -72,6 +75,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -88,6 +92,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"}
     ],
     "dirt": [
@@ -125,6 +130,7 @@
           "type": "gravityAi"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
     ],
     "failed": [

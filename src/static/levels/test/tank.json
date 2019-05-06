@@ -13,6 +13,7 @@
           "type": "input"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
       {"type": "camera", "data": {"borderSize": 5}},
@@ -31,6 +32,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "trigger-explodable", "data": {"triggerStrength": 100}},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
       {"type": "lifetime", "data": {"remainingTicks": 150}}
@@ -52,6 +54,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],

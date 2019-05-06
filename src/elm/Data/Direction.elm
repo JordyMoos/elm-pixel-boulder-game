@@ -3,6 +3,7 @@ module Data.Direction exposing
     , getDirectionFromID
     , getIDFromDirection
     , getIDFromKey
+    , invert
     )
 
 
@@ -43,6 +44,22 @@ getIDFromDirection direction =
 
         Down ->
             3
+
+
+invert : Direction -> Direction
+invert direction =
+    case direction of
+        Left ->
+            Right
+
+        Up ->
+            Down
+
+        Right ->
+            Left
+
+        Down ->
+            Up
 
 
 getIDFromKey : String -> Maybe Int

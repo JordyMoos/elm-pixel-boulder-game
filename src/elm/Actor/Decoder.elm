@@ -33,7 +33,9 @@ import Actor.Actor as Actor
         , LevelFailedData
         , LevelFinishedDescriptionProvider(..)
         , LifetimeComponentData
+        , MovementComponentData
         , MovingDownState(..)
+        , MovingState(..)
         , PhysicsComponentData
         , PixelRenderComponentData
         , RenderComponentData(..)
@@ -164,6 +166,9 @@ componentDecoder =
                     "counter" ->
                         Decode.map CounterComponent <| Decode.field "data" counterDataDecoder
 
+                    "movement" ->
+                        Decode.map MovementComponent <| Decode.field "data" movementDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -280,6 +285,13 @@ counterDataDecoder : Decoder CounterComponentData
 counterDataDecoder =
     Decode.succeed CounterComponentData
         |> JDP.optional "count" Decode.int 0
+
+
+movementDataDecoder : Decoder MovementComponentData
+movementDataDecoder =
+    Decode.succeed MovementComponentData
+        |> JDP.optional "movingTicks" Decode.int 0
+        |> JDP.hardcoded NotMoving
 
 
 spawnDataDecoder : Decoder SpawnComponentData

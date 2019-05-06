@@ -2,6 +2,7 @@ module LevelInitializer exposing (initLevel)
 
 import Actor.Actor as Actor
 import Actor.Common as Common
+import Actor.Component.MovementComponent as MovementComponent
 import Actor.Decoder
 import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
@@ -71,7 +72,6 @@ setActors levelConfig level =
                                                 "transform"
                                                 (Actor.TransformComponent
                                                     { position = { x = x, y = y }
-                                                    , movingState = Actor.NotMoving
                                                     }
                                                 )
                                                 entity

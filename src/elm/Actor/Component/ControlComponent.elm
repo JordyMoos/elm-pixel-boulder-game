@@ -11,9 +11,9 @@ import Actor.Actor as Actor
         , WalkAroundAiControlData
         )
 import Actor.Common as Common
+import Actor.Component.MovementComponent as MovementComponent
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
-import Actor.Component.TransformComponent as Transform
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict
@@ -24,7 +24,7 @@ import Util.Util as Util
 
 updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputControllerDirection controlData actor level =
-    if Transform.isActorMoving actor |> not then
+    if MovementComponent.isActorMoving actor |> not then
         getControlDirection inputControllerDirection controlData actor level
             |> Maybe.map
                 (\( direction, updatedActor ) ->
@@ -121,7 +121,7 @@ getGravityAiDirection controlData actor level =
                             (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Left, Position.getOffsetFromDirection Direction.Down ])
                             level
                     , \() -> Physics.isCircleAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
-                    , \() -> Transform.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
+                    , \() -> MovementComponent.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
                     , \() -> canGoInDirection actor Direction.Left level
                     ]
                   )
@@ -131,7 +131,7 @@ getGravityAiDirection controlData actor level =
                             (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Right, Position.getOffsetFromDirection Direction.Down ])
                             level
                     , \() -> Physics.isCircleAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
-                    , \() -> Transform.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
+                    , \() -> MovementComponent.isNotMovingAt (Position.addPositions [ position, Position.getOffsetFromDirection Direction.Down ]) level
                     , \() -> canGoInDirection actor Direction.Right level
                     ]
                   )
@@ -169,55 +169,27 @@ isAllowedToBePushedByAi direction actor =
 
 handleDirection : Direction -> Actor -> Level -> Level
 handleDirection direction actor level =
-    Common.getTransformComponent actor
-        |> Maybe.map
-            (\transformData ->
-                case Common.getActorsThatAffectNeighborPosition actor direction level of
-                    -- No one there
-                    [] ->
-                        Transform.startMovingTowards
-                            actor
-                            transformData
-                            (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
-                            direction
-                            level
+    case Common.getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there
+        [] ->
+            MovementComponent.startMovingTowards actor direction level
 
-                    -- Only one actor
-                    [ otherActor ] ->
-                        if canBeWalkedOver actor otherActor then
-                            Transform.startMovingTowards
-                                actor
-                                transformData
-                                (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
-                                direction
-                                level
+        -- Only one actor
+        [ otherActor ] ->
+            if canBeWalkedOver actor otherActor then
+                MovementComponent.startMovingTowards actor direction level
 
-                        else if canPush actor otherActor direction level then
-                            Common.getTransformComponent otherActor
-                                |> Maybe.map
-                                    (\otherTransformData ->
-                                        Transform.startMovingTowards
-                                            otherActor
-                                            otherTransformData
-                                            (Position.addPositions [ otherTransformData.position, Position.getOffsetFromDirection direction ])
-                                            direction
-                                            level
-                                            |> Transform.startMovingTowards
-                                                actor
-                                                transformData
-                                                (Position.addPositions [ transformData.position, Position.getOffsetFromDirection direction ])
-                                                direction
-                                    )
-                                |> Maybe.withDefault level
+            else if canPush actor otherActor direction level then
+                level
+                    |> MovementComponent.startMovingTowards otherActor direction
+                    |> MovementComponent.startMovingTowards actor direction
 
-                        else
-                            level
+            else
+                level
 
-                    -- Multiple actors. There is no implementation for that scenario
-                    _ ->
-                        level
-            )
-        |> Maybe.withDefault level
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            level
 
 
 canGoInDirection : Actor -> Direction -> Level -> Bool
@@ -244,7 +216,7 @@ canPush pushingActor toBePushedActor direction level =
     Util.lazyAll
         [ \() -> Rigid.hasRigidComponent pushingActor
         , \() -> Rigid.hasRigidComponent toBePushedActor
-        , \() -> Transform.isActorMoving toBePushedActor |> not
+        , \() -> MovementComponent.isActorMoving toBePushedActor |> not
         , \() -> isAllowedToBePushedByAi direction toBePushedActor
         , \() -> Common.isDestinationEmpty toBePushedActor direction level
         , \() -> hasEnoughPushStrength pushingActor toBePushedActor
