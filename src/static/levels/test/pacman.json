@@ -9,6 +9,7 @@
           "type": "input"
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "collector", "data": {"interestedIn": ["candy", "diamond"]}},
       {"type": "rigid"},
       {"type": "explodable"},
@@ -34,6 +35,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -51,6 +53,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -68,6 +71,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],
@@ -85,6 +89,7 @@
           }
         }
       }},
+      {"type": "movement", "data": {"movingTicks": 4}},
       {"type": "explodable"},
       {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
     ],

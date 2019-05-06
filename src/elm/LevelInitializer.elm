@@ -68,17 +68,13 @@ setActors levelConfig level =
                                 |> Maybe.map
                                     (\entity ->
                                         Common.addActor
-                                            (entity
-                                                |> Dict.insert
-                                                    "transform"
-                                                    (Actor.TransformComponent
-                                                        { position = { x = x, y = y }
-                                                        }
-                                                    )
-                                                |> Dict.insert
-                                                    "movement"
-                                                    (Actor.MovementComponent <| MovementComponent.init 4)
-                                             -- @todo this should be in the jsons
+                                            (Dict.insert
+                                                "transform"
+                                                (Actor.TransformComponent
+                                                    { position = { x = x, y = y }
+                                                    }
+                                                )
+                                                entity
                                             )
                                             innerAccLevel
                                     )

@@ -52,14 +52,10 @@ spawnActor entities data level =
             |> Maybe.map
                 (\entity ->
                     Common.addActor
-                        (entity
-                            |> Dict.insert
-                                "transform"
-                                (Actor.TransformComponent { position = data.position })
-                            -- @todo cheats. We should configure the speed in the spawn component
-                            |> Dict.insert
-                                "movement"
-                                (Actor.MovementComponent <| MovementComponent.init 4)
+                        (Dict.insert
+                            "transform"
+                            (Actor.TransformComponent { position = data.position })
+                            entity
                         )
                         level
                 )
