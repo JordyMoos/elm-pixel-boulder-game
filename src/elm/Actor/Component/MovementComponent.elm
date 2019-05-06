@@ -103,8 +103,8 @@ setTransformToPosition position ( actor, level ) =
             updatedActor
                 |> Common.updateActor level.actors
                 |> Common.updateActors level
-                |> Common.removeActorFromIndex actor
-                |> Common.addActorToIndex position actor.id
+                |> Common.removeActorFromIndices actor
+                |> Common.addActorToIndices position actor
     in
     ( updatedActor, updatedLevel )
 

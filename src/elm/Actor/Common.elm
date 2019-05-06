@@ -1,6 +1,6 @@
 module Actor.Common exposing
     ( addActor
-    , addActorToIndex
+    , addActorToIndices
     , addEvent
     , getActorById
     , getActorIdsByPosition
@@ -9,6 +9,7 @@ module Actor.Common exposing
     , getActorsThatAffect
     , getActorsThatAffectNeighborPosition
     , getCameraComponent
+    , getDynamicActorIdsByXY
     , getMovementComponent
     , getMovingTowardsData
     , getPosition
@@ -19,8 +20,8 @@ module Actor.Common exposing
     , isEmpty
     , isNotEmpty
     , removeActor
-    , removeActorFromIndex
-    , removeActorFromIndexByPosition
+    , removeActorFromIndices
+    , removeActorFromIndicesByPosition
     , setView
     , updateActor
     , updateActors
@@ -32,6 +33,7 @@ import Actor.Actor as Actor
     exposing
         ( Actor
         , ActorId
+        , ActorType(..)
         , Actors
         , Component(..)
         , Components
@@ -43,6 +45,7 @@ import Actor.Actor as Actor
         , MovingState(..)
         , MovingTowardsData
         , PositionIndex
+        , PositionIndices
         , Subscriber
         , Subscribers
         , TagComponentData
@@ -85,9 +88,19 @@ updateActors level actors =
     { level | actors = actors }
 
 
-updatePositionIndex : Level -> PositionIndex -> Level
-updatePositionIndex level positionIndex =
-    { level | positionIndex = positionIndex }
+updateStaticPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
+updateStaticPositionIndex static indices =
+    { indices | static = static }
+
+
+updateDynamicPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
+updateDynamicPositionIndex dynamic indices =
+    { indices | dynamic = dynamic }
+
+
+updatePositionIndices : Level -> PositionIndices -> Level
+updatePositionIndices level positionIndices =
+    { level | positionIndices = positionIndices }
 
 
 setView : View -> Level -> Level
@@ -111,24 +124,39 @@ updateViewCoordinate coordinate view =
 removeActor : Actor -> Level -> Level
 removeActor actor level =
     level
-        |> removeActorFromIndex actor
+        |> removeActorFromIndices actor
         |> removeActorFromDict actor.id
         |> addEvent (Actor.ActorRemoved actor)
 
 
-removeActorFromIndex : Actor -> Level -> Level
-removeActorFromIndex actor level =
+removeActorFromIndices : Actor -> Level -> Level
+removeActorFromIndices actor level =
     getTransformComponent actor
         |> Maybe.map .position
         |> Maybe.map
             (\position ->
-                removeActorFromIndexByPosition position actor.id level
+                removeActorFromIndicesByPosition position actor.id level
             )
         |> Maybe.withDefault level
 
 
-removeActorFromIndexByPosition : Position -> ActorId -> Level -> Level
-removeActorFromIndexByPosition position actorId level =
+removeActorFromIndicesByPosition : Position -> ActorId -> Level -> Level
+removeActorFromIndicesByPosition position actorId level =
+    let
+        static =
+            removeActorFromIndexByPosition position actorId level.positionIndices.static
+
+        dynamic =
+            removeActorFromIndexByPosition position actorId level.positionIndices.dynamic
+    in
+    level.positionIndices
+        |> updateStaticPositionIndex static
+        |> updateDynamicPositionIndex dynamic
+        |> updatePositionIndices level
+
+
+removeActorFromIndexByPosition : Position -> ActorId -> PositionIndex -> PositionIndex
+removeActorFromIndexByPosition position actorId index =
     Dict.update
         ( position.x, position.y )
         (\maybeActorIds ->
@@ -142,8 +170,7 @@ removeActorFromIndexByPosition position actorId level =
                 Nothing ->
                     Nothing
         )
-        level.positionIndex
-        |> updatePositionIndex level
+        index
 
 
 removeActorFromDict : ActorId -> Level -> Level
@@ -176,7 +203,7 @@ addActor components givenLevel =
                 getPosition actor
                     |> Maybe.map
                         (\position ->
-                            ( addActorToIndex position actor.id level, actor )
+                            ( addActorToIndices position actor level, actor )
                         )
                     |> Maybe.withDefault
                         ( level, actor )
@@ -223,8 +250,22 @@ incrementNextActorId level =
     { level | nextActorId = level.nextActorId + 1 }
 
 
-addActorToIndex : Position -> ActorId -> Level -> Level
-addActorToIndex position actorId level =
+addActorToIndices : Position -> Actor -> Level -> Level
+addActorToIndices position actor level =
+    case getActorType actor of
+        StaticActor ->
+            addActorToStaticIndex level position actor.id
+                |> Pilf.flip updateStaticPositionIndex level.positionIndices
+                |> updatePositionIndices level
+
+        DynamicActor ->
+            addActorToDynamicIndex level position actor.id
+                |> Pilf.flip updateDynamicPositionIndex level.positionIndices
+                |> updatePositionIndices level
+
+
+addActorToIndex : PositionIndex -> Position -> ActorId -> PositionIndex
+addActorToIndex index position actorId =
     Dict.update
         ( position.x, position.y )
         (\maybeActorIds ->
@@ -237,8 +278,70 @@ addActorToIndex position actorId level =
                 Nothing ->
                     Just [ actorId ]
         )
-        level.positionIndex
-        |> updatePositionIndex level
+        index
+
+
+addActorToStaticIndex : Level -> Position -> ActorId -> PositionIndex
+addActorToStaticIndex level =
+    addActorToIndex level.positionIndices.static
+
+
+addActorToDynamicIndex : Level -> Position -> ActorId -> PositionIndex
+addActorToDynamicIndex level =
+    addActorToIndex level.positionIndices.dynamic
+
+
+getActorType : Actor -> ActorType
+getActorType actor =
+    let
+        hasUpdateableComponents =
+            List.any
+                (\component ->
+                    case component of
+                        Actor.AiComponent _ ->
+                            True
+
+                        Actor.CameraComponent _ ->
+                            True
+
+                        Actor.CollectorComponent _ ->
+                            True
+
+                        Actor.ControlComponent _ ->
+                            True
+
+                        Actor.CounterComponent _ ->
+                            True
+
+                        Actor.DamageComponent _ ->
+                            True
+
+                        Actor.DownSmashComponent _ ->
+                            True
+
+                        Actor.LifetimeComponent _ ->
+                            True
+
+                        Actor.SpawnComponent _ ->
+                            True
+
+                        Actor.MovementComponent _ ->
+                            True
+
+                        Actor.TriggerExplodableComponent _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+                (Dict.values actor.components)
+    in
+    case hasUpdateableComponents of
+        True ->
+            DynamicActor
+
+        False ->
+            StaticActor
 
 
 
@@ -273,10 +376,19 @@ getActorIdsByPosition position =
 
 getActorIdsByXY : Int -> Int -> Level -> List ActorId
 getActorIdsByXY x y level =
-    Dict.get
-        ( x, y )
-        level.positionIndex
-        |> Maybe.withDefault []
+    List.append
+        (getStaticActorIdsByXY x y level)
+        (getDynamicActorIdsByXY x y level)
+
+
+getStaticActorIdsByXY : Int -> Int -> Level -> List ActorId
+getStaticActorIdsByXY x y level =
+    Util.dictGetWithDefault level.positionIndices.static ( x, y ) []
+
+
+getDynamicActorIdsByXY : Int -> Int -> Level -> List ActorId
+getDynamicActorIdsByXY x y level =
+    Util.dictGetWithDefault level.positionIndices.dynamic ( x, y ) []
 
 
 getActorsThatAffectNeighborPosition : Actor -> Direction -> Level -> List Actor

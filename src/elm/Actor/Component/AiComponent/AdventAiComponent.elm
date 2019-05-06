@@ -161,8 +161,8 @@ setNewPosition actor level oldPosition newPosition =
         |> Common.updateComponents actor
         |> Common.updateActor level.actors
         |> Common.updateActors level
-        |> Common.removeActorFromIndexByPosition oldPosition actor.id
-        |> Common.addActorToIndex newPosition actor.id
+        |> Common.removeActorFromIndicesByPosition oldPosition actor.id
+        |> Common.addActorToIndices newPosition actor
 
 
 setupSearch : Position -> TargetSearch
