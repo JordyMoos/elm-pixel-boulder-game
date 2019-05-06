@@ -78,7 +78,7 @@ init flags =
             , flags = flags
             , inputModel = InputController.init
             , gameState = MainMenuState <| MainMenu.init config
-            , gameSpeed = Just 41
+            , gameSpeed = Just 16
             , currentTick = 0
             , timeBuffer = 0
             , maxUpdatesPerView = 4
@@ -356,11 +356,10 @@ debugView model =
             []
             [ button [ onClick <| GameSpeed Nothing ] [ text "Off" ]
             , button [ onClick <| GameSpeed <| Just 10000 ] [ text "0.1 fps" ]
-            , button [ onClick <| GameSpeed <| Just 5000 ] [ text "0.5 fps" ]
             , button [ onClick <| GameSpeed <| Just 1000 ] [ text "1 fps" ]
-            , button [ onClick <| GameSpeed <| Just 166 ] [ text "6 fps" ]
             , button [ onClick <| GameSpeed <| Just 83 ] [ text "12 fps" ]
             , button [ onClick <| GameSpeed <| Just 41 ] [ text "24 fps" ]
+            , button [ onClick <| GameSpeed <| Just 16 ] [ text "60 fps" ]
             ]
         , div
             []

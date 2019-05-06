@@ -18,8 +18,8 @@ addExplosion x y level =
     Common.addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y } } )
-            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 2 } )
-            , ( "lifetime", LifetimeComponent { remainingTicks = 8 } )
+            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 4 } )
+            , ( "lifetime", LifetimeComponent { remainingTicks = 16 } )
             , ( "damage", DamageComponent { damageStrength = 80 } )
             ]
         )

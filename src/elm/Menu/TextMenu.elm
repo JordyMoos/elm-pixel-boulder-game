@@ -39,12 +39,15 @@ type Action a
     | Invoke a
 
 
+defaultDelay : Int
+defaultDelay = 12
+
 init : Config -> TextMenu a -> Model a
 init config menu =
     { config = config
     , menu = menu
     , tick = 0
-    , delay = 6
+    , delay = defaultDelay
     }
 
 
@@ -101,7 +104,7 @@ decreaseDelay model =
 
 setDelay : Model a -> Model a
 setDelay model =
-    { model | delay = 4 }
+    { model | delay = defaultDelay }
 
 
 setMenu : Model a -> TextMenu a -> Model a
