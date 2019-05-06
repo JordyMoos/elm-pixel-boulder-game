@@ -73,27 +73,27 @@ processEvents model =
 
 handleEvent : Actor.Level -> Actor.Event -> ( Actor.EventManager, Actor.EventAction ) -> ( Actor.EventManager, Actor.EventAction )
 handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
-    List.foldr
-        (\subscriber ( updatedSubscribers, accAction ) ->
-            case accAction of
-                Actor.LevelContinue ->
-                    let
-                        ( updatedSubscriber, eventAction ) =
-                            case subscriber of
-                                Actor.TagDiedSubscriber onResolveAction data ->
-                                    EventManager.onTagDiedSubscriber onResolveAction data event level
+    accumulatedEventManager.subscribers
+        |> List.foldr
+            (\subscriber ( updatedSubscribers, accAction ) ->
+                case accAction of
+                    Actor.LevelContinue ->
+                        let
+                            ( updatedSubscriber, eventAction ) =
+                                case subscriber of
+                                    Actor.TagDiedSubscriber onResolveAction data ->
+                                        EventManager.onTagDiedSubscriber onResolveAction data event level
 
-                                Actor.InventoryUpdatedSubscriber onResolveAction data ->
-                                    EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
-                    in
-                    ( updatedSubscriber :: updatedSubscribers, eventAction )
+                                    Actor.InventoryUpdatedSubscriber onResolveAction data ->
+                                        EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
+                        in
+                        ( updatedSubscriber :: updatedSubscribers, eventAction )
 
-                -- Void events if action is already decided
-                _ ->
-                    ( subscriber :: updatedSubscribers, accAction )
-        )
-        ( [], accumulatedAction )
-        accumulatedEventManager.subscribers
+                    -- Void events if action is already decided
+                    _ ->
+                        ( subscriber :: updatedSubscribers, accAction )
+            )
+            ( [], accumulatedAction )
         |> (\( subscribers, eventAction ) ->
                 ( { subscribers = subscribers }, eventAction )
            )
