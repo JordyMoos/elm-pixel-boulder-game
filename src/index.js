@@ -26,6 +26,7 @@ const defaultEasyScene = `
 const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
+const hideControls = !! urlParams.get('hideControls');
 let editorMode = urlParams.get('editorMode') === 'advanced' ? 'advanced' : 'easy';
 let notEditorMode = getOtherMode(editorMode);
 let subMode = 'image';
@@ -291,6 +292,10 @@ document.getElementById('edit-level')
     location.replace(location.origin + location.pathname + '?' + urlParams.toString());
     }
   );
+
+if (hideControls) {
+  document.getElementById('control-container').style.display = 'none';
+}
 
 if (startLevel !== null) {
   runElm();
