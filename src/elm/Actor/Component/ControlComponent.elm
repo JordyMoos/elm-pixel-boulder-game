@@ -32,11 +32,8 @@ type alias Action =
 updateControlComponent : InputController.Model -> ControlComponentData -> Actor -> Level -> Level
 updateControlComponent inputController controlData actor level =
     if MovementComponent.isActorMoving actor |> not then
-        getControlDirection inputController controlData actor level
-            |> Maybe.map
-                (\( direction, updatedActor ) ->
-                    handleDirection direction updatedActor level
-                )
+        getControlAction inputController controlData actor level
+            |> Maybe.map (handleAction level)
             |> Maybe.withDefault level
 
     else
@@ -71,57 +68,62 @@ getWalkOverStrength actor =
         |> Maybe.withDefault 0
 
 
-getControlDirection : InputController.Model -> ControlComponentData -> Actor -> Level -> Maybe Action
-getControlDirection inputController controlData actor level =
+getControlAction : InputController.Model -> ControlComponentData -> Actor -> Level -> Maybe ( Action, Actor )
+getControlAction inputController controlData actor level =
     case controlData.control of
         InputControl ->
-            getInputControlDirection inputController
+            getInputControlAction inputController actor
 
         WalkAroundAiControl aiData ->
-            getWalkAroundAiDirection controlData aiData actor level
+            getWalkAroundAiAction controlData aiData actor level
 
         GravityAiControl ->
-            getGravityAiDirection controlData actor level
+            getGravityAiAction actor level
 
 
-getInputControlDirection : InputController.Model -> Maybe Direction
-getInputControlDirection inputController =
+withActor : Actor -> Action -> ( Action, Actor )
+withActor actor action =
+    ( action, actor )
+
+
+getInputControlAction : InputController.Model -> Actor -> Maybe ( Action, Actor )
+getInputControlAction inputController actor =
+    InputController.getCurrentDirection inputController
+        |> Maybe.map (\direction -> { direction = direction, peak = False })
+        |> Maybe.map (withActor actor)
+
+
+getWalkAroundAiAction : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Action, Actor )
+getWalkAroundAiAction controlData aiData actor level =
     let
-        requestedDirection =
-            InputController.getCurrentDirection inputController
-    in
-    ""
+        positionFromDirectionOffset : Int -> Direction
+        positionFromDirectionOffset =
+            \directionOffset ->
+                Direction.getIDFromDirection aiData.previousDirection
+                    - directionOffset
+                    |> Direction.getDirectionFromID
 
-
-getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe Action
-getWalkAroundAiDirection controlData aiData actor level =
-    aiData.nextDirectionOffsets
-        |> List.map
-            (\directionOffset ->
-                Direction.getDirectionFromID <| Direction.getIDFromDirection aiData.previousDirection - directionOffset
-            )
-        |> List.Extra.find
-            (\direction ->
-                canGoInDirection actor direction level
-            )
-        |> Maybe.map
-            (\direction ->
-                ( direction
-                , Dict.insert
-                    "control"
-                    (ControlComponent
-                        { controlData
-                            | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
-                        }
-                    )
-                    actor.components
+        updateActor : Direction -> Actor
+        updateActor =
+            \direction ->
+                actor.components
+                    |> Dict.insert
+                        "control"
+                        (ControlComponent
+                            { controlData
+                                | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                            }
+                        )
                     |> Common.updateComponents actor
-                )
-            )
+    in
+    aiData.nextDirectionOffsets
+        |> List.map positionFromDirectionOffset
+        |> List.Extra.find (\direction -> canGoInDirection actor direction level)
+        |> Maybe.map (\direction -> ( { direction = direction, peak = False }, updateActor direction ))
 
 
-getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe Action
-getGravityAiDirection controlData actor level =
+getGravityAiAction : Actor -> Level -> Maybe ( Action, Actor )
+getGravityAiAction actor level =
     Common.getPosition actor
         |> Maybe.map
             (\position ->
@@ -152,14 +154,8 @@ getGravityAiDirection controlData actor level =
             )
         |> Maybe.Extra.toList
         |> Util.fastConcat
-        |> List.Extra.find
-            (\( _, predicates ) ->
-                Util.lazyAll predicates
-            )
-        |> Maybe.map
-            (\( direction, _ ) ->
-                ( direction, actor )
-            )
+        |> List.Extra.find (\( _, predicates ) -> Util.lazyAll predicates)
+        |> Maybe.map (\( direction, _ ) -> ( { direction = direction, peak = False }, actor ))
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
@@ -180,22 +176,22 @@ isAllowedToBePushedByAi direction actor =
         |> Maybe.withDefault True
 
 
-handleDirection : Direction -> Actor -> Level -> Level
-handleDirection direction actor level =
-    case Common.getActorsThatAffectNeighborPosition actor direction level of
+handleAction : Level -> ( Action, Actor ) -> Level
+handleAction level ( action, actor ) =
+    case Common.getActorsThatAffectNeighborPosition actor action.direction level of
         -- No one there
         [] ->
-            MovementComponent.startMovingTowards actor direction level
+            MovementComponent.startMovingTowards actor action.direction level
 
         -- Only one actor
         [ otherActor ] ->
             if canBeWalkedOver actor otherActor then
-                MovementComponent.startMovingTowards actor direction level
+                MovementComponent.startMovingTowards actor action.direction level
 
-            else if canPush actor otherActor direction level then
+            else if canPush actor otherActor action.direction level then
                 level
-                    |> MovementComponent.startMovingTowards otherActor direction
-                    |> MovementComponent.startMovingTowards actor direction
+                    |> MovementComponent.startMovingTowards otherActor action.direction
+                    |> MovementComponent.startMovingTowards actor action.direction
 
             else
                 level
