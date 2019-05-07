@@ -89,7 +89,7 @@ withActor actor action =
 getInputControlAction : InputController.Model -> Actor -> Maybe ( Action, Actor )
 getInputControlAction inputController actor =
     InputController.getCurrentDirection inputController
-        |> Maybe.map (\direction -> { direction = direction, peak = False })
+        |> Maybe.map (\direction -> { direction = direction, peak = InputController.isKeyPressed inputController InputController.spaceKey })
         |> Maybe.map (withActor actor)
 
 
@@ -167,7 +167,7 @@ isAllowedToBePushedByAi direction actor =
                     InputControl ->
                         False
 
-                    WalkAroundAiControl data ->
+                    WalkAroundAiControl _ ->
                         False
 
                     GravityAiControl ->
@@ -178,20 +178,53 @@ isAllowedToBePushedByAi direction actor =
 
 handleAction : Level -> ( Action, Actor ) -> Level
 handleAction level ( action, actor ) =
-    case Common.getActorsThatAffectNeighborPosition actor action.direction level of
+    if action.peak then
+        handleStationedDirection level actor action.direction
+
+    else
+        handleMovementDirection level actor action.direction
+
+
+handleMovementDirection : Level -> Actor -> Direction -> Level
+handleMovementDirection level actor direction =
+    case Common.getActorsThatAffectNeighborPosition actor direction level of
         -- No one there
         [] ->
-            MovementComponent.startMovingTowards actor action.direction level
+            MovementComponent.startMovingTowards actor direction level
 
         -- Only one actor
         [ otherActor ] ->
             if canBeWalkedOver actor otherActor then
-                MovementComponent.startMovingTowards actor action.direction level
+                MovementComponent.startMovingTowards actor direction level
 
-            else if canPush actor otherActor action.direction level then
+            else if canPush actor otherActor direction level then
                 level
-                    |> MovementComponent.startMovingTowards otherActor action.direction
-                    |> MovementComponent.startMovingTowards actor action.direction
+                    |> MovementComponent.startMovingTowards otherActor direction
+                    |> MovementComponent.startMovingTowards actor direction
+
+            else
+                level
+
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            level
+
+
+handleStationedDirection : Level -> Actor -> Direction -> Level
+handleStationedDirection level actor direction =
+    case Common.getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there, nothing to peak for then
+        [] ->
+            level
+
+        -- Only one actor
+        [ otherActor ] ->
+            if canBeWalkedOver actor otherActor then
+                -- Maybe we can consume @todo implement
+                level
+
+            else if canPush actor otherActor direction level then
+                MovementComponent.startMovingTowards otherActor direction level
 
             else
                 level

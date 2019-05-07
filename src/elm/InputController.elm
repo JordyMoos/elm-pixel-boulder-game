@@ -7,10 +7,11 @@ port module InputController exposing
     , getCurrentDirection
     , getOrderedPressedKeys
     , init
+    , isKeyPressed
     , resetWasPressed
+    , spaceKey
     , subscriptions
     , update
-    , isKeyPressed
     )
 
 import Browser.Events
@@ -117,9 +118,10 @@ selectKey : KeyCode
 selectKey =
     "x"
 
+
 spaceKey : KeyCode
 spaceKey =
-    ""
+    " "
 
 
 keyCodeToDirection : Dict KeyCode Direction
@@ -175,13 +177,13 @@ getCurrentDirection model =
                     |> Maybe.map (\counter -> ( counter, direction ))
             )
         |> Maybe.Extra.values
-        |> List.sortBy  (\( code, direction ) -> code)
+        |> List.sortBy (\( code, direction ) -> code)
         |> List.head
         |> Maybe.map Tuple.second
 
 
-isKeyPressed : KeyCode -> Model -> Bool
-isKeyPressed keyCode model =
+isKeyPressed : Model -> KeyCode -> Bool
+isKeyPressed model keyCode =
     case Dict.get keyCode model.keys of
         Just (IsPressed _) ->
             True
@@ -293,7 +295,7 @@ getOrderedPressedKeys model =
                     IsPressed tick ->
                         tick
             )
-        |> List.filter (\( key, status ) -> status /= NotPressed )
+        |> List.filter (\( key, status ) -> status /= NotPressed)
         |> List.map Tuple.first
         |> List.map (\a -> Dict.get a keyMap)
         |> Maybe.Extra.values
