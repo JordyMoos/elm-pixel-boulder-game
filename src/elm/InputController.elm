@@ -10,6 +10,7 @@ port module InputController exposing
     , resetWasPressed
     , subscriptions
     , update
+    , isKeyPressed
     )
 
 import Browser.Events
@@ -116,6 +117,10 @@ selectKey : KeyCode
 selectKey =
     "x"
 
+spaceKey : KeyCode
+spaceKey =
+    ""
+
 
 keyCodeToDirection : Dict KeyCode Direction
 keyCodeToDirection =
@@ -140,6 +145,7 @@ init =
             , ( startKey, NotPressed )
             , ( escKey, NotPressed )
             , ( selectKey, NotPressed )
+            , ( spaceKey, NotPressed )
             ]
     , counter = 0
     }
@@ -164,22 +170,27 @@ getCurrentDirection model =
         |> Dict.toList
         |> List.map
             (\( code, direction ) ->
-                getCounter code model.keys
-                    |> Maybe.andThen
-                        (\counter ->
-                            Just ( counter, direction )
-                        )
+                model.keys
+                    |> getCounter code
+                    |> Maybe.map (\counter -> ( counter, direction ))
             )
         |> Maybe.Extra.values
-        |> List.sortBy
-            (\( code, direction ) ->
-                code
-            )
+        |> List.sortBy  (\( code, direction ) -> code)
         |> List.head
-        |> Maybe.andThen
-            (\( _, direction ) ->
-                Just direction
-            )
+        |> Maybe.map Tuple.second
+
+
+isKeyPressed : KeyCode -> Model -> Bool
+isKeyPressed keyCode model =
+    case Dict.get keyCode model.keys of
+        Just (IsPressed _) ->
+            True
+
+        Just (WasPressed _) ->
+            True
+
+        _ ->
+            False
 
 
 resetWasPressed : Model -> Model
@@ -203,10 +214,10 @@ handleIsPressed : KeyCode -> Model -> Model
 handleIsPressed keyCode model =
     model
         |> incrementCounter
-        |> (\m ->
-                { m
+        |> (\updatedModel ->
+                { updatedModel
                     | keys =
-                        updateKey keyCode (IsPressed m.counter) m.keys
+                        updateKey keyCode (IsPressed updatedModel.counter) updatedModel.keys
                 }
            )
 
@@ -282,10 +293,7 @@ getOrderedPressedKeys model =
                     IsPressed tick ->
                         tick
             )
-        |> List.filter
-            (\( key, status ) ->
-                status /= NotPressed
-            )
+        |> List.filter (\( key, status ) -> status /= NotPressed )
         |> List.map Tuple.first
         |> List.map (\a -> Dict.get a keyMap)
         |> Maybe.Extra.values

@@ -17,15 +17,22 @@ import Actor.Component.RigidComponent as Rigid
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict
+import InputController
 import List.Extra
 import Maybe.Extra
 import Util.Util as Util
 
 
-updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
-updateControlComponent inputControllerDirection controlData actor level =
+type alias Action =
+    { direction : Direction
+    , peak : Bool
+    }
+
+
+updateControlComponent : InputController.Model -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent inputController controlData actor level =
     if MovementComponent.isActorMoving actor |> not then
-        getControlDirection inputControllerDirection controlData actor level
+        getControlDirection inputController controlData actor level
             |> Maybe.map
                 (\( direction, updatedActor ) ->
                     handleDirection direction updatedActor level
@@ -64,23 +71,29 @@ getWalkOverStrength actor =
         |> Maybe.withDefault 0
 
 
-getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
-getControlDirection inputControllerDirection controlData actor level =
-    case ( controlData.control, inputControllerDirection ) of
-        ( InputControl, Just direction ) ->
-            Just ( direction, actor )
+getControlDirection : InputController.Model -> ControlComponentData -> Actor -> Level -> Maybe Action
+getControlDirection inputController controlData actor level =
+    case controlData.control of
+        InputControl ->
+            getInputControlDirection inputController
 
-        ( InputControl, Nothing ) ->
-            Nothing
-
-        ( WalkAroundAiControl aiData, _ ) ->
+        WalkAroundAiControl aiData ->
             getWalkAroundAiDirection controlData aiData actor level
 
-        ( GravityAiControl, _ ) ->
+        GravityAiControl ->
             getGravityAiDirection controlData actor level
 
 
-getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
+getInputControlDirection : InputController.Model -> Maybe Direction
+getInputControlDirection inputController =
+    let
+        requestedDirection =
+            InputController.getCurrentDirection inputController
+    in
+    ""
+
+
+getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe Action
 getWalkAroundAiDirection controlData aiData actor level =
     aiData.nextDirectionOffsets
         |> List.map
@@ -107,7 +120,7 @@ getWalkAroundAiDirection controlData aiData actor level =
             )
 
 
-getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
+getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe Action
 getGravityAiDirection controlData actor level =
     Common.getPosition actor
         |> Maybe.map

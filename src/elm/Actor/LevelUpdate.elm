@@ -16,9 +16,10 @@ import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Data.Coordinate as Coordinate
 import Data.Direction exposing (Direction)
 import Dict
+import InputController
 
 
-update : Maybe Direction -> Level -> LevelConfig -> Level
+update : InputController.Model -> Level -> LevelConfig -> Level
 update controllerInput levelBeforeUpdate levelConfig =
     let
         view =
@@ -54,7 +55,7 @@ update controllerInput levelBeforeUpdate levelConfig =
         yPositions
 
 
-updateActorsAtPosition : LevelConfig -> Level -> Maybe Direction -> Int -> Int -> Level -> Level
+updateActorsAtPosition : LevelConfig -> Level -> InputController.Model -> Int -> Int -> Level -> Level
 updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput x y level =
     let
         preparedUpdateActorById =
@@ -66,7 +67,7 @@ updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput x y level =
             level
 
 
-updateActorById : LevelConfig -> Level -> Maybe Direction -> Level -> ActorId -> Level
+updateActorById : LevelConfig -> Level -> InputController.Model -> Level -> ActorId -> Level
 updateActorById levelConfig levelBeforeUpdate controllerInput level actorId =
     let
         preparedUpdateComponent =
@@ -87,7 +88,7 @@ updateActorById levelConfig levelBeforeUpdate controllerInput level actorId =
         |> Maybe.withDefault level
 
 
-updateComponent : LevelConfig -> Level -> Maybe Direction -> Component -> Level -> Actor -> Level
+updateComponent : LevelConfig -> Level -> InputController.Model -> Component -> Level -> Actor -> Level
 updateComponent levelConfig levelBeforeUpdate controllerInput component level actor =
     case component of
         Actor.AiComponent aiData ->
