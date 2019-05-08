@@ -1,69 +1,112 @@
-module Actor.Component.CollectorComponent exposing (updateCollectorComponent)
+module Actor.Component.CollectorComponent exposing (tryCollectPosition, updateCollectorComponent)
 
 import Actor.Actor as Actor
     exposing
         ( Actor
         , CollectibleComponentData
         , CollectorComponentData
+        , Component(..)
         , Components
         , Level
         )
 import Actor.Common as Common
 import Actor.Component.CollectibleComponent as CollectibleComponent
+import Actor.Component.MovementComponent as MovementComponent
+import Data.Position exposing (Position)
 import Dict
-import Maybe.Extra
+import Pilf
 import Util.Util as Util
 
 
 updateCollectorComponent : CollectorComponentData -> Actor -> Level -> Level
-updateCollectorComponent collectorData collectorActor level =
-    Common.getTransformComponent collectorActor
-        |> Maybe.Extra.toList
-        |> List.map .position
-        |> Util.fastConcatMap
-            (\position ->
-                Common.getActorsByPosition position level
-                    |> List.map
-                        (\actor ->
-                            ( position, actor )
-                        )
-            )
-        |> List.filterMap
-            (\( position, actor ) ->
-                CollectibleComponent.getCollectibleComponent actor
-                    |> Maybe.andThen
-                        (\collectibleData ->
-                            Just ( position, actor, collectibleData )
-                        )
-            )
-        |> List.filter
-            (\( position, actor, collectibleData ) ->
-                canCollect collectibleData collectorData.interestedIn
-            )
-        |> List.foldr
-            (\( position, actor, collectibleData ) accLevel ->
-                updateCollectorComponentData collectorData collectibleData
-                    |> (\newCollectorComponentData ->
-                            setCollectorComponent collectorActor.components newCollectorComponentData
-                                |> Common.updateComponents collectorActor
-                                |> Common.updateActor accLevel.actors
-                                |> Common.updateActors accLevel
-                                |> Common.removeActor actor
-                                |> Common.addEvent (Actor.InventoryUpdated newCollectorComponentData.inventory)
-                       )
-            )
-            level
+updateCollectorComponent data actor level =
+    Common.getTransformComponent actor
+        |> Maybe.map .position
+        |> Maybe.map (\position -> collect data actor position level)
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault level
 
 
-updateCollectorComponentData : CollectorComponentData -> CollectibleComponentData -> CollectorComponentData
-updateCollectorComponentData collector collectible =
-    collector.inventory
-        |> Dict.update
-            collectible.name
-            (\maybeCurrentQuantity ->
-                Just <| Maybe.withDefault 0 maybeCurrentQuantity + collectible.quantity
+getCollectorComponent : Actor -> Maybe CollectorComponentData
+getCollectorComponent actor =
+    Dict.get "collector" actor.components
+        |> Maybe.andThen
+            (\component ->
+                case component of
+                    CollectorComponent data ->
+                        Just data
+
+                    _ ->
+                        Nothing
             )
-        |> updateCollectorInventory collector
+
+
+tryCollectPosition : Actor -> Position -> Level -> Level
+tryCollectPosition actor position level =
+    getCollectorComponent actor
+        |> Maybe.map (\collectorData -> collect collectorData actor position level)
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault level
+
+
+collect : CollectorComponentData -> Actor -> Position -> Level -> ( Actor, Level )
+collect collectorData actor position level =
+    let
+        collectiblePredicates : ( Actor, CollectibleComponentData ) -> Bool
+        collectiblePredicates ( collectibleActor, collectibleData ) =
+            Util.lazyAll
+                [ \() -> MovementComponent.isActorNotMoving collectibleActor
+                , \() -> List.member collectibleData.name collectorData.interestedIn
+                ]
+
+        collectibleActors : List ( Actor, CollectibleComponentData )
+        collectibleActors =
+            Common.getActorsByPosition position level
+                |> List.filter (\foundActor -> foundActor.id /= actor.id)
+                |> List.filterMap withCollectibleData
+                |> List.filter collectiblePredicates
+
+        updatedCollectorData : CollectorComponentData
+        updatedCollectorData =
+            collectAll collectorData collectibleActors
+
+        updatedCollectorActor : Actor
+        updatedCollectorActor =
+            actor.components
+                |> Dict.insert "collector" (Actor.CollectorComponent updatedCollectorData)
+                |> Common.updateComponents actor
+
+        updatedLevel : Level
+        updatedLevel =
+            updatedCollectorActor
+                |> Common.updateActor level.actors
+                |> Common.updateActors level
+                |> Pilf.flip removeCollectibleActorsFromLevel collectibleActors
+                |> Common.addEvent (Actor.InventoryUpdated updatedCollectorData.inventory)
+    in
+    ( updatedCollectorActor, updatedLevel )
+
+
+removeCollectibleActorsFromLevel : Level -> List ( Actor, CollectibleComponentData ) -> Level
+removeCollectibleActorsFromLevel =
+    List.foldl
+        (\( actor, _ ) accLevel ->
+            Common.removeActor actor accLevel
+        )
+
+
+collectAll : CollectorComponentData -> List ( Actor, CollectibleComponentData ) -> CollectorComponentData
+collectAll =
+    List.foldl
+        (\( _, collectibleData ) collectorData ->
+            collectorData.inventory
+                |> Dict.update
+                    collectibleData.name
+                    (\maybeCurrentQuantity ->
+                        Just <| Maybe.withDefault 0 maybeCurrentQuantity + collectibleData.quantity
+                    )
+                |> updateCollectorInventory collectorData
+        )
 
 
 updateCollectorInventory : CollectorComponentData -> Actor.Inventory -> CollectorComponentData
@@ -71,23 +114,7 @@ updateCollectorInventory collector newInventory =
     { collector | inventory = newInventory }
 
 
-setCollectorComponent : Components -> CollectorComponentData -> Components
-setCollectorComponent components collectorData =
-    Dict.insert
-        "collector"
-        (Actor.CollectorComponent collectorData)
-        components
-
-
-getCollectibleDataIfCanCollect : Actor -> List String -> Maybe CollectibleComponentData
-getCollectibleDataIfCanCollect targetActor interestedIn =
-    CollectibleComponent.getCollectibleComponent targetActor
-        |> Maybe.Extra.filter
-            (\collectibleData ->
-                List.member collectibleData.name interestedIn
-            )
-
-
-canCollect : CollectibleComponentData -> List String -> Bool
-canCollect collectibleData =
-    List.member collectibleData.name
+withCollectibleData : Actor -> Maybe ( Actor, CollectibleComponentData )
+withCollectibleData actor =
+    CollectibleComponent.getCollectibleComponent actor
+        |> Maybe.map (\collectibleData -> ( actor, collectibleData ))

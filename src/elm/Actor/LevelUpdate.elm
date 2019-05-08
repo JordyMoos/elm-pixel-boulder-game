@@ -14,7 +14,6 @@ import Actor.Component.MovementComponent as Movement
 import Actor.Component.SpawnComponent as Spawn
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Data.Coordinate as Coordinate
-import Data.Direction exposing (Direction)
 import Dict
 import InputController
 

@@ -11,6 +11,7 @@ import Actor.Actor as Actor
         , WalkAroundAiControlData
         )
 import Actor.Common as Common
+import Actor.Component.CollectorComponent as CollectorComponent
 import Actor.Component.MovementComponent as MovementComponent
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
@@ -219,15 +220,13 @@ handleStationedDirection level actor direction =
 
         -- Only one actor
         [ otherActor ] ->
-            if canBeWalkedOver actor otherActor then
-                -- Maybe we can consume @todo implement
-                level
-
-            else if canPush actor otherActor direction level then
+            if canPush actor otherActor direction level then
                 MovementComponent.startMovingTowards otherActor direction level
 
             else
-                level
+                Common.getPosition otherActor
+                    |> Maybe.map (\otherActorPosition -> CollectorComponent.tryCollectPosition actor otherActorPosition level)
+                    |> Maybe.withDefault level
 
         -- Multiple actors. There is no implementation for that scenario
         _ ->
