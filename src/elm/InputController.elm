@@ -9,7 +9,7 @@ port module InputController exposing
     , init
     , isKeyPressed
     , resetWasPressed
-    , spaceKey
+    , submitKey
     , subscriptions
     , update
     )
@@ -119,11 +119,6 @@ selectKey =
     "x"
 
 
-spaceKey : KeyCode
-spaceKey =
-    " "
-
-
 keyCodeToDirection : Dict KeyCode Direction
 keyCodeToDirection =
     Dict.fromList
@@ -147,7 +142,6 @@ init =
             , ( startKey, NotPressed )
             , ( escKey, NotPressed )
             , ( selectKey, NotPressed )
-            , ( spaceKey, NotPressed )
             ]
     , counter = 0
     }

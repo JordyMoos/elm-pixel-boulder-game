@@ -90,7 +90,7 @@ withActor actor action =
 getInputControlAction : InputController.Model -> Actor -> Maybe ( Action, Actor )
 getInputControlAction inputController actor =
     InputController.getCurrentDirection inputController
-        |> Maybe.map (\direction -> { direction = direction, peak = InputController.isKeyPressed inputController InputController.spaceKey })
+        |> Maybe.map (\direction -> { direction = direction, peak = InputController.isKeyPressed inputController InputController.submitKey })
         |> Maybe.map (withActor actor)
 
 
