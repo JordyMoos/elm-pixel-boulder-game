@@ -55,7 +55,7 @@ updateTick currentTick inputModel model =
 
         _ ->
             LevelUpdate.update
-                (InputController.getCurrentDirection inputModel)
+                inputModel
                 model.level
                 model.levelConfig
                 |> setLevel model

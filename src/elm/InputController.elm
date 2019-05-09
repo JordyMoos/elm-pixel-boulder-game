@@ -7,7 +7,9 @@ port module InputController exposing
     , getCurrentDirection
     , getOrderedPressedKeys
     , init
+    , isKeyPressed
     , resetWasPressed
+    , submitKey
     , subscriptions
     , update
     )
@@ -164,22 +166,27 @@ getCurrentDirection model =
         |> Dict.toList
         |> List.map
             (\( code, direction ) ->
-                getCounter code model.keys
-                    |> Maybe.andThen
-                        (\counter ->
-                            Just ( counter, direction )
-                        )
+                model.keys
+                    |> getCounter code
+                    |> Maybe.map (\counter -> ( counter, direction ))
             )
         |> Maybe.Extra.values
-        |> List.sortBy
-            (\( code, direction ) ->
-                code
-            )
+        |> List.sortBy (\( code, direction ) -> code)
         |> List.head
-        |> Maybe.andThen
-            (\( _, direction ) ->
-                Just direction
-            )
+        |> Maybe.map Tuple.second
+
+
+isKeyPressed : Model -> KeyCode -> Bool
+isKeyPressed model keyCode =
+    case Dict.get keyCode model.keys of
+        Just (IsPressed _) ->
+            True
+
+        Just (WasPressed _) ->
+            True
+
+        _ ->
+            False
 
 
 resetWasPressed : Model -> Model
@@ -203,10 +210,10 @@ handleIsPressed : KeyCode -> Model -> Model
 handleIsPressed keyCode model =
     model
         |> incrementCounter
-        |> (\m ->
-                { m
+        |> (\updatedModel ->
+                { updatedModel
                     | keys =
-                        updateKey keyCode (IsPressed m.counter) m.keys
+                        updateKey keyCode (IsPressed updatedModel.counter) updatedModel.keys
                 }
            )
 
@@ -282,10 +289,7 @@ getOrderedPressedKeys model =
                     IsPressed tick ->
                         tick
             )
-        |> List.filter
-            (\( key, status ) ->
-                status /= NotPressed
-            )
+        |> List.filter (\( key, status ) -> status /= NotPressed)
         |> List.map Tuple.first
         |> List.map (\a -> Dict.get a keyMap)
         |> Maybe.Extra.values

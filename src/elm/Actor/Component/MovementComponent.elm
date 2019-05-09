@@ -2,6 +2,7 @@ module Actor.Component.MovementComponent exposing
     ( calculateCompletionPercentage
     , init
     , isActorMoving
+    , isActorNotMoving
     , isMoving
     , isMovingAt
     , isMovingDown
@@ -119,6 +120,11 @@ isActorMoving actor =
     Common.getMovementComponent actor
         |> Maybe.map isMoving
         |> Maybe.withDefault False
+
+
+isActorNotMoving : Actor -> Bool
+isActorNotMoving =
+    isActorMoving >> not
 
 
 isMoving : MovementComponentData -> Bool

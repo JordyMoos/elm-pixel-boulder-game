@@ -11,25 +11,30 @@ import Actor.Actor as Actor
         , WalkAroundAiControlData
         )
 import Actor.Common as Common
+import Actor.Component.CollectorComponent as CollectorComponent
 import Actor.Component.MovementComponent as MovementComponent
 import Actor.Component.PhysicsComponent as Physics
 import Actor.Component.RigidComponent as Rigid
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
 import Dict
+import InputController
 import List.Extra
 import Maybe.Extra
 import Util.Util as Util
 
 
-updateControlComponent : Maybe Direction -> ControlComponentData -> Actor -> Level -> Level
-updateControlComponent inputControllerDirection controlData actor level =
+type alias Action =
+    { direction : Direction
+    , peak : Bool
+    }
+
+
+updateControlComponent : InputController.Model -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent inputController controlData actor level =
     if MovementComponent.isActorMoving actor |> not then
-        getControlDirection inputControllerDirection controlData actor level
-            |> Maybe.map
-                (\( direction, updatedActor ) ->
-                    handleDirection direction updatedActor level
-                )
+        getControlAction inputController controlData actor level
+            |> Maybe.map (handleAction level)
             |> Maybe.withDefault level
 
     else
@@ -64,51 +69,62 @@ getWalkOverStrength actor =
         |> Maybe.withDefault 0
 
 
-getControlDirection : Maybe Direction -> ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
-getControlDirection inputControllerDirection controlData actor level =
-    case ( controlData.control, inputControllerDirection ) of
-        ( InputControl, Just direction ) ->
-            Just ( direction, actor )
+getControlAction : InputController.Model -> ControlComponentData -> Actor -> Level -> Maybe ( Action, Actor )
+getControlAction inputController controlData actor level =
+    case controlData.control of
+        InputControl ->
+            getInputControlAction inputController actor
 
-        ( InputControl, Nothing ) ->
-            Nothing
+        WalkAroundAiControl aiData ->
+            getWalkAroundAiAction controlData aiData actor level
 
-        ( WalkAroundAiControl aiData, _ ) ->
-            getWalkAroundAiDirection controlData aiData actor level
-
-        ( GravityAiControl, _ ) ->
-            getGravityAiDirection controlData actor level
+        GravityAiControl ->
+            getGravityAiAction actor level
 
 
-getWalkAroundAiDirection : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Direction, Actor )
-getWalkAroundAiDirection controlData aiData actor level =
-    aiData.nextDirectionOffsets
-        |> List.map
-            (\directionOffset ->
-                Direction.getDirectionFromID <| Direction.getIDFromDirection aiData.previousDirection - directionOffset
-            )
-        |> List.Extra.find
-            (\direction ->
-                canGoInDirection actor direction level
-            )
-        |> Maybe.map
-            (\direction ->
-                ( direction
-                , Dict.insert
-                    "control"
-                    (ControlComponent
-                        { controlData
-                            | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
-                        }
-                    )
-                    actor.components
+withActor : Actor -> Action -> ( Action, Actor )
+withActor actor action =
+    ( action, actor )
+
+
+getInputControlAction : InputController.Model -> Actor -> Maybe ( Action, Actor )
+getInputControlAction inputController actor =
+    InputController.getCurrentDirection inputController
+        |> Maybe.map (\direction -> { direction = direction, peak = InputController.isKeyPressed inputController InputController.submitKey })
+        |> Maybe.map (withActor actor)
+
+
+getWalkAroundAiAction : ControlComponentData -> WalkAroundAiControlData -> Actor -> Level -> Maybe ( Action, Actor )
+getWalkAroundAiAction controlData aiData actor level =
+    let
+        positionFromDirectionOffset : Int -> Direction
+        positionFromDirectionOffset =
+            \directionOffset ->
+                Direction.getIDFromDirection aiData.previousDirection
+                    - directionOffset
+                    |> Direction.getDirectionFromID
+
+        updateActor : Direction -> Actor
+        updateActor =
+            \direction ->
+                actor.components
+                    |> Dict.insert
+                        "control"
+                        (ControlComponent
+                            { controlData
+                                | control = WalkAroundAiControl <| { aiData | previousDirection = direction }
+                            }
+                        )
                     |> Common.updateComponents actor
-                )
-            )
+    in
+    aiData.nextDirectionOffsets
+        |> List.map positionFromDirectionOffset
+        |> List.Extra.find (\direction -> canGoInDirection actor direction level)
+        |> Maybe.map (\direction -> ( { direction = direction, peak = False }, updateActor direction ))
 
 
-getGravityAiDirection : ControlComponentData -> Actor -> Level -> Maybe ( Direction, Actor )
-getGravityAiDirection controlData actor level =
+getGravityAiAction : Actor -> Level -> Maybe ( Action, Actor )
+getGravityAiAction actor level =
     Common.getPosition actor
         |> Maybe.map
             (\position ->
@@ -139,14 +155,8 @@ getGravityAiDirection controlData actor level =
             )
         |> Maybe.Extra.toList
         |> Util.fastConcat
-        |> List.Extra.find
-            (\( _, predicates ) ->
-                Util.lazyAll predicates
-            )
-        |> Maybe.map
-            (\( direction, _ ) ->
-                ( direction, actor )
-            )
+        |> List.Extra.find (\( _, predicates ) -> Util.lazyAll predicates)
+        |> Maybe.map (\( direction, _ ) -> ( { direction = direction, peak = False }, actor ))
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
@@ -158,7 +168,7 @@ isAllowedToBePushedByAi direction actor =
                     InputControl ->
                         False
 
-                    WalkAroundAiControl data ->
+                    WalkAroundAiControl _ ->
                         False
 
                     GravityAiControl ->
@@ -167,8 +177,17 @@ isAllowedToBePushedByAi direction actor =
         |> Maybe.withDefault True
 
 
-handleDirection : Direction -> Actor -> Level -> Level
-handleDirection direction actor level =
+handleAction : Level -> ( Action, Actor ) -> Level
+handleAction level ( action, actor ) =
+    if action.peak then
+        handleStationedDirection level actor action.direction
+
+    else
+        handleMovementDirection level actor action.direction
+
+
+handleMovementDirection : Level -> Actor -> Direction -> Level
+handleMovementDirection level actor direction =
     case Common.getActorsThatAffectNeighborPosition actor direction level of
         -- No one there
         [] ->
@@ -186,6 +205,28 @@ handleDirection direction actor level =
 
             else
                 level
+
+        -- Multiple actors. There is no implementation for that scenario
+        _ ->
+            level
+
+
+handleStationedDirection : Level -> Actor -> Direction -> Level
+handleStationedDirection level actor direction =
+    case Common.getActorsThatAffectNeighborPosition actor direction level of
+        -- No one there, nothing to peak for then
+        [] ->
+            level
+
+        -- Only one actor
+        [ otherActor ] ->
+            if canPush actor otherActor direction level then
+                MovementComponent.startMovingTowards otherActor direction level
+
+            else
+                Common.getPosition otherActor
+                    |> Maybe.map (\otherActorPosition -> CollectorComponent.tryCollectPosition actor otherActorPosition level)
+                    |> Maybe.withDefault level
 
         -- Multiple actors. There is no implementation for that scenario
         _ ->
