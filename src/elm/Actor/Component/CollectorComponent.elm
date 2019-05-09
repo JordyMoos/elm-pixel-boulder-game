@@ -65,7 +65,17 @@ collect collectorData actor position level =
                 |> List.filter (\foundActor -> foundActor.id /= actor.id)
                 |> List.filterMap withCollectibleData
                 |> List.filter collectiblePredicates
+    in
+    if List.length collectibleActors > 0 then
+        doCollect collectorData actor collectibleActors level
 
+    else
+        ( actor, level )
+
+
+doCollect : CollectorComponentData -> Actor -> List ( Actor, CollectibleComponentData ) -> Level -> ( Actor, Level )
+doCollect collectorData actor collectibleActors level =
+    let
         updatedCollectorData : CollectorComponentData
         updatedCollectorData =
             collectAll collectorData collectibleActors
