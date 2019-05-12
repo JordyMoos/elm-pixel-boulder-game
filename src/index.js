@@ -27,6 +27,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
 const hideControls = !! urlParams.get('hideControls');
+const hideEdit = !! urlParams.get('hideEdit');
+const lazy = !! urlParams.get('lazy');
 let editorMode = urlParams.get('editorMode') === 'advanced' ? 'advanced' : 'easy';
 let notEditorMode = getOtherMode(editorMode);
 let subMode = 'image';
@@ -296,7 +298,21 @@ document.getElementById('edit-level')
 if (hideControls) {
   document.getElementById('control-container').style.display = 'none';
 }
+if (hideEdit) {
+  document.getElementById('edit-level-container').style.display = 'none';
+}
 
 if (startLevel !== null) {
-  runElm();
+  if (lazy) {
+    document.getElementById('editor-container').style.display = 'none';
+    document.getElementById('game-container').style.display = '';
+    document.getElementById('lazy-level').style.display = '';
+    document.getElementById('lazy-level')
+      .addEventListener('click', function() {
+        document.getElementById('lazy-level').style.display = 'none';
+        runElm();
+      });
+  } else {
+    runElm();
+  }
 }
