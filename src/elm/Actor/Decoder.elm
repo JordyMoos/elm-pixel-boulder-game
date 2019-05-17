@@ -7,6 +7,7 @@ import Actor.Actor as Actor
         , AiType(..)
         , AnimationSetup
         , AttackComponentData
+        , BecomeActorLifetimeActionData
         , CameraComponentData
         , CollectibleComponentData
         , CollectorComponentData
@@ -32,6 +33,7 @@ import Actor.Actor as Actor
         , LevelConfig
         , LevelFailedData
         , LevelFinishedDescriptionProvider(..)
+        , LifetimeAction(..)
         , LifetimeComponentData
         , MovementComponentData
         , MovingDownState(..)
@@ -373,6 +375,33 @@ lifetimeDataDecoder : Decoder LifetimeComponentData
 lifetimeDataDecoder =
     Decode.succeed LifetimeComponentData
         |> JDP.required "remainingTicks" Decode.int
+        |> JDP.optional "action" lifetimeAction RemoveActorLifetimeAction
+
+
+lifetimeAction : Decoder LifetimeAction
+lifetimeAction =
+    Decode.string
+        |> Decode.andThen
+            (\action ->
+                case action of
+                    "remove" ->
+                        Decode.succeed RemoveActorLifetimeAction
+
+                    "become" ->
+                        Decode.map BecomeActorLifetimeAction <| Decode.field "data" becomeActorLifetimeDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode a lifetime action, but the action "
+                                ++ action
+                                ++ " is not supported."
+            )
+
+
+becomeActorLifetimeDecoder : Decoder BecomeActorLifetimeActionData
+becomeActorLifetimeDecoder =
+    Decode.succeed BecomeActorLifetimeActionData
+        |> JDP.required "entityName" Decode.string
 
 
 damageDataDecoder : Decoder DamageComponentData

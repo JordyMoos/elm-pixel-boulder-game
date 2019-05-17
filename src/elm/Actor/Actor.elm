@@ -8,6 +8,7 @@ module Actor.Actor exposing
     , AiType(..)
     , AnimationSetup
     , AttackComponentData
+    , BecomeActorLifetimeActionData
     , CameraComponentData
     , CollectibleComponentData
     , CollectorComponentData
@@ -39,6 +40,7 @@ module Actor.Actor exposing
     , LevelConfig
     , LevelFailedData
     , LevelFinishedDescriptionProvider(..)
+    , LifetimeAction(..)
     , LifetimeComponentData
     , MovementComponentData
     , MovingDownState(..)
@@ -382,6 +384,17 @@ type alias TriggerExplodableComponentData =
 
 type alias LifetimeComponentData =
     { remainingTicks : Int
+    , action : LifetimeAction
+    }
+
+
+type LifetimeAction
+    = RemoveActorLifetimeAction
+    | BecomeActorLifetimeAction BecomeActorLifetimeActionData
+
+
+type alias BecomeActorLifetimeActionData =
+    { entityName : String
     }
 
 
