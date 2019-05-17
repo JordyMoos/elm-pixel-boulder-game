@@ -15,17 +15,11 @@ updateDamageComponent damageData damageDealingActor level =
             (\transformData ->
                 Common.getActorsThatAffect transformData.position level
             )
-        |> List.filter
-            (\actor ->
-                actor.id /= damageDealingActor.id
-            )
+        |> List.filter (\actor -> actor.id /= damageDealingActor.id)
         |> List.filter
             (\actor ->
                 Physics.getPhysicsComponent actor
-                    |> Maybe.andThen
-                        (\physics ->
-                            Just <| physics.strength < damageData.damageStrength
-                        )
+                    |> Maybe.map (\physics -> physics.strength < damageData.damageStrength)
                     |> Maybe.withDefault True
             )
         |> List.foldr
