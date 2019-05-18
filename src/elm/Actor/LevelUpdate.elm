@@ -3,6 +3,7 @@ module Actor.LevelUpdate exposing (update)
 import Actor.Actor as Actor exposing (Actor, ActorId, Component, Level, LevelConfig)
 import Actor.Common as Common
 import Actor.Component.AiComponent as Ai
+import Actor.Component.AreaComponent as AreaComponent
 import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
@@ -93,6 +94,9 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
         Actor.AiComponent aiData ->
             Ai.updateAiComponent aiData actor levelConfig.entities levelBeforeUpdate level
 
+        Actor.AreaComponent area ->
+            AreaComponent.updateAreaComponent area actor level
+
         Actor.CameraComponent camera ->
             Camera.updateCameraComponent camera actor level
 
@@ -112,7 +116,7 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
             DownSmash.updateDownSmashComponent downSmash actor level
 
         Actor.LifetimeComponent lifetimeData ->
-            Lifetime.updateLifetimeComponent lifetimeData actor level
+            Lifetime.updateLifetimeComponent lifetimeData actor levelConfig.entities level
 
         Actor.SpawnComponent spawnData ->
             Spawn.updateSpawnComponent levelConfig.entities spawnData actor level

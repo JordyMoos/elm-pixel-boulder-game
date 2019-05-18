@@ -51,6 +51,7 @@ module Actor.Actor exposing
     , PositionIndex
     , PositionIndices
     , RenderComponentData(..)
+    , AreaComponentData
     , Scene
     , Shape(..)
     , Signs
@@ -185,6 +186,7 @@ type Component
     | HealthComponent HealthComponentData
     | AttackComponent AttackComponentData
     | CounterComponent CounterComponentData
+    | AreaComponent AreaComponentData
 
 
 
@@ -397,6 +399,19 @@ type alias BecomeActorLifetimeActionData =
     { entityName : String
     }
 
+
+{-
+
+   AreaComponent
+
+-}
+
+
+type alias AreaComponentData =
+    { width : Int
+    , height : Int
+    , direction : Direction
+    }
 
 
 {-

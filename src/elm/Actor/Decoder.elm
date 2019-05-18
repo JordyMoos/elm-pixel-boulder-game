@@ -6,6 +6,7 @@ import Actor.Actor as Actor
         , AiComponentData
         , AiType(..)
         , AnimationSetup
+        , AreaComponentData
         , AttackComponentData
         , BecomeActorLifetimeActionData
         , CameraComponentData
@@ -116,6 +117,9 @@ componentDecoder =
                 (case theType of
                     "ai" ->
                         Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+
+                    "zarea" ->
+                        Decode.map AreaComponent <| Decode.field "data" areaDataDecoder
 
                     "control" ->
                         Decode.map ControlComponent <| Decode.field "data" controlDataDecoder
@@ -506,6 +510,14 @@ adventAiDataDecoder : Decoder AdventAiData
 adventAiDataDecoder =
     Decode.succeed AdventAiData
         |> JDP.required "target" Decode.string
+
+
+areaDataDecoder : Decoder AreaComponentData
+areaDataDecoder =
+    Decode.succeed AreaComponentData
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
+        |> JDP.required "direction" directionDecoder
 
 
 controlDataDecoder : Decoder ControlComponentData

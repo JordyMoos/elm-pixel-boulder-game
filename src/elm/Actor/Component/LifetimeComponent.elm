@@ -11,8 +11,8 @@ import Actor.Common as Common
 import Dict
 
 
-updateLifetimeComponent : LifetimeComponentData -> Actor -> Level -> Level
-updateLifetimeComponent lifetimeData actor level =
+updateLifetimeComponent : LifetimeComponentData -> Actor -> Actor.Entities -> Level -> Level
+updateLifetimeComponent lifetimeData actor entities level =
     if lifetimeData.remainingTicks > 0 then
         Dict.insert
             "lifetime"

@@ -1,5 +1,6 @@
 module Actor.Component.MovementComponent exposing
     ( calculateCompletionPercentage
+    , createMovingTowards
     , init
     , isActorMoving
     , isActorNotMoving
@@ -8,6 +9,7 @@ module Actor.Component.MovementComponent exposing
     , isMovingDown
     , isNotMoving
     , isNotMovingAt
+    , setMovementData
     , startMovingTowards
     , updateMovementComponent
     )
