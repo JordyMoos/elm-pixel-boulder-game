@@ -41,14 +41,7 @@ getRequiredData area actor =
 
 filterNotMoving : RequiredData -> Bool
 filterNotMoving requiredData =
-    let
-        result =
-            MovementComponent.isNotMoving requiredData.movement
-
-        _ =
-            Debug.log "isNotMoving" (Debug.toString result)
-    in
-    result
+    MovementComponent.isNotMoving requiredData.movement
 
 
 handleMovement : Level -> RequiredData -> Level
@@ -80,24 +73,6 @@ handleMovement level data =
                     |> Maybe.map (\transform -> MovementComponent.createMovingTowards transform.position data.area.direction data.movement)
                     |> Maybe.map (\movementData -> MovementComponent.setMovementData movementData ( actor, accLevel ))
                     |> Maybe.map Tuple.second
-                    |> Maybe.map
-                        (\x ->
-                            let
-                                newActor =
-                                    Common.getActorById actor.id x
-
-                                _ =
-                                    Debug.log "moved" (Debug.toString actor.id)
-
-                                --
-                                --                                _ =
-                                --                                    Debug.log "old" (Debug.toString actor)
-                                --
-                                _ =
-                                    Debug.log "new" (Debug.toString newActor)
-                            in
-                            x
-                        )
                     |> Maybe.withDefault accLevel
     in
     List.foldl foldY level yPositions

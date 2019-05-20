@@ -2,11 +2,11 @@ module LevelInitializer exposing (initLevel)
 
 import Actor.Actor as Actor
 import Actor.Common as Common
-import Actor.Component.MovementComponent as MovementComponent
 import Actor.Decoder
 import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Dict
+import String.Extra
 
 
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
@@ -57,17 +57,12 @@ setActors levelConfig level =
         |> List.indexedMap Tuple.pair
         |> List.foldl
             (\( y, line ) accLevel ->
-                String.toList line
+                String.Extra.break levelConfig.signLength line
                     |> List.indexedMap Tuple.pair
                     |> List.foldl
-                        (\( x, char ) innerAccLevel ->
-                            Dict.get
-                                (String.fromChar char)
-                                levelConfig.signs
-                                |> Maybe.andThen
-                                    (\entityName ->
-                                        Dict.get entityName levelConfig.entities
-                                    )
+                        (\( x, key ) innerAccLevel ->
+                            Dict.get key levelConfig.signs
+                                |> Maybe.andThen (\entityName -> Dict.get entityName levelConfig.entities)
                                 |> Maybe.map
                                     (\entity ->
                                         Common.addActor

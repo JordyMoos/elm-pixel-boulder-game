@@ -7,6 +7,7 @@ module Actor.Actor exposing
     , AiComponentData
     , AiType(..)
     , AnimationSetup
+    , AreaComponentData
     , AttackComponentData
     , BecomeActorLifetimeActionData
     , CameraComponentData
@@ -51,7 +52,6 @@ module Actor.Actor exposing
     , PositionIndex
     , PositionIndices
     , RenderComponentData(..)
-    , AreaComponentData
     , Scene
     , Shape(..)
     , Signs
@@ -144,6 +144,7 @@ type alias Images =
 
 type alias LevelConfig =
     { entities : Entities
+    , signLength : Int
     , signs : Signs
     , scene : Scene
     , viewCoordinate : Coordinate
@@ -400,6 +401,7 @@ type alias BecomeActorLifetimeActionData =
     }
 
 
+
 {-
 
    AreaComponent
@@ -412,6 +414,7 @@ type alias AreaComponentData =
     , height : Int
     , direction : Direction
     }
+
 
 
 {-
@@ -488,6 +491,7 @@ type RenderComponentData
 type alias PixelRenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
+    , layer : Int
     }
 
 
@@ -500,6 +504,7 @@ type alias ImagesData =
 type alias ImageRenderComponentData =
     { default : ImagesData
     , direction : Dict Int ImagesData
+    , layer : Int
     }
 
 

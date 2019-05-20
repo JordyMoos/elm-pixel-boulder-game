@@ -78,6 +78,7 @@ levelConfigDecoder : Decoder LevelConfig
 levelConfigDecoder =
     Decode.succeed LevelConfig
         |> JDP.required "entities" entitiesDecoder
+        |> JDP.optional "signLength" Decode.int 1
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
         |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
@@ -92,6 +93,7 @@ defaultBackground =
     PixelRenderComponent
         { colors = [ Color.white ]
         , ticksPerColor = 1
+        , layer = 0
         }
 
 
@@ -213,6 +215,7 @@ renderPixelDataDecoder =
     Decode.succeed PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
+        |> JDP.optional "layer" Decode.int 1
 
 
 renderImageDataDecoder : Decoder ImageRenderComponentData
@@ -220,6 +223,7 @@ renderImageDataDecoder =
     Decode.succeed ImageRenderComponentData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
+        |> JDP.optional "layer" Decode.int 1
 
 
 type alias DirectionNames =
@@ -384,7 +388,7 @@ lifetimeDataDecoder =
 
 lifetimeAction : Decoder LifetimeAction
 lifetimeAction =
-    Decode.string
+    Decode.field "type" Decode.string
         |> Decode.andThen
             (\action ->
                 case action of
