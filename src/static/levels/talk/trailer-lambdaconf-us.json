@@ -55,6 +55,10 @@
       {"type": "camera", "data": {"borderSize": 3}},
       {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
+    "end": [
+      {"type": "tag", "data": {"name": "end"}},
+      {"type": "lifetime", "data": {"remainingTicks": 1050}}
+    ],
     "explosion": [
       {"type": "render", "data": {"type": "image", "data": {
         "default": {
@@ -126,7 +130,11 @@
     "plane_00": [
       {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_00"]}}}},
       {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "lifetime", "data": {"remainingTicks": 600, "action": {"type": "become", "data": {"entityName": "plane_zz"}}}}
+      {"type": "lifetime", "data": {"remainingTicks": 500, "action": {"type": "become", "data": {"entityName": "plane_zz"}}}}
+    ],
+    "plane_01": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_01"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}}
     ],
     "plane_09": [
       {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_09"]}}}},
@@ -232,8 +240,12 @@
       {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_35"]}}}},
       {"type": "movement", "data": {"movingTicks": 24}}
     ],
+    "plane_39": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_39"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}}
+    ],
     "plane_40": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_40"]}}}},
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_40", "plane_40_b", "plane_40_b", "plane_40_b"], "ticksPerImage":  1400}}}},
       {"type": "movement", "data": {"movingTicks": 24}}
     ],
     "plane_41": [
@@ -242,11 +254,37 @@
     ],
     "plane_42": [
       {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_42"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}}
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}}
     ],
     "plane_43": [
       {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_43"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}}
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}}
+    ],
+    "lambda_0": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_0"]}}}}
+    ],
+    "lambda_1": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_1"]}}}}
+    ],
+    "lambda_2": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_2"]}}}}
+    ],
+    "lambda_3": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_3"]}}}}
+    ],
+    "lambda_4": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_4"]}}}}
+    ],
+    "lambda_5": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_5"]}}}}
+    ],
+    "lambda_6": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_6"]}}}}
+    ],
+    "lambda_7": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_7"]}}}}
     ]
   },
   "signLength": 3,
@@ -258,6 +296,7 @@
     "std": "static_diamond",
     "pzz": "plane_zz",
     "p00": "plane_00",
+    "p01": "plane_01",
     "p09": "plane_09",
     "p10": "plane_10",
     "p11": "plane_11",
@@ -284,10 +323,20 @@
     "p33": "plane_33",
     "p34": "plane_34",
     "p35": "plane_35",
+    "p39": "plane_39",
     "p40": "plane_40",
     "p41": "plane_41",
     "p42": "plane_42",
-    "p43": "plane_43"
+    "p43": "plane_43",
+    "la0": "lambda_0",
+    "la1": "lambda_1",
+    "la2": "lambda_2",
+    "la3": "lambda_3",
+    "la4": "lambda_4",
+    "la5": "lambda_5",
+    "la6": "lambda_6",
+    "la7": "lambda_7",
+    "end": "end"
   },
   "images": {
     "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
@@ -334,8 +383,13 @@
     "rock-0": "./images/spriters-resource.com/rock-0.png",
     "wall": "./images/spriters-resource.com/wall.png",
     "strong-wall": "./images/spriters-resource.com/strong-wall.png",
-    "background-big": "./images/spriters-resource.com/background-big.png",
+    "bg-1": "./images/plane/bg-1.png",
+    "bg-2": "./images/plane/bg-2.png",
+    "bg-3": "./images/plane/bg-3.png",
+    "bg-4": "./images/plane/bg-4.png",
+    "bg-5": "./images/plane/bg-5.png",
     "plane_00": "./images/plane/tiles/plane_00.png",
+    "plane_01": "./images/plane/tiles/plane_01.png",
     "plane_09": "./images/plane/tiles/plane_09.png",
     "plane_10": "./images/plane/tiles/plane_10.png",
     "plane_11": "./images/plane/tiles/plane_11.png",
@@ -362,50 +416,92 @@
     "plane_33": "./images/plane/tiles/plane_33.png",
     "plane_34": "./images/plane/tiles/plane_34.png",
     "plane_35": "./images/plane/tiles/plane_35.png",
+    "plane_39": "./images/plane/tiles/plane_39.png",
     "plane_40": "./images/plane/tiles/plane_40.png",
     "plane_41": "./images/plane/tiles/plane_41.png",
     "plane_42": "./images/plane/tiles/plane_42.png",
-    "plane_43": "./images/plane/tiles/plane_43.png"
+    "plane_43": "./images/plane/tiles/plane_43.png",
+    "plane_40_b": "./images/plane/tiles/z_plane_40.png",
+    "lambda_0": "./images/lambdaconf/tiles/00.png",
+    "lambda_1": "./images/lambdaconf/tiles/01.png",
+    "lambda_2": "./images/lambdaconf/tiles/02.png",
+    "lambda_3": "./images/lambdaconf/tiles/03.png",
+    "lambda_4": "./images/lambdaconf/tiles/04.png",
+    "lambda_5": "./images/lambdaconf/tiles/05.png",
+    "lambda_6": "./images/lambdaconf/tiles/06.png",
+    "lambda_7": "./images/lambdaconf/tiles/07.png"
   },
   "background": {
     "type": "image",
     "data": {
       "default": {
-        "names": ["background-big"]
+        "names": [
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-2",
+          "bg-3",
+          "bg-4",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5"
+        ],
+        "ticksPerImage": 100
       }
     }
   },
   "scene": [
-    "you               p00                        ",
+    "                                                                              la0la1la2la3",
+    "                                                                              la4la5la6la7",
+    "",
+    "",
+    "you               p00p01end                  ",
     "                  p09p10p11p12p13p14p15p16p17",
     "                  p18p19p20p21p22p23p24p25p26",
     "                  p27p28p29p30p31p32p33p34p35",
-    "                              p40p41p42p43   "
+    "                           p39p40p41p42p43   "
   ],
-  "updateBorder": 20,
+  "updateBorder": 30,
   "subscribers": [
     {
       "type": "onTagDied",
-      "eventActionData": {
-        "type": "failed",
-        "data": {
-          "descriptionProvider": {
-            "type": "static",
-            "data": {"text": "You died"}
-          },
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "currentTick"
-          }
-        }
-      },
-      "tagDiedData": {
-        "tagName": "player",
-        "limit": 1
-      }
-    },
-    {
-      "type": "onInventoryUpdated",
       "eventActionData": {
         "type": "completed",
         "data": {
@@ -420,9 +516,9 @@
           }
         }
       },
-      "inventoryUpdatedData": {
-        "interestedIn": "diamond",
-        "minimumQuantity": 1
+      "tagDiedData": {
+        "tagName": "end",
+        "limit": 1
       }
     }
   ]

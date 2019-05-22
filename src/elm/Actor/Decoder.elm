@@ -301,6 +301,7 @@ movementDataDecoder : Decoder MovementComponentData
 movementDataDecoder =
     Decode.succeed MovementComponentData
         |> JDP.optional "movingTicks" Decode.int 0
+        |> JDP.hardcoded 0
         |> JDP.hardcoded NotMoving
 
 

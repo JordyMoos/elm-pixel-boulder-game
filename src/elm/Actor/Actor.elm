@@ -213,6 +213,7 @@ type alias TransformComponentData =
 
 type alias MovementComponentData =
     { movingTicks : Int
+    , lastHandledTick : Int
     , movingState : MovingState
     }
 

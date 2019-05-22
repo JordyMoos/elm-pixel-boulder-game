@@ -55,6 +55,7 @@ updateTick currentTick inputModel model =
 
         _ ->
             LevelUpdate.update
+                currentTick
                 inputModel
                 model.level
                 model.levelConfig

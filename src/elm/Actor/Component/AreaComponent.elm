@@ -22,11 +22,11 @@ type alias RequiredData =
     }
 
 
-updateAreaComponent : AreaComponentData -> Actor -> Level -> Level
-updateAreaComponent area actor level =
+updateAreaComponent : Int -> AreaComponentData -> Actor -> Level -> Level
+updateAreaComponent currentTick area actor level =
     getRequiredData area actor
         |> Maybe.Extra.filter filterNotMoving
-        |> Maybe.map (handleMovement level)
+        |> Maybe.map (handleMovement currentTick level)
         |> Maybe.withDefault level
 
 
@@ -44,8 +44,8 @@ filterNotMoving requiredData =
     MovementComponent.isNotMoving requiredData.movement
 
 
-handleMovement : Level -> RequiredData -> Level
-handleMovement level data =
+handleMovement : Int -> Level -> RequiredData -> Level
+handleMovement currentTick level data =
     let
         xPositions : List Int
         xPositions =
@@ -70,7 +70,7 @@ handleMovement level data =
         doMovement =
             \actor accLevel ->
                 Common.getTransformComponent actor
-                    |> Maybe.map (\transform -> MovementComponent.createMovingTowards transform.position data.area.direction data.movement)
+                    |> Maybe.map (\transform -> MovementComponent.createMovingTowards currentTick transform.position data.area.direction data.movement)
                     |> Maybe.map (\movementData -> MovementComponent.setMovementData movementData ( actor, accLevel ))
                     |> Maybe.map Tuple.second
                     |> Maybe.withDefault accLevel

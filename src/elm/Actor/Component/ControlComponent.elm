@@ -30,11 +30,11 @@ type alias Action =
     }
 
 
-updateControlComponent : InputController.Model -> ControlComponentData -> Actor -> Level -> Level
-updateControlComponent inputController controlData actor level =
+updateControlComponent : Int -> InputController.Model -> ControlComponentData -> Actor -> Level -> Level
+updateControlComponent currentTick inputController controlData actor level =
     if MovementComponent.isActorMoving actor |> not then
         getControlAction inputController controlData actor level
-            |> Maybe.map (handleAction level)
+            |> Maybe.map (handleAction currentTick level)
             |> Maybe.withDefault level
 
     else
@@ -177,31 +177,31 @@ isAllowedToBePushedByAi direction actor =
         |> Maybe.withDefault True
 
 
-handleAction : Level -> ( Action, Actor ) -> Level
-handleAction level ( action, actor ) =
+handleAction : Int -> Level -> ( Action, Actor ) -> Level
+handleAction currentTick level ( action, actor ) =
     if action.peak then
-        handleStationedDirection level actor action.direction
+        handleStationedDirection currentTick level actor action.direction
 
     else
-        handleMovementDirection level actor action.direction
+        handleMovementDirection currentTick level actor action.direction
 
 
-handleMovementDirection : Level -> Actor -> Direction -> Level
-handleMovementDirection level actor direction =
+handleMovementDirection : Int -> Level -> Actor -> Direction -> Level
+handleMovementDirection currentTick level actor direction =
     case Common.getActorsThatAffectNeighborPosition actor direction level of
         -- No one there
         [] ->
-            MovementComponent.startMovingTowards actor direction level
+            MovementComponent.startMovingTowards currentTick actor direction level
 
         -- Only one actor
         [ otherActor ] ->
             if canBeWalkedOver actor otherActor then
-                MovementComponent.startMovingTowards actor direction level
+                MovementComponent.startMovingTowards currentTick actor direction level
 
             else if canPush actor otherActor direction level then
                 level
-                    |> MovementComponent.startMovingTowards otherActor direction
-                    |> MovementComponent.startMovingTowards actor direction
+                    |> MovementComponent.startMovingTowards currentTick otherActor direction
+                    |> MovementComponent.startMovingTowards currentTick actor direction
 
             else
                 level
@@ -211,8 +211,8 @@ handleMovementDirection level actor direction =
             level
 
 
-handleStationedDirection : Level -> Actor -> Direction -> Level
-handleStationedDirection level actor direction =
+handleStationedDirection : Int -> Level -> Actor -> Direction -> Level
+handleStationedDirection currentTick level actor direction =
     case Common.getActorsThatAffectNeighborPosition actor direction level of
         -- No one there, nothing to peak for then
         [] ->
@@ -221,7 +221,7 @@ handleStationedDirection level actor direction =
         -- Only one actor
         [ otherActor ] ->
             if canPush actor otherActor direction level then
-                MovementComponent.startMovingTowards otherActor direction level
+                MovementComponent.startMovingTowards currentTick otherActor direction level
 
             else
                 Common.getPosition otherActor
