@@ -207,8 +207,19 @@ handleMovementDirection currentTick level actor direction =
                 level
 
         -- Multiple actors. There is no implementation for that scenario
-        _ ->
-            level
+        multipleActors ->
+            let
+                canWalkOverAll =
+                    List.all (\otherActor -> canBeWalkedOver actor otherActor) multipleActors
+            in
+            if canWalkOverAll then
+                List.foldl (\otherActor accLevel -> MovementComponent.startMovingTowards currentTick otherActor direction accLevel)
+                    level
+                    multipleActors
+                    |> MovementComponent.startMovingTowards currentTick actor direction
+
+            else
+                level
 
 
 handleStationedDirection : Int -> Level -> Actor -> Direction -> Level

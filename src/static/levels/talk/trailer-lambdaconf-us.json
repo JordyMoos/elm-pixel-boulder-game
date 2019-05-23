@@ -104,7 +104,7 @@
         }
       }},
       {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+      {"type": "physics", "data": {"strength": 50, "shape": "circle"}}
     ],
     "static_diamond": [
       {"type": "render", "data": {"type": "image", "data": {
