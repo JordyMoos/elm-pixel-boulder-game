@@ -523,6 +523,7 @@ areaDataDecoder =
         |> JDP.required "width" Decode.int
         |> JDP.required "height" Decode.int
         |> JDP.required "direction" directionDecoder
+        |> JDP.required "tags" (Decode.list Decode.string)
 
 
 controlDataDecoder : Decoder ControlComponentData

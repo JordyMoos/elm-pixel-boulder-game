@@ -7,6 +7,7 @@ import Actor.Actor as Actor
         , Component(..)
         , Level
         , MovementComponentData
+        , TagComponentData
         , TransformComponentData
         )
 import Actor.Common as Common
@@ -15,10 +16,16 @@ import Data.Position as Position
 import Maybe.Extra
 
 
-type alias RequiredData =
+type alias RequiredAreaData =
     { area : AreaComponentData
     , transform : TransformComponentData
     , movement : MovementComponentData
+    }
+
+
+type alias RequiredActorData =
+    { transform : TransformComponentData
+    , tag : TagComponentData
     }
 
 
@@ -30,30 +37,30 @@ updateAreaComponent currentTick area actor level =
         |> Maybe.withDefault level
 
 
-getRequiredData : AreaComponentData -> Actor -> Maybe RequiredData
+getRequiredData : AreaComponentData -> Actor -> Maybe RequiredAreaData
 getRequiredData area actor =
     Maybe.map3
-        RequiredData
+        RequiredAreaData
         (Just area)
         (Common.getTransformComponent actor)
         (Common.getMovementComponent actor)
 
 
-filterNotMoving : RequiredData -> Bool
+filterNotMoving : RequiredAreaData -> Bool
 filterNotMoving requiredData =
     MovementComponent.isNotMoving requiredData.movement
 
 
-handleMovement : Int -> Level -> RequiredData -> Level
-handleMovement currentTick level data =
+handleMovement : Int -> Level -> RequiredAreaData -> Level
+handleMovement currentTick level area =
     let
         xPositions : List Int
         xPositions =
-            List.range data.transform.position.x (data.transform.position.x + data.area.width)
+            List.range area.transform.position.x (area.transform.position.x + area.area.width)
 
         yPositions : List Int
         yPositions =
-            List.range data.transform.position.y (data.transform.position.y + data.area.height)
+            List.range area.transform.position.y (area.transform.position.y + area.area.height)
 
         foldY : Int -> Level -> Level
         foldY =
@@ -69,8 +76,13 @@ handleMovement currentTick level data =
         doMovement : Actor -> Level -> Level
         doMovement =
             \actor accLevel ->
-                Common.getTransformComponent actor
-                    |> Maybe.map (\transform -> MovementComponent.createMovingTowards currentTick transform.position data.area.direction data.movement)
+                Maybe.map2
+                    RequiredActorData
+                    (Common.getTransformComponent actor)
+                    (Common.getTagComponent actor)
+                    |> Maybe.Extra.filter (\actorData -> List.member actorData.tag.name area.area.tags)
+                    |> Maybe.map (\actorData -> actorData.transform)
+                    |> Maybe.map (\transform -> MovementComponent.createMovingTowards currentTick transform.position area.area.direction area.movement)
                     |> Maybe.map (\movementData -> MovementComponent.setMovementData movementData ( actor, accLevel ))
                     |> Maybe.map Tuple.second
                     |> Maybe.withDefault accLevel

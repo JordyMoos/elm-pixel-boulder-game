@@ -414,6 +414,7 @@ type alias AreaComponentData =
     { width : Int
     , height : Int
     , direction : Direction
+    , tags : List String
     }
 
 
