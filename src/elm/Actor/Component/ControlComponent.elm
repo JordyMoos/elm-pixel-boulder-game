@@ -206,17 +206,14 @@ handleMovementDirection currentTick level actor direction =
             else
                 level
 
-        -- Multiple actors. There is no implementation for that scenario
+        -- Multiple actors. Can only walk over
         multipleActors ->
             let
                 canWalkOverAll =
                     List.all (\otherActor -> canBeWalkedOver actor otherActor) multipleActors
             in
             if canWalkOverAll then
-                List.foldl (\otherActor accLevel -> MovementComponent.startMovingTowards currentTick otherActor direction accLevel)
-                    level
-                    multipleActors
-                    |> MovementComponent.startMovingTowards currentTick actor direction
+                MovementComponent.startMovingTowards currentTick actor direction level
 
             else
                 level
@@ -258,9 +255,8 @@ canGoInDirection actor direction level =
                 , \() -> canPush actor otherActor direction level
                 ]
 
-        -- Multiple actors. There is no implementation for that scenario
-        _ ->
-            False
+        multipleActors ->
+            List.all (\otherActor -> canBeWalkedOver actor otherActor) multipleActors
 
 
 canPush : Actor -> Actor -> Direction -> Level -> Bool

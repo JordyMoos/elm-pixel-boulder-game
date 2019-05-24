@@ -92,6 +92,7 @@
     ],
     "diamond": [
       {"type": "render", "data": {"type": "image", "data": {
+        "layer": 1,
         "default": {
           "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
           "ticksPerImage": 8
@@ -99,6 +100,7 @@
       }}},
       {"type": "collectible", "data": {"name": "diamond"}},
       {"type": "control", "data": {
+        "settings": {"pushStrength": 0, "walkOverStrength": 50},
         "control": {
           "type": "gravityAi"
         }
