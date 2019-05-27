@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "player": [
+      {"type": "tag", "data": {"name": "player"}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": [
+            "hero-03"
+          ],
+          "ticksPerImage": 6
+        },
+        "layer": 5
+      }}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "up",
+            "nextDirectionOffsets": [0, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 1}}
+    ],
+    "enemy": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["enemy-a-0"],
+          "ticksPerImage": 6
+        },
+        "layer": 3
+      }}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "down",
+            "nextDirectionOffsets": [0, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 1}}
+    ],
+    "camera": [
+      {"type": "camera", "data": {"borderSize": 1}}
+    ],
+    "strongwall": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["strong-wall"]
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ]
+  },
+  "signs": {
+    "p": "player",
+    "e": "enemy",
+    "c": "camera",
+    "#": "strongwall"
+  },
+  "images": {
+    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
+    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
+    "background-big": "./images/spriters-resource.com/background-big.png",
+    "strong-wall": "./images/spriters-resource.com/strong-wall.png"
+  },
+  "background": {
+    "type": "image",
+    "data": {
+      "default": {
+        "names": ["background-big"]
+      }
+    }
+  },
+  "scene": [
+    "######",
+    "",
+    "",
+    "",
+    "",
+    "p     ",
+    "   c e",
+    "",
+    "",
+    "",
+    "",
+    "######"
+  ]
+}

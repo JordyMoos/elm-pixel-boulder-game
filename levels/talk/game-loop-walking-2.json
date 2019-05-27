@@ -1,0 +1,194 @@
+{
+  "entities": {
+    "player": [
+      {"type": "tag", "data": {"name": "player"}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": [
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-66", "hero-67"
+          ],
+          "ticksPerImage": 6
+        },
+        "direction": {
+          "left": {
+            "names": [
+              "hero-06",
+              "hero-07"
+            ],
+            "ticksPerImage": 6
+          },
+          "up": {
+            "names": [
+              "hero-32"
+            ],
+            "ticksPerImage": 6
+          },
+          "right": {
+            "names": [
+              "hero-18",
+              "hero-19"
+            ],
+            "ticksPerImage": 6
+          },
+          "down": {
+            "names": [
+              "hero-00",
+              "hero-01"
+            ],
+            "ticksPerImage": 6
+          }
+        },
+        "layer": 5
+      }}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [0, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}}
+    ],
+    "enemy": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"],
+          "ticksPerImage": 6
+        },
+        "layer": 3
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [0, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "secret-enemy": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"
+          , "pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"
+          , "pet-a-0", "pet-a-1", "enemy-a-2", "enemy-a-3"],
+          "ticksPerImage": 6
+        },
+        "layer": 3
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [0, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "explodable"},
+      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+    ],
+    "camera": [
+      {"type": "camera", "data": {"borderSize": 1}}
+    ],
+    "strongwall": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["strong-wall"]
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ]
+  },
+  "signs": {
+    "p": "player",
+    "e": "enemy",
+    "s": "secret-enemy",
+    "c": "camera",
+    "#": "strongwall"
+  },
+  "images": {
+    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
+    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
+    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
+    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
+    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
+    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
+    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
+    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
+    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
+    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
+    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
+    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
+    "diamond-0": "./images/spriters-resource.com/diamond-0.png",
+    "diamond-1": "./images/spriters-resource.com/diamond-1.png",
+    "diamond-2": "./images/spriters-resource.com/diamond-2.png",
+    "diamond-3": "./images/spriters-resource.com/diamond-3.png",
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png",
+    "dirt": "./images/spriters-resource.com/dirt.png",
+    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
+    "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
+    "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
+    "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
+    "enemy-b-0": "./images/spriters-resource.com/enemy-b-0.png",
+    "enemy-b-1": "./images/spriters-resource.com/enemy-b-1.png",
+    "enemy-b-2": "./images/spriters-resource.com/enemy-b-2.png",
+    "enemy-b-3": "./images/spriters-resource.com/enemy-b-3.png",
+    "enemy-c-0": "./images/spriters-resource.com/enemy-c-0.png",
+    "enemy-c-1": "./images/spriters-resource.com/enemy-c-1.png",
+    "enemy-c-2": "./images/spriters-resource.com/enemy-c-2.png",
+    "enemy-c-3": "./images/spriters-resource.com/enemy-c-3.png",
+    "enemy-d-0": "./images/spriters-resource.com/enemy-d-0.png",
+    "enemy-d-1": "./images/spriters-resource.com/enemy-d-1.png",
+    "enemy-d-2": "./images/spriters-resource.com/enemy-d-2.png",
+    "enemy-d-3": "./images/spriters-resource.com/enemy-d-3.png",
+    "pet-a-0": "./images/spriters-resource.com/pet-a-0.png",
+    "pet-a-1": "./images/spriters-resource.com/pet-a-1.png",
+    "pet-a-2": "./images/spriters-resource.com/pet-a-2.png",
+    "pet-a-3": "./images/spriters-resource.com/pet-a-3.png",
+    "rock-0": "./images/spriters-resource.com/rock-0.png",
+    "wall": "./images/spriters-resource.com/wall.png",
+    "strong-wall": "./images/spriters-resource.com/strong-wall.png",
+    "background-big": "./images/spriters-resource.com/background-big.png"
+  },
+  "background": {
+    "type": "image",
+    "data": {
+      "default": {
+        "names": ["background-big"]
+      }
+    }
+  },
+  "scene": [
+    "############",
+    "#          #",
+    "#       s  #",
+    "#          #",
+    "#          #",
+    "#       p  #",
+    "#     c    #",
+    "#          #",
+    "#          #",
+    "#       e  #",
+    "#          #",
+    "############"
+  ]
+}
