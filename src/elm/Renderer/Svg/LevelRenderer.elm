@@ -137,20 +137,16 @@ drawLevel tick config level images =
                     )
                     acc
         )
-        ( [], [] )
+        Dict.empty
         (List.range yBasePosition yEndPosition)
-        |> (\( back, front ) ->
-                List.append
-                    back
-                    front
-           )
+        |> toSortedList
 
 
-getImage : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getImage : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
 getImage tick config viewPosition position pixelOffset level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
-            (\actor ( backOps, frontOps ) ->
+            (\actor innerAcc ->
                 Render.getRenderComponent actor
                     |> Maybe.andThen
                         (\renderData ->
@@ -174,10 +170,10 @@ getImage tick config viewPosition position pixelOffset level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor acc
+                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor innerAcc
                                     )
                         )
-                    |> Maybe.withDefault acc
+                    |> Maybe.withDefault innerAcc
             )
             acc
 
@@ -191,26 +187,26 @@ getImageOp :
     -> Coordinate
     -> Actor.Images
     -> Actor.Actor
-    -> ( List (Svg msg), List (Svg msg) )
-    -> ( List (Svg msg), List (Svg msg) )
-getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor ( backOps, frontOps ) =
+    -> LayeredSvg msg
+    -> LayeredSvg msg
+getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor acc =
     let
         notMovingOp _ =
             getImageName tick imageRenderData.default
                 |> Maybe.map
                     (\imageName ->
-                        ( List.append backOps
-                            [ Svg.use
+                        addToLayeredSvg
+                            imageRenderData.layer
+                            (Svg.use
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
                                 , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
                                 , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
                                 ]
                                 []
-                            ]
-                        , frontOps
-                        )
+                            )
+                            acc
                     )
-                |> Maybe.withDefault ( backOps, frontOps )
+                |> Maybe.withDefault acc
 
         movingOp towardsData =
             let
@@ -238,18 +234,18 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                 |> getImageName tick
                 |> Maybe.map
                     (\imageName ->
-                        ( backOps
-                        , List.append frontOps
-                            [ Svg.use
+                        addToLayeredSvg
+                            imageRenderData.layer
+                            (Svg.use
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
                                 , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
                                 , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + pixelOffset.y
                                 ]
                                 []
-                            ]
-                        )
+                            )
+                            acc
                     )
-                |> Maybe.withDefault ( backOps, frontOps )
+                |> Maybe.withDefault acc
     in
     Common.getMovementComponent actor
         |> Maybe.andThen Common.getMovingTowardsData
@@ -264,15 +260,15 @@ getImageNamesDataByDirection direction imageRenderData =
         |> Maybe.withDefault imageRenderData.default
 
 
-getDrawOps : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
+getDrawOps : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
 getDrawOps tick config viewPosition position pixelOffset level images acc =
     acc
         |> getPixel tick config viewPosition position pixelOffset level
         |> getImage tick config viewPosition position pixelOffset level images
 
 
-getPixel : Int -> Config -> Position -> Position -> Coordinate -> Level -> ( List (Svg msg), List (Svg msg) ) -> ( List (Svg msg), List (Svg msg) )
-getPixel tick config viewPosition position pixelOffset level ( backOps, frontOps ) =
+getPixel : Int -> Config -> Position -> Position -> Coordinate -> Level -> LayeredSvg msg -> LayeredSvg msg
+getPixel tick config viewPosition position pixelOffset level givenAcc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
@@ -295,13 +291,15 @@ getPixel tick config viewPosition position pixelOffset level ( backOps, frontOps
                                             Common.getMovementComponent actor
                                                 |> Maybe.andThen Common.getMovingTowardsData
                                                 |> Maybe.map (\towardsData -> calculateColor (getColor tick renderData) (100.0 - towardsData.completionPercentage))
-                                                |> Maybe.withDefault (getColor tick renderData)
+                                                |> Maybe.map (\color -> ( renderData.layer, color ))
+                                                |> Maybe.withDefault ( renderData.layer, getColor tick renderData )
                                                 |> Maybe.Just
 
                                         else
                                             Common.getMovementComponent actor
                                                 |> Maybe.andThen Common.getMovingTowardsData
                                                 |> Maybe.map (\towardsData -> calculateColor (getColor tick renderData) towardsData.completionPercentage)
+                                                |> Maybe.map (\color -> ( renderData.layer, color ))
                                     )
                         )
                 )
@@ -310,20 +308,17 @@ getPixel tick config viewPosition position pixelOffset level ( backOps, frontOps
             []
         |> Maybe.Extra.values
         |> List.foldr
-            (\color acc ->
+            (\layerAndColor acc ->
                 case acc of
                     Nothing ->
-                        Just color
+                        Just layerAndColor
 
                     Just accColor ->
-                        Just <| combineColors color accColor
+                        Just <| ( Tuple.first layerAndColor, combineColors (Tuple.second layerAndColor) (Tuple.second accColor) )
             )
             Nothing
-        |> Maybe.andThen
-            (\color ->
-                Just <| ( List.append backOps [ asPixel config viewPosition position pixelOffset color ], frontOps )
-            )
-        |> Maybe.withDefault ( backOps, frontOps )
+        |> Maybe.map (\layerAndColor -> addToLayeredSvg (Tuple.first layerAndColor) (asPixel config viewPosition position pixelOffset (Tuple.second layerAndColor)) givenAcc)
+        |> Maybe.withDefault givenAcc
 
 
 getColor : Int -> Actor.PixelRenderComponentData -> Color
@@ -389,3 +384,25 @@ asPixel config viewPosition position pixelOffset color =
         , Attributes.fill <| Color.toCssString color
         ]
         []
+
+
+type alias LayeredSvg msg =
+    Dict Int (List (Svg msg))
+
+
+addToLayeredSvg : Int -> Svg msg -> LayeredSvg msg -> LayeredSvg msg
+addToLayeredSvg layer svg =
+    Dict.update layer
+        (\maybeList ->
+            case maybeList of
+                Nothing ->
+                    Just [ svg ]
+
+                Just list ->
+                    Just <| svg :: list
+        )
+
+
+toSortedList : LayeredSvg msg -> List (Svg msg)
+toSortedList =
+    Dict.values >> Util.fastConcat

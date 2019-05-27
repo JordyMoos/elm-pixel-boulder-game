@@ -7,7 +7,9 @@ module Actor.Actor exposing
     , AiComponentData
     , AiType(..)
     , AnimationSetup
+    , AreaComponentData
     , AttackComponentData
+    , BecomeActorLifetimeActionData
     , CameraComponentData
     , CollectibleComponentData
     , CollectorComponentData
@@ -39,6 +41,7 @@ module Actor.Actor exposing
     , LevelConfig
     , LevelFailedData
     , LevelFinishedDescriptionProvider(..)
+    , LifetimeAction(..)
     , LifetimeComponentData
     , MovementComponentData
     , MovingDownState(..)
@@ -141,6 +144,7 @@ type alias Images =
 
 type alias LevelConfig =
     { entities : Entities
+    , signLength : Int
     , signs : Signs
     , scene : Scene
     , viewCoordinate : Coordinate
@@ -183,6 +187,7 @@ type Component
     | HealthComponent HealthComponentData
     | AttackComponent AttackComponentData
     | CounterComponent CounterComponentData
+    | AreaComponent AreaComponentData
 
 
 
@@ -208,6 +213,7 @@ type alias TransformComponentData =
 
 type alias MovementComponentData =
     { movingTicks : Int
+    , lastHandledTick : Int
     , movingState : MovingState
     }
 
@@ -382,6 +388,33 @@ type alias TriggerExplodableComponentData =
 
 type alias LifetimeComponentData =
     { remainingTicks : Int
+    , action : LifetimeAction
+    }
+
+
+type LifetimeAction
+    = RemoveActorLifetimeAction
+    | BecomeActorLifetimeAction BecomeActorLifetimeActionData
+
+
+type alias BecomeActorLifetimeActionData =
+    { entityName : String
+    }
+
+
+
+{-
+
+   AreaComponent
+
+-}
+
+
+type alias AreaComponentData =
+    { width : Int
+    , height : Int
+    , direction : Direction
+    , tags : List String
     }
 
 
@@ -460,6 +493,7 @@ type RenderComponentData
 type alias PixelRenderComponentData =
     { colors : List Color
     , ticksPerColor : Int
+    , layer : Int
     }
 
 
@@ -472,6 +506,7 @@ type alias ImagesData =
 type alias ImageRenderComponentData =
     { default : ImagesData
     , direction : Dict Int ImagesData
+    , layer : Int
     }
 
 

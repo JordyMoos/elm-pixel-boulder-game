@@ -6,7 +6,9 @@ import Actor.Actor as Actor
         , AiComponentData
         , AiType(..)
         , AnimationSetup
+        , AreaComponentData
         , AttackComponentData
+        , BecomeActorLifetimeActionData
         , CameraComponentData
         , CollectibleComponentData
         , CollectorComponentData
@@ -32,6 +34,7 @@ import Actor.Actor as Actor
         , LevelConfig
         , LevelFailedData
         , LevelFinishedDescriptionProvider(..)
+        , LifetimeAction(..)
         , LifetimeComponentData
         , MovementComponentData
         , MovingDownState(..)
@@ -75,6 +78,7 @@ levelConfigDecoder : Decoder LevelConfig
 levelConfigDecoder =
     Decode.succeed LevelConfig
         |> JDP.required "entities" entitiesDecoder
+        |> JDP.optional "signLength" Decode.int 1
         |> JDP.required "signs" signsDecoder
         |> JDP.required "scene" sceneDecoder
         |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
@@ -89,6 +93,7 @@ defaultBackground =
     PixelRenderComponent
         { colors = [ Color.white ]
         , ticksPerColor = 1
+        , layer = 0
         }
 
 
@@ -114,6 +119,9 @@ componentDecoder =
                 (case theType of
                     "ai" ->
                         Decode.map AiComponent <| Decode.field "data" aiDataDecoder
+
+                    "zarea" ->
+                        Decode.map AreaComponent <| Decode.field "data" areaDataDecoder
 
                     "control" ->
                         Decode.map ControlComponent <| Decode.field "data" controlDataDecoder
@@ -207,6 +215,7 @@ renderPixelDataDecoder =
     Decode.succeed PixelRenderComponentData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
+        |> JDP.optional "layer" Decode.int 1
 
 
 renderImageDataDecoder : Decoder ImageRenderComponentData
@@ -214,6 +223,7 @@ renderImageDataDecoder =
     Decode.succeed ImageRenderComponentData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
+        |> JDP.optional "layer" Decode.int 1
 
 
 type alias DirectionNames =
@@ -291,6 +301,7 @@ movementDataDecoder : Decoder MovementComponentData
 movementDataDecoder =
     Decode.succeed MovementComponentData
         |> JDP.optional "movingTicks" Decode.int 0
+        |> JDP.hardcoded 0
         |> JDP.hardcoded NotMoving
 
 
@@ -373,6 +384,33 @@ lifetimeDataDecoder : Decoder LifetimeComponentData
 lifetimeDataDecoder =
     Decode.succeed LifetimeComponentData
         |> JDP.required "remainingTicks" Decode.int
+        |> JDP.optional "action" lifetimeAction RemoveActorLifetimeAction
+
+
+lifetimeAction : Decoder LifetimeAction
+lifetimeAction =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\action ->
+                case action of
+                    "remove" ->
+                        Decode.succeed RemoveActorLifetimeAction
+
+                    "become" ->
+                        Decode.map BecomeActorLifetimeAction <| Decode.field "data" becomeActorLifetimeDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode a lifetime action, but the action "
+                                ++ action
+                                ++ " is not supported."
+            )
+
+
+becomeActorLifetimeDecoder : Decoder BecomeActorLifetimeActionData
+becomeActorLifetimeDecoder =
+    Decode.succeed BecomeActorLifetimeActionData
+        |> JDP.required "entityName" Decode.string
 
 
 damageDataDecoder : Decoder DamageComponentData
@@ -477,6 +515,15 @@ adventAiDataDecoder : Decoder AdventAiData
 adventAiDataDecoder =
     Decode.succeed AdventAiData
         |> JDP.required "target" Decode.string
+
+
+areaDataDecoder : Decoder AreaComponentData
+areaDataDecoder =
+    Decode.succeed AreaComponentData
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
+        |> JDP.required "direction" directionDecoder
+        |> JDP.required "tags" (Decode.list Decode.string)
 
 
 controlDataDecoder : Decoder ControlComponentData

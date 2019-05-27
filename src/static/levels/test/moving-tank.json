@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "player": [
+      {"type": "tag", "data": {"name": "player"}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["hero"]
+        }
+      }}},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
+      {"type": "rigid"},
+      {"type": "camera", "data": {"borderSize": 5}},
+      {"type": "explodable"},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "tank": [
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["wall-0"]
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+    ],
+    "tire": [
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["rock-0"]
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+    ],
+    "strongwall": [
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["wall"]
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "failed": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
+    ],
+    "area": [
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "zarea", "data": {"width": 8, "height": 3, "direction": "right"}}
+    ]
+  },
+  "signs": {
+    "p": "player",
+    "t": "tank",
+    "o": "tire",
+    "#": "strongwall",
+    "a": "area"
+  },
+  "images": {
+    "hero": "./images/itch.io/hero.png",
+    "enemy": "./images/itch.io/enemy.png",
+    "wall": "./images/itch.io/wall.png",
+    "rock-0": "./images/spriters-resource.com/rock-0.png",
+    "wall-0": "./images/spriters-resource.com/wall.png"
+  },
+  "background": {
+    "type": "pixel",
+    "data": {
+      "colors": [{"red": 255, "green": 255, "blue": 255}]
+    }
+  },
+  "scene": [
+    "       p        ",
+    "    ############",
+    "     a  tt     ",
+    "     ttttttttt ",
+    "     tttttt    ",
+    "      oooo     "
+  ],
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "failed",
+        "data": {
+          "descriptionProvider": {
+            "type": "static",
+            "data": {"text": "You died"}
+          },
+          "entityNames": ["failed"],
+          "animation": {
+            "type": "currentTick"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "player",
+        "limit": 1
+      }
+    }
+  ]
+}

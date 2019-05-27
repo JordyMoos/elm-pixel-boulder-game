@@ -1,5 +1,6 @@
 module Actor.Component.MovementComponent exposing
     ( calculateCompletionPercentage
+    , createMovingTowards
     , init
     , isActorMoving
     , isActorNotMoving
@@ -8,6 +9,7 @@ module Actor.Component.MovementComponent exposing
     , isMovingDown
     , isNotMoving
     , isNotMovingAt
+    , setMovementData
     , startMovingTowards
     , updateMovementComponent
     )
@@ -29,44 +31,50 @@ import Maybe.Extra
 import Pilf
 
 
-updateMovementComponent : MovementComponentData -> Actor -> Level -> Level
-updateMovementComponent movementData actor level =
-    Common.getMovingTowardsData movementData
-        |> Maybe.map
-            (\towardsData ->
-                if towardsData.tickCountLeft > 0 then
-                    let
-                        newMovementData =
-                            { movementData
-                                | movingState =
-                                    MovingTowards
-                                        { towardsData
-                                            | tickCountLeft = towardsData.tickCountLeft - 1
-                                            , completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
-                                        }
-                            }
-                    in
-                    setMovementData newMovementData ( actor, level )
+updateMovementComponent : Int -> MovementComponentData -> Actor -> Level -> Level
+updateMovementComponent currentTick movementData actor level =
+    if currentTick == movementData.lastHandledTick then
+        level
 
-                else
-                    -- Finished moving
-                    setTransformToPosition towardsData.position ( actor, level )
-                        |> setMovementData (notMovingData movementData)
-            )
-        |> Maybe.map Tuple.second
-        |> Maybe.withDefault level
+    else
+        Common.getMovingTowardsData movementData
+            |> Maybe.map
+                (\towardsData ->
+                    if towardsData.tickCountLeft > 0 then
+                        let
+                            newMovementData =
+                                { movementData
+                                    | lastHandledTick = currentTick
+                                    , movingState =
+                                        MovingTowards
+                                            { towardsData
+                                                | tickCountLeft = towardsData.tickCountLeft - 1
+                                                , completionPercentage = calculateCompletionPercentage towardsData.totalTickCount towardsData.tickCountLeft
+                                            }
+                                }
+                        in
+                        setMovementData newMovementData ( actor, level )
+
+                    else
+                        -- Finished moving
+                        setTransformToPosition towardsData.position ( actor, level )
+                            |> setMovementData (notMovingData currentTick movementData)
+                )
+            |> Maybe.map Tuple.second
+            |> Maybe.withDefault level
 
 
 init : Int -> MovementComponentData
 init movingTicks =
     { movingTicks = movingTicks
+    , lastHandledTick = 0
     , movingState = NotMoving
     }
 
 
-notMovingData : MovementComponentData -> MovementComponentData
-notMovingData movementData =
-    { movementData | movingState = NotMoving }
+notMovingData : Int -> MovementComponentData -> MovementComponentData
+notMovingData currentTick movementData =
+    { movementData | lastHandledTick = currentTick, movingState = NotMoving }
 
 
 setMovementData : MovementComponentData -> ( Actor, Level ) -> ( Actor, Level )
@@ -163,22 +171,23 @@ isMovingDown actor =
         |> Maybe.Extra.isJust
 
 
-startMovingTowards : Actor -> Direction -> Level -> Level
-startMovingTowards actor direction level =
+startMovingTowards : Int -> Actor -> Direction -> Level -> Level
+startMovingTowards currentTick actor direction level =
     Maybe.map2
         Tuple.pair
         (Common.getTransformComponent actor)
         (Common.getMovementComponent actor)
-        |> Maybe.map (\( transformData, movementData ) -> createMovingTowards transformData.position direction movementData)
+        |> Maybe.map (\( transformData, movementData ) -> createMovingTowards currentTick transformData.position direction movementData)
         |> Maybe.map (Pilf.flip setMovementData ( actor, level ))
         |> Maybe.map Tuple.second
         |> Maybe.withDefault level
 
 
-createMovingTowards : Position -> Direction -> MovementComponentData -> MovementComponentData
-createMovingTowards oldPosition direction movementData =
+createMovingTowards : Int -> Position -> Direction -> MovementComponentData -> MovementComponentData
+createMovingTowards currentTick oldPosition direction movementData =
     { movementData
-        | movingState =
+        | lastHandledTick = currentTick
+        , movingState =
             MovingTowards
                 { position = Position.addDirection oldPosition direction
                 , totalTickCount = movementData.movingTicks

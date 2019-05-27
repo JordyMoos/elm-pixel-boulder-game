@@ -3,6 +3,7 @@ module Actor.LevelUpdate exposing (update)
 import Actor.Actor as Actor exposing (Actor, ActorId, Component, Level, LevelConfig)
 import Actor.Common as Common
 import Actor.Component.AiComponent as Ai
+import Actor.Component.AreaComponent as AreaComponent
 import Actor.Component.CameraComponent as Camera
 import Actor.Component.CollectorComponent as Collector
 import Actor.Component.ControlComponent as Control
@@ -18,8 +19,8 @@ import Dict
 import InputController
 
 
-update : InputController.Model -> Level -> LevelConfig -> Level
-update controllerInput levelBeforeUpdate levelConfig =
+update : Int -> InputController.Model -> Level -> LevelConfig -> Level
+update currentTick controllerInput levelBeforeUpdate levelConfig =
     let
         view =
             levelBeforeUpdate.view
@@ -31,7 +32,7 @@ update controllerInput levelBeforeUpdate levelConfig =
             Coordinate.pixelToTile view.pixelSize view.coordinate.x
 
         preparedUpdateActorsAtPosition =
-            updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput
+            updateActorsAtPosition currentTick levelConfig levelBeforeUpdate controllerInput
 
         yPositions =
             List.range
@@ -54,11 +55,11 @@ update controllerInput levelBeforeUpdate levelConfig =
         yPositions
 
 
-updateActorsAtPosition : LevelConfig -> Level -> InputController.Model -> Int -> Int -> Level -> Level
-updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput x y level =
+updateActorsAtPosition : Int -> LevelConfig -> Level -> InputController.Model -> Int -> Int -> Level -> Level
+updateActorsAtPosition currentTick levelConfig levelBeforeUpdate controllerInput x y level =
     let
         preparedUpdateActorById =
-            updateActorById levelConfig levelBeforeUpdate controllerInput
+            updateActorById currentTick levelConfig levelBeforeUpdate controllerInput
     in
     Common.getDynamicActorIdsByXY x y levelBeforeUpdate
         |> List.foldr
@@ -66,11 +67,11 @@ updateActorsAtPosition levelConfig levelBeforeUpdate controllerInput x y level =
             level
 
 
-updateActorById : LevelConfig -> Level -> InputController.Model -> Level -> ActorId -> Level
-updateActorById levelConfig levelBeforeUpdate controllerInput level actorId =
+updateActorById : Int -> LevelConfig -> Level -> InputController.Model -> Level -> ActorId -> Level
+updateActorById currentTick levelConfig levelBeforeUpdate controllerInput level actorId =
     let
         preparedUpdateComponent =
-            updateComponent levelConfig levelBeforeUpdate controllerInput
+            updateComponent currentTick levelConfig levelBeforeUpdate controllerInput
     in
     Common.getActorById actorId level
         |> Maybe.map
@@ -87,11 +88,14 @@ updateActorById levelConfig levelBeforeUpdate controllerInput level actorId =
         |> Maybe.withDefault level
 
 
-updateComponent : LevelConfig -> Level -> InputController.Model -> Component -> Level -> Actor -> Level
-updateComponent levelConfig levelBeforeUpdate controllerInput component level actor =
+updateComponent : Int -> LevelConfig -> Level -> InputController.Model -> Component -> Level -> Actor -> Level
+updateComponent currentTick levelConfig levelBeforeUpdate controllerInput component level actor =
     case component of
         Actor.AiComponent aiData ->
             Ai.updateAiComponent aiData actor levelConfig.entities levelBeforeUpdate level
+
+        Actor.AreaComponent area ->
+            AreaComponent.updateAreaComponent currentTick area actor level
 
         Actor.CameraComponent camera ->
             Camera.updateCameraComponent camera actor level
@@ -100,7 +104,7 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
             Collector.updateCollectorComponent data actor level
 
         Actor.ControlComponent control ->
-            Control.updateControlComponent controllerInput control actor level
+            Control.updateControlComponent currentTick controllerInput control actor level
 
         Actor.CounterComponent counterData ->
             Counter.updateCounterComponent counterData actor level
@@ -112,13 +116,13 @@ updateComponent levelConfig levelBeforeUpdate controllerInput component level ac
             DownSmash.updateDownSmashComponent downSmash actor level
 
         Actor.LifetimeComponent lifetimeData ->
-            Lifetime.updateLifetimeComponent lifetimeData actor level
+            Lifetime.updateLifetimeComponent lifetimeData actor levelConfig.entities level
 
         Actor.SpawnComponent spawnData ->
             Spawn.updateSpawnComponent levelConfig.entities spawnData actor level
 
         Actor.MovementComponent movementData ->
-            Movement.updateMovementComponent movementData actor level
+            Movement.updateMovementComponent currentTick movementData actor level
 
         Actor.TriggerExplodableComponent triggerData ->
             TriggerExplodable.updateTriggerExplodableComponent triggerData actor level

@@ -1,0 +1,560 @@
+{
+  "entities": {
+    "player": [
+      {"type": "tag", "data": {"name": "player"}},
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": [
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+            "hero-66", "hero-67"
+          ],
+          "ticksPerImage": 6
+        },
+        "direction": {
+          "left": {
+            "names": [
+              "hero-06",
+              "hero-07"
+            ],
+            "ticksPerImage": 6
+          },
+          "up": {
+            "names": [
+              "hero-32"
+            ],
+            "ticksPerImage": 6
+          },
+          "right": {
+            "names": [
+              "hero-18",
+              "hero-19"
+            ],
+            "ticksPerImage": 6
+          },
+          "down": {
+            "names": [
+              "hero-00",
+              "hero-01"
+            ],
+            "ticksPerImage": 6
+          }
+        }
+      }}},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
+      {"type": "rigid"},
+      {"type": "camera", "data": {"borderSize": 3}},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+    ],
+    "end": [
+      {"type": "tag", "data": {"name": "end"}},
+      {"type": "lifetime", "data": {"remainingTicks": 1050}}
+    ],
+    "explosion": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
+          "ticksPerImage": 4
+        }
+      }}},
+      {"type": "lifetime", "data": {"remainingTicks": 16}},
+      {"type": "damage", "data": {"damageStrength": 80}}
+    ],
+    "pet": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"],
+          "ticksPerImage": 6
+        }
+      }}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
+      {"type": "control", "data": {
+        "control": {
+          "type": "walkAroundAi",
+          "data": {
+            "previousDirection": "left",
+            "nextDirectionOffsets": [-1, 0, 1, 2]
+          }
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "explodable"}
+    ],
+    "diamond": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "layer": 1,
+        "default": {
+          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
+          "ticksPerImage": 8
+        }
+      }}},
+      {"type": "collectible", "data": {"name": "diamond"}},
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 0, "walkOverStrength": 50},
+        "control": {
+          "type": "gravityAi"
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "physics", "data": {"strength": 50, "shape": "circle"}}
+    ],
+    "static_diamond": [
+      {"type": "render", "data": {"type": "image", "data": {
+        "default": {
+          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
+          "ticksPerImage": 8
+        }
+      }}},
+      {"type": "collectible", "data": {"name": "diamond"}},
+      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+    ],
+    "failed": [
+      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
+      {"type": "rigid"},
+      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
+      {"type": "damage", "data": {"damageStrength": 1000}}
+    ],
+    "plane_zz": [
+      {"type": "zarea", "data": {"width": 9, "height": 5, "direction": "right", "tags": ["plane", "player"]}},
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_00"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_00": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_00"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "lifetime", "data": {"remainingTicks": 500, "action": {"type": "become", "data": {"entityName": "plane_zz"}}}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_01": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_01"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_09": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_09"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_10": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_10"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_11": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_11"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_12": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_12"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_13": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_13"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_14": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_14"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_15": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_15"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_16": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_16"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_18": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_18"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_19": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_19"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_20": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_20"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_21": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_21"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_22": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_22"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_23": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_23"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_24": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_24"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_25": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_25"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_26": [
+      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_26"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_27": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_27"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_28": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_28"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_29": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_29"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_30": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_30"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_31": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_31"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_32": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_32"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_33": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_33"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_34": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_34"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_35": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_35"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_39": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_39"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_40": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_40", "plane_40_b", "plane_40_b", "plane_40_b"], "ticksPerImage":  1400}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_41": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_41"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_42": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_42"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "plane_43": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_43"]}}}},
+      {"type": "movement", "data": {"movingTicks": 24}},
+      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}},
+      {"type": "tag", "data": {"name": "plane"}}
+    ],
+    "lambda_0": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_0"]}}}}
+    ],
+    "lambda_1": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_1"]}}}}
+    ],
+    "lambda_2": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_2"]}}}}
+    ],
+    "lambda_3": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_3"]}}}}
+    ],
+    "lambda_4": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_4"]}}}}
+    ],
+    "lambda_5": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_5"]}}}}
+    ],
+    "lambda_6": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_6"]}}}}
+    ],
+    "lambda_7": [
+      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_7"]}}}}
+    ]
+  },
+  "signLength": 3,
+  "signs": {
+    "you": "player",
+    "xxx": "explosion",
+    "pet": "pet",
+    "dia": "diamond",
+    "std": "static_diamond",
+    "pzz": "plane_zz",
+    "p00": "plane_00",
+    "p01": "plane_01",
+    "p09": "plane_09",
+    "p10": "plane_10",
+    "p11": "plane_11",
+    "p12": "plane_12",
+    "p13": "plane_13",
+    "p14": "plane_14",
+    "p15": "plane_15",
+    "p16": "plane_16",
+    "p18": "plane_18",
+    "p19": "plane_19",
+    "p20": "plane_20",
+    "p21": "plane_21",
+    "p22": "plane_22",
+    "p23": "plane_23",
+    "p24": "plane_24",
+    "p25": "plane_25",
+    "p26": "plane_26",
+    "p27": "plane_27",
+    "p28": "plane_28",
+    "p29": "plane_29",
+    "p30": "plane_30",
+    "p31": "plane_31",
+    "p32": "plane_32",
+    "p33": "plane_33",
+    "p34": "plane_34",
+    "p35": "plane_35",
+    "p39": "plane_39",
+    "p40": "plane_40",
+    "p41": "plane_41",
+    "p42": "plane_42",
+    "p43": "plane_43",
+    "la0": "lambda_0",
+    "la1": "lambda_1",
+    "la2": "lambda_2",
+    "la3": "lambda_3",
+    "la4": "lambda_4",
+    "la5": "lambda_5",
+    "la6": "lambda_6",
+    "la7": "lambda_7",
+    "end": "end"
+  },
+  "images": {
+    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
+    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
+    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
+    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
+    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
+    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
+    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
+    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
+    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
+    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
+    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
+    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
+    "diamond-0": "./images/spriters-resource.com/diamond-0.png",
+    "diamond-1": "./images/spriters-resource.com/diamond-1.png",
+    "diamond-2": "./images/spriters-resource.com/diamond-2.png",
+    "diamond-3": "./images/spriters-resource.com/diamond-3.png",
+    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
+    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
+    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
+    "explosion-3": "./images/spriters-resource.com/explosion-3.png",
+    "dirt": "./images/spriters-resource.com/dirt.png",
+    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
+    "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
+    "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
+    "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
+    "enemy-b-0": "./images/spriters-resource.com/enemy-b-0.png",
+    "enemy-b-1": "./images/spriters-resource.com/enemy-b-1.png",
+    "enemy-b-2": "./images/spriters-resource.com/enemy-b-2.png",
+    "enemy-b-3": "./images/spriters-resource.com/enemy-b-3.png",
+    "enemy-c-0": "./images/spriters-resource.com/enemy-c-0.png",
+    "enemy-c-1": "./images/spriters-resource.com/enemy-c-1.png",
+    "enemy-c-2": "./images/spriters-resource.com/enemy-c-2.png",
+    "enemy-c-3": "./images/spriters-resource.com/enemy-c-3.png",
+    "enemy-d-0": "./images/spriters-resource.com/enemy-d-0.png",
+    "enemy-d-1": "./images/spriters-resource.com/enemy-d-1.png",
+    "enemy-d-2": "./images/spriters-resource.com/enemy-d-2.png",
+    "enemy-d-3": "./images/spriters-resource.com/enemy-d-3.png",
+    "pet-a-0": "./images/spriters-resource.com/pet-a-0.png",
+    "pet-a-1": "./images/spriters-resource.com/pet-a-1.png",
+    "pet-a-2": "./images/spriters-resource.com/pet-a-2.png",
+    "pet-a-3": "./images/spriters-resource.com/pet-a-3.png",
+    "rock-0": "./images/spriters-resource.com/rock-0.png",
+    "wall": "./images/spriters-resource.com/wall.png",
+    "strong-wall": "./images/spriters-resource.com/strong-wall.png",
+    "bg-1": "./images/plane/bg-1.png",
+    "bg-2": "./images/plane/bg-2.png",
+    "bg-3": "./images/plane/bg-3.png",
+    "bg-4": "./images/plane/bg-4.png",
+    "bg-5": "./images/plane/bg-5.png",
+    "plane_00": "./images/plane/tiles/plane_00.png",
+    "plane_01": "./images/plane/tiles/plane_01.png",
+    "plane_09": "./images/plane/tiles/plane_09.png",
+    "plane_10": "./images/plane/tiles/plane_10.png",
+    "plane_11": "./images/plane/tiles/plane_11.png",
+    "plane_12": "./images/plane/tiles/plane_12.png",
+    "plane_13": "./images/plane/tiles/plane_13.png",
+    "plane_14": "./images/plane/tiles/plane_14.png",
+    "plane_15": "./images/plane/tiles/plane_15.png",
+    "plane_16": "./images/plane/tiles/plane_16.png",
+    "plane_18": "./images/plane/tiles/plane_18.png",
+    "plane_19": "./images/plane/tiles/plane_19.png",
+    "plane_20": "./images/plane/tiles/plane_20.png",
+    "plane_21": "./images/plane/tiles/plane_21.png",
+    "plane_22": "./images/plane/tiles/plane_22.png",
+    "plane_23": "./images/plane/tiles/plane_23.png",
+    "plane_24": "./images/plane/tiles/plane_24.png",
+    "plane_25": "./images/plane/tiles/plane_25.png",
+    "plane_26": "./images/plane/tiles/plane_26.png",
+    "plane_27": "./images/plane/tiles/plane_27.png",
+    "plane_28": "./images/plane/tiles/plane_28.png",
+    "plane_29": "./images/plane/tiles/plane_29.png",
+    "plane_30": "./images/plane/tiles/plane_30.png",
+    "plane_31": "./images/plane/tiles/plane_31.png",
+    "plane_32": "./images/plane/tiles/plane_32.png",
+    "plane_33": "./images/plane/tiles/plane_33.png",
+    "plane_34": "./images/plane/tiles/plane_34.png",
+    "plane_35": "./images/plane/tiles/plane_35.png",
+    "plane_39": "./images/plane/tiles/plane_39.png",
+    "plane_40": "./images/plane/tiles/plane_40.png",
+    "plane_41": "./images/plane/tiles/plane_41.png",
+    "plane_42": "./images/plane/tiles/plane_42.png",
+    "plane_43": "./images/plane/tiles/plane_43.png",
+    "plane_40_b": "./images/plane/tiles/z_plane_40.png",
+    "lambda_0": "./images/lambdaconf/tiles/00.png",
+    "lambda_1": "./images/lambdaconf/tiles/01.png",
+    "lambda_2": "./images/lambdaconf/tiles/02.png",
+    "lambda_3": "./images/lambdaconf/tiles/03.png",
+    "lambda_4": "./images/lambdaconf/tiles/04.png",
+    "lambda_5": "./images/lambdaconf/tiles/05.png",
+    "lambda_6": "./images/lambdaconf/tiles/06.png",
+    "lambda_7": "./images/lambdaconf/tiles/07.png"
+  },
+  "background": {
+    "type": "image",
+    "data": {
+      "default": {
+        "names": [
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-1",
+          "bg-2",
+          "bg-3",
+          "bg-4",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5",
+          "bg-5"
+        ],
+        "ticksPerImage": 100
+      }
+    }
+  },
+  "scene": [
+    "                                                                              la0la1la2la3",
+    "                                                                              la4la5la6la7",
+    "",
+    "",
+    "you               p00p01end                  ",
+    "                  p09p10p11p12p13p14p15p16p17",
+    "                  p18p19p20p21p22p23p24p25p26",
+    "                  p27p28p29p30p31p32p33p34p35",
+    "                           p39p40p41p42p43   "
+  ],
+  "updateBorder": 30,
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "static",
+            "data": {"text": "Level Completed"}
+          },
+          "nextLevel": "official/001",
+          "entityNames": ["diamond"],
+          "animation": {
+            "type": "currentTick"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "end",
+        "limit": 1
+      }
+    }
+  ]
+}

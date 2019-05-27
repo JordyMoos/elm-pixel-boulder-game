@@ -4,6 +4,7 @@ import Actor.Actor as Actor
     exposing
         ( Component(..)
         , Level
+        , LifetimeAction(..)
         , RenderComponentData(..)
         )
 import Actor.Common as Common
@@ -18,8 +19,8 @@ addExplosion x y level =
     Common.addActor
         (Dict.fromList
             [ ( "transform", TransformComponent { position = { x = x, y = y } } )
-            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 4 } )
-            , ( "lifetime", LifetimeComponent { remainingTicks = 16 } )
+            , ( "render", RenderComponent <| PixelRenderComponent { colors = [ Color.red, Color.darkOrange, Color.yellow ], ticksPerColor = 4, layer = 10 } )
+            , ( "lifetime", LifetimeComponent { remainingTicks = 16, action = RemoveActorLifetimeAction } )
             , ( "damage", DamageComponent { damageStrength = 80 } )
             ]
         )
