@@ -8,7 +8,8 @@
             "hero-03"
           ],
           "ticksPerImage": 6
-        }
+        },
+        "layer": 5
       }}},
       {"type": "control", "data": {
         "control": {
@@ -26,7 +27,8 @@
         "default": {
           "names": ["enemy-a-0"],
           "ticksPerImage": 6
-        }
+        },
+        "layer": 3
       }}},
       {"type": "control", "data": {
         "control": {

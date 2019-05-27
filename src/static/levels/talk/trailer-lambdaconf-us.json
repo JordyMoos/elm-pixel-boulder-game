@@ -40,8 +40,7 @@
             ],
             "ticksPerImage": 6
           }
-        },
-        "layer": 5
+        }
       }}},
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},

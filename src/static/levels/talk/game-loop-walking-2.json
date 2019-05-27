@@ -40,7 +40,8 @@
             ],
             "ticksPerImage": 6
           }
-        }
+        },
+        "layer": 5
       }}},
       {"type": "control", "data": {
         "control": {
@@ -58,7 +59,8 @@
         "default": {
           "names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"],
           "ticksPerImage": 6
-        }
+        },
+        "layer": 3
       }}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
@@ -82,7 +84,8 @@
           , "pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"
           , "pet-a-0", "pet-a-1", "enemy-a-2", "enemy-a-3"],
           "ticksPerImage": 6
-        }
+        },
+        "layer": 3
       }}},
       {"type": "rigid"},
       {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
