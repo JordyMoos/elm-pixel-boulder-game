@@ -92,7 +92,7 @@
     ],
     "diamond": [
       {"type": "render", "data": {"type": "image", "data": {
-        "layer": 1,
+        "layer": 0,
         "default": {
           "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
           "ticksPerImage": 8
