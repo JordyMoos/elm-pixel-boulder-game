@@ -9,7 +9,8 @@
     "start": "npm run dev",
     "dev": "webpack-dev-server --hot --colors --port 3000",
     "build": "webpack",
-    "prod": "webpack -p"
+    "prod": "webpack -p",
+    "itch": "webpack -p --env.NODE_ENV=itch"
   },
   "repository": {
     "type": "git",

@@ -9,24 +9,47 @@ const CleanWebpackPlugin = require("clean-webpack-plugin");
 // to extract the css as a separate file
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-var MODE =
-  process.env.npm_lifecycle_event === "prod" ? "production" : "development";
-var filename = MODE === "production" ? "[name]-[hash].js" : "index.js";
-var publicPath = MODE === "production" ? "./" : "/";
+let MODE, OUTPUT_JS_FILE_NAME, PUBLIC_PATH, ENTRY_TEMPLATE, ENTRY_JS;
+
+switch (process.env.npm_lifecycle_event) {
+    case 'itch':
+        MODE = 'production';
+        OUTPUT_JS_FILE_NAME = '[name]-[hash].js';
+        PUBLIC_PATH = './';
+        ENTRY_TEMPLATE = 'src/itch.ejs';
+        ENTRY_JS = './src/itch.js';
+        break;
+
+    case 'prod':
+        MODE = 'production';
+        OUTPUT_JS_FILE_NAME = '[name]-[hash].js';
+        PUBLIC_PATH = './';
+        ENTRY_TEMPLATE = 'src/index.ejs';
+        ENTRY_JS = './src/index.js';
+        break;
+
+    default:
+        MODE = 'development';
+        OUTPUT_JS_FILE_NAME = 'index.js';
+        PUBLIC_PATH = './';
+        ENTRY_TEMPLATE = 'src/index.ejs';
+        ENTRY_JS = './src/index.js';
+        break;
+}
 
 var common = {
   mode: MODE,
-  entry: "./src/index.js",
+  entry: ENTRY_JS,
   output: {
     path: path.join(__dirname, "dist"),
-    publicPath: publicPath,
+    publicPath: PUBLIC_PATH,
     // webpack -p automatically adds hash when building for production
-    filename: filename
+    filename: OUTPUT_JS_FILE_NAME
   },
   plugins: [
     new HTMLWebpackPlugin({
       // Use this template to get basic responsive meta tags
-      template: "src/index.ejs",
+      template: ENTRY_TEMPLATE,
       // inject details of output file at end of body
       inject: "body"
     })
