@@ -265,10 +265,7 @@ updateKey keyCode status keys =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Browser.Events.onKeyPress (Decode.map KeyPressed (Decode.field "key" Decode.string))
-        , Browser.Events.onKeyDown (Decode.map KeyDown (Decode.field "key" Decode.string))
-        , Browser.Events.onKeyUp (Decode.map KeyUp (Decode.field "key" Decode.string))
-        , Ports.keyDown KeyDown
+        [ Ports.keyDown KeyDown
         , Ports.keyUp KeyUp
         ]
 

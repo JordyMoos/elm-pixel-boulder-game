@@ -22,7 +22,6 @@ const defaultEasyScene = `
  ......*...
  ..........`;
 
-
 const urlParams = new URLSearchParams(window.location.search);
 const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
@@ -240,7 +239,20 @@ function runElm() {
       }
     });
 
-    ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'].forEach(function (buttonName) {
+    let trackedKeys = ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'];
+    window.addEventListener('keydown', function(event) {
+      if (trackedKeys.includes(event.key)) {
+        app.ports.keyDown.send(event.key);
+        event.preventDefault();
+      }
+    }, true);window.addEventListener('keyup', function(event) {
+      if (trackedKeys.includes(event.key)) {
+        app.ports.keyUp.send(event.key);
+        event.preventDefault();
+      }
+    }, true);
+
+    trackedKeys.forEach(function (buttonName) {
       ['mousedown', 'touchstart'].forEach(function (eventName) {
         document.getElementById('button-' + buttonName).addEventListener(eventName, function () {
           app.ports.keyDown.send(buttonName);
