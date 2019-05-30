@@ -13,7 +13,8 @@ function runElm() {
       width: 12,
       height: 12,
       pixelSize: 32,
-        debug: false
+      additionalViewBorder: 0,
+      debug: false
     }
   });
 

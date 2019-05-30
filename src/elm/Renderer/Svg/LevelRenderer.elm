@@ -26,8 +26,8 @@ renderLevel currentTick config level images =
         , drawLevel currentTick config level images
         ]
         |> Svg.svg
-            [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
-            , Attributes.height <| String.fromInt <| config.height * config.pixelSize
+            [ Attributes.width <| String.fromInt <| (config.width + (config.additionalViewBorder * 2)) * config.pixelSize
+            , Attributes.height <| String.fromInt <| (config.height + (config.additionalViewBorder * 2)) * config.pixelSize
             , Attributes.x "0"
             , Attributes.y "0"
             , Attributes.version "1.1"
@@ -59,8 +59,8 @@ drawBackground tick config images backgroundData =
             [ Svg.rect
                 [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
                 , Attributes.height <| String.fromInt <| config.height * config.pixelSize
-                , Attributes.x "0"
-                , Attributes.y "0"
+                , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
+                , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                 , Attributes.fill <| Color.toCssString <| getColor tick data
                 ]
                 []
@@ -75,8 +75,8 @@ drawBackground tick config images backgroundData =
                             [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
                             , Attributes.height <| String.fromInt <| config.height * config.pixelSize
                             , Attributes.xlinkHref image
-                            , Attributes.x "0"
-                            , Attributes.y "0"
+                            , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
+                            , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             ]
                             []
                         ]
@@ -102,10 +102,10 @@ drawLevel tick config level images =
             }
 
         xBasePosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.x
+            Coordinate.pixelToTile view.pixelSize view.coordinate.x - config.additionalViewBorder
 
         yBasePosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.y
+            Coordinate.pixelToTile view.pixelSize view.coordinate.y - config.additionalViewBorder
 
         viewPosition =
             { x =
@@ -123,10 +123,10 @@ drawLevel tick config level images =
             }
 
         xEndPosition =
-            xBasePosition + level.view.width
+            xBasePosition + level.view.width + (config.additionalViewBorder * 2)
 
         yEndPosition =
-            yBasePosition + level.view.height
+            yBasePosition + level.view.height + (config.additionalViewBorder * 2)
     in
     List.foldr
         (\y acc ->

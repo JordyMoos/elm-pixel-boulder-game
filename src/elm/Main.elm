@@ -36,6 +36,7 @@ type alias Flags =
     , width : Int
     , height : Int
     , pixelSize : Int
+    , additionalViewBorder : Int
     , debug : Bool
     }
 
@@ -71,6 +72,7 @@ init flags =
             { width = flags.width
             , height = flags.height
             , pixelSize = flags.pixelSize
+            , additionalViewBorder = flags.additionalViewBorder
             }
 
         model =
