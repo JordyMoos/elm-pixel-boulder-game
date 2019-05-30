@@ -31,7 +31,7 @@ switch (process.env.npm_lifecycle_event) {
     default:
         MODE = 'development';
         OUTPUT_JS_FILE_NAME = 'index.js';
-        PUBLIC_PATH = './';
+        PUBLIC_PATH = '/';
         ENTRY_TEMPLATE = 'src/index.ejs';
         ENTRY_JS = './src/index.js';
         break;

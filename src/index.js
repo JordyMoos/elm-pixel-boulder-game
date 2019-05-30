@@ -235,6 +235,7 @@ function runElm() {
         width: urlParams.get('width')|0 || 12,
         height: urlParams.get('height')|0 || 12,
         pixelSize: urlParams.get('pixelSize')|0 || 32,
+        additionalViewBorder: urlParams.get('additionalViewBorder')|0 || 0,
 	      debug: ! hideDebug
       }
     });
