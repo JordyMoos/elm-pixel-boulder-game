@@ -16,6 +16,19 @@ function runElm() {
         debug: false
     }
   });
+
+  let trackedKeys = ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'];
+  window.addEventListener('keydown', function(event) {
+    if (trackedKeys.includes(event.key)) {
+      app.ports.keyDown.send(event.key);
+      event.preventDefault();
+    }
+  }, true);window.addEventListener('keyup', function(event) {
+    if (trackedKeys.includes(event.key)) {
+      app.ports.keyUp.send(event.key);
+      event.preventDefault();
+    }
+  }, true);
 }
 
 runElm();
