@@ -14,7 +14,7 @@ import Data.Config exposing (Config)
 import Html exposing (Html)
 import InputController
 import LevelInitializer
-import Renderer.Svg.LevelRenderer as LevelRenderer
+import Renderer.Aframe.LevelRenderer as LevelRenderer
 
 
 type alias Model =
