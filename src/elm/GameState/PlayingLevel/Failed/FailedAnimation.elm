@@ -14,7 +14,7 @@ import Data.Config exposing (Config)
 import GameState.PlayingLevel.Animation.Animation as Animation
 import Html exposing (Html)
 import InputController
-import Renderer.Svg.LevelRenderer as LevelRenderer
+import Renderer.Aframe.LevelRenderer as LevelRenderer
 
 
 type alias Model =

@@ -17,13 +17,29 @@ import String
 import Util.Util as Util
 
 
+zDistance : String
+zDistance =
+    "-20"
+
+
+type alias Offset =
+    { x : Float
+    , y : Float
+    }
+
+
 renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
 renderLevel currentTick config level images =
     Util.fastConcat
         [ [ drawLoadImages config images ]
         , drawBackground currentTick config images level.background
-        , [ node "a-entity" [ Attributes.attribute "camera" "userHeight: 1.6" ] []
-          ]
+
+        --        , [ node "a-entity"
+        --                [ Attributes.attribute "camera" "userHeight: 1.6"
+        --                , Attributes.attribute "position" "6 -6 0"
+        --                ]
+        --                []
+        --          ]
         , drawLevel currentTick config level images
         ]
         |> node "a-scene" []
@@ -53,7 +69,7 @@ drawBackground tick config images backgroundData =
                 [ Attributes.width config.width
                 , Attributes.height config.height
                 , Attributes.attribute "material" "color: red"
-                , Attributes.attribute "position" "0 0 -20.1"
+                , Attributes.attribute "position" <| "0 0 " ++ zDistance ++ ".1"
                 ]
                 []
             ]
@@ -63,11 +79,10 @@ drawBackground tick config images backgroundData =
                 |> Maybe.map
                     (\image ->
                         [ node "a-image"
-                            [ Attributes.width config.width
-                            , Attributes.height config.height
+                            [ Attributes.width (config.width + 1)
+                            , Attributes.height (config.height + 1)
                             , Attributes.attribute "src" <| "#image-" ++ image
-                            , Attributes.attribute "repeat" <| "12 12"
-                            , Attributes.attribute "position" "0 0 -20"
+                            , Attributes.attribute "position" <| "6 -6 " ++ zDistance ++ ".1"
                             ]
                             []
                         ]
@@ -82,13 +97,11 @@ drawLevel tick config level images =
             level.view
 
         xPixelOffset =
-            0
+            (100 / toFloat view.pixelSize * (toFloat <| modBy view.pixelSize view.coordinate.x)) * 0.01
 
-        -- modBy view.pixelSize view.coordinate.x
         yPixelOffset =
-            0
+            (100 / toFloat view.pixelSize * (toFloat <| modBy view.pixelSize view.coordinate.y)) * 0.01
 
-        --modBy view.pixelSize view.coordinate.y
         viewPixelOffset =
             { x = xPixelOffset * -1
             , y = yPixelOffset * -1
@@ -102,13 +115,13 @@ drawLevel tick config level images =
 
         viewPosition =
             { x =
-                if view.coordinate.x < 0 && viewPixelOffset.x /= 0 then
+                if view.coordinate.x < 0 && viewPixelOffset.x /= 0.0 then
                     xBasePosition - 1
 
                 else
                     xBasePosition
             , y =
-                if view.coordinate.y < 0 && viewPixelOffset.y /= 0 then
+                if view.coordinate.y < 0 && viewPixelOffset.y /= 0.0 then
                     yBasePosition - 1
 
                 else
@@ -135,7 +148,7 @@ drawLevel tick config level images =
         |> toSortedList
 
 
-getImage : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getImage : Int -> Config -> Position -> Position -> Offset -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
 getImage tick config viewPosition position pixelOffset level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
@@ -177,7 +190,7 @@ getImageOp :
     -> Actor.ImageRenderComponentData
     -> Actor.TransformComponentData
     -> Position
-    -> Coordinate
+    -> Offset
     -> Actor.Images
     -> Actor.Actor
     -> LayeredSvg msg
@@ -190,13 +203,13 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                     (\imageName ->
                         let
                             x =
-                                String.fromInt <| (transformData.position.x - viewPosition.x) + pixelOffset.x
+                                String.fromFloat <| toFloat (transformData.position.x - viewPosition.x) + pixelOffset.x
 
                             y =
-                                String.fromInt <| (transformData.position.y - viewPosition.y) + pixelOffset.y
+                                String.fromFloat <| (toFloat (transformData.position.y - viewPosition.y) + pixelOffset.y) * -1.0
 
                             position =
-                                x ++ " " ++ y ++ " " ++ " -20"
+                                x ++ " " ++ y ++ " " ++ " " ++ zDistance
                         in
                         addToLayeredSvg
                             imageRenderData.layer
@@ -238,13 +251,13 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                     (\imageName ->
                         let
                             x =
-                                String.fromFloat <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + toFloat pixelOffset.x
+                                String.fromFloat <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
 
                             y =
-                                String.fromFloat <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + toFloat pixelOffset.y
+                                String.fromFloat <| (calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + pixelOffset.y) * -1.0
 
                             position =
-                                x ++ " " ++ y ++ " " ++ " -20"
+                                x ++ " " ++ y ++ " " ++ " " ++ zDistance
                         in
                         addToLayeredSvg
                             imageRenderData.layer
@@ -271,14 +284,14 @@ getImageNamesDataByDirection direction imageRenderData =
         |> Maybe.withDefault imageRenderData.default
 
 
-getDrawOps : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getDrawOps : Int -> Config -> Position -> Position -> Offset -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
 getDrawOps tick config viewPosition position pixelOffset level images acc =
     acc
         |> getPixel tick config viewPosition position pixelOffset level
         |> getImage tick config viewPosition position pixelOffset level images
 
 
-getPixel : Int -> Config -> Position -> Position -> Coordinate -> Level -> LayeredSvg msg -> LayeredSvg msg
+getPixel : Int -> Config -> Position -> Position -> Offset -> Level -> LayeredSvg msg -> LayeredSvg msg
 getPixel tick config viewPosition position pixelOffset level givenAcc =
     Common.getActorsThatAffect position level
         |> List.foldr
@@ -385,17 +398,17 @@ calculateColor color percentage =
     Color.rgba newRgba.red newRgba.green newRgba.blue newRgba.alpha
 
 
-asPixel : Config -> Position -> Position -> Coordinate -> Color -> Html msg
+asPixel : Config -> Position -> Position -> Offset -> Color -> Html msg
 asPixel config viewPosition position pixelOffset color =
     let
         x =
-            String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
+            String.fromFloat <| (toFloat <| (position.x - viewPosition.x) * config.pixelSize) + pixelOffset.x
 
         y =
-            String.fromInt <| (position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
+            String.fromFloat <| (toFloat <| (position.y - viewPosition.y) * config.pixelSize) + pixelOffset.y
 
         boxPosition =
-            x ++ " " ++ y ++ " " ++ " -20"
+            x ++ " " ++ y ++ " " ++ " " ++ zDistance
     in
     node "a-box"
         [ Attributes.attribute "position" boxPosition
