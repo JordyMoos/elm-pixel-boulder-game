@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "purecss": "^1.0.0",
-    "aframe": "^0.9.2"
+    "aframe": "^0.9.2",
+    "ar.js": "^1.7.1"
   }
 }

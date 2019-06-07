@@ -22,6 +22,11 @@ zDistance =
     "-20"
 
 
+zDistanceBg : String
+zDistanceBg =
+    "-21"
+
+
 type alias Offset =
     { x : Float
     , y : Float
@@ -35,14 +40,18 @@ renderLevel currentTick config level images =
         , drawBackground currentTick config images level.background
 
         --        , [ node "a-entity"
-        --                [ Attributes.attribute "camera" "userHeight: 1.6"
-        --                , Attributes.attribute "position" "6 -6 0"
+        --                [ Attributes.attribute "camera" "camera"
+        --                , Attributes.attribute "position" "6 -6 5"
         --                ]
         --                []
         --          ]
+        --        , [ node "a-entity" [ Attributes.attribute "camera" "camera" ] [] ]
         , drawLevel currentTick config level images
         ]
-        |> node "a-scene" []
+        |> node "a-scene"
+            [ Attributes.attribute "embedded" "embedded"
+            , Attributes.attribute "arjs" "trackingMethod: best;"
+            ]
 
 
 drawLoadImages : Config -> Actor.Images -> Html msg
@@ -69,7 +78,7 @@ drawBackground tick config images backgroundData =
                 [ Attributes.width config.width
                 , Attributes.height config.height
                 , Attributes.attribute "material" "color: red"
-                , Attributes.attribute "position" <| "0 0 " ++ zDistance ++ ".1"
+                , Attributes.attribute "position" <| "0 0 " ++ zDistanceBg ++ ".5"
                 ]
                 []
             ]
@@ -82,7 +91,7 @@ drawBackground tick config images backgroundData =
                             [ Attributes.width (config.width + 1)
                             , Attributes.height (config.height + 1)
                             , Attributes.attribute "src" <| "#image-" ++ image
-                            , Attributes.attribute "position" <| "6 -6 " ++ zDistance ++ ".1"
+                            , Attributes.attribute "position" <| "6 -6 " ++ zDistanceBg ++ ".5"
                             ]
                             []
                         ]
