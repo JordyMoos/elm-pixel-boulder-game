@@ -45,11 +45,11 @@ renderLevel currentTick config level images =
         --                ]
         --                []
         --          ]
-        , [ node "a-camera"
-                [ Attributes.attribute "position" "3 -8 -5"
-                ]
-                []
-          ]
+        --        , [ node "a-camera"
+        --                [ Attributes.attribute "position" "3 -8 -5"
+        --                ]
+        --                []
+        --          ]
         , drawLevel currentTick config level images
         ]
         |> node "a-scene" []
@@ -216,6 +216,9 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                 |> Maybe.map
                     (\imageName ->
                         let
+                            isHero =
+                                String.slice 0 4 imageName == "hero"
+
                             x =
                                 String.fromFloat <| toFloat (transformData.position.x - viewPosition.x) + pixelOffset.x
 
@@ -225,15 +228,31 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             position =
                                 x ++ " " ++ y ++ " " ++ " " ++ zDistance
                         in
-                        addToLayeredSvg
-                            imageRenderData.layer
-                            (Html.node "a-box"
-                                [ Attributes.attribute "src" <| "#image-" ++ imageName
-                                , Attributes.attribute "position" position
-                                ]
-                                []
-                            )
-                            acc
+                        if isHero then
+                            addToLayeredSvg
+                                imageRenderData.layer
+                                (Html.node "a-box"
+                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    , Attributes.attribute "position" position
+                                    ]
+                                    [ node "a-camera"
+                                        [ Attributes.attribute "position" "0 0 4"
+                                        ]
+                                        []
+                                    ]
+                                )
+                                acc
+
+                        else
+                            addToLayeredSvg
+                                imageRenderData.layer
+                                (Html.node "a-box"
+                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    , Attributes.attribute "position" position
+                                    ]
+                                    []
+                                )
+                                acc
                     )
                 |> Maybe.withDefault acc
 
@@ -264,6 +283,9 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                 |> Maybe.map
                     (\imageName ->
                         let
+                            isHero =
+                                String.slice 0 4 imageName == "hero"
+
                             x =
                                 String.fromFloat <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
 
@@ -273,15 +295,31 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             position =
                                 x ++ " " ++ y ++ " " ++ " " ++ zDistance
                         in
-                        addToLayeredSvg
-                            imageRenderData.layer
-                            (node "a-image"
-                                [ Attributes.attribute "src" <| "#image-" ++ imageName
-                                , Attributes.attribute "position" position
-                                ]
-                                []
-                            )
-                            acc
+                        if isHero then
+                            addToLayeredSvg
+                                imageRenderData.layer
+                                (node "a-image"
+                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    , Attributes.attribute "position" position
+                                    ]
+                                    [ node "a-camera"
+                                        [ Attributes.attribute "position" "0 0 4"
+                                        ]
+                                        []
+                                    ]
+                                )
+                                acc
+
+                        else
+                            addToLayeredSvg
+                                imageRenderData.layer
+                                (node "a-image"
+                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    , Attributes.attribute "position" position
+                                    ]
+                                    []
+                                )
+                                acc
                     )
                 |> Maybe.withDefault acc
     in
