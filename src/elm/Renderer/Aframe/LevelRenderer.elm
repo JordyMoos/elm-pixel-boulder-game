@@ -22,6 +22,11 @@ zDistance =
     "-20"
 
 
+zDistanceBG : String
+zDistanceBG =
+    "-22"
+
+
 type alias Offset =
     { x : Float
     , y : Float
@@ -40,6 +45,11 @@ renderLevel currentTick config level images =
         --                ]
         --                []
         --          ]
+        , [ node "a-camera"
+                [ Attributes.attribute "position" "3 -8 -5"
+                ]
+                []
+          ]
         , drawLevel currentTick config level images
         ]
         |> node "a-scene" []
@@ -69,7 +79,7 @@ drawBackground tick config images backgroundData =
                 [ Attributes.width config.width
                 , Attributes.height config.height
                 , Attributes.attribute "material" "color: red"
-                , Attributes.attribute "position" <| "0 0 " ++ zDistance ++ ".1"
+                , Attributes.attribute "position" <| "0 0 " ++ zDistanceBG
                 ]
                 []
             ]
@@ -78,12 +88,16 @@ drawBackground tick config images backgroundData =
             getImageName tick data.default
                 |> Maybe.map
                     (\image ->
-                        [ node "a-image"
-                            [ Attributes.width (config.width + 1)
-                            , Attributes.height (config.height + 1)
-                            , Attributes.attribute "src" <| "#image-" ++ image
-                            , Attributes.attribute "position" <| "6 -6 " ++ zDistance ++ ".1"
-                            ]
+                        --                        [ node "a-image"
+                        --                            [ Attributes.width (config.width + 1)
+                        --                            , Attributes.height (config.height + 1)
+                        --                            , Attributes.attribute "src" <| "#image-" ++ image
+                        --                            , Attributes.attribute "position" <| "6 -6 " ++ zDistanceBG
+                        --                            ]
+                        --                            []
+                        --                        ]
+                        [ node "a-sky"
+                            [ Attributes.attribute "src" <| "#image-" ++ image ]
                             []
                         ]
                     )
@@ -213,7 +227,7 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                         in
                         addToLayeredSvg
                             imageRenderData.layer
-                            (Html.node "a-image"
+                            (Html.node "a-box"
                                 [ Attributes.attribute "src" <| "#image-" ++ imageName
                                 , Attributes.attribute "position" position
                                 ]
