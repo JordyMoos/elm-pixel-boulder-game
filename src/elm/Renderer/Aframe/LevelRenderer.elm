@@ -27,6 +27,11 @@ zDistanceBG =
     "-22"
 
 
+cameraZ : String
+cameraZ =
+    "6"
+
+
 type alias Offset =
     { x : Float
     , y : Float
@@ -232,11 +237,20 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             addToLayeredSvg
                                 imageRenderData.layer
                                 (Html.node "a-box"
-                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    [ Attributes.attribute "material" <|
+                                        String.concat
+                                            [ "src:"
+                                            , "#image-" ++ imageName
+                                            , ";"
+                                            , "transparent:"
+                                            , "true"
+                                            , ";"
+                                            ]
                                     , Attributes.attribute "position" position
                                     ]
                                     [ node "a-camera"
-                                        [ Attributes.attribute "position" "0 0 4"
+                                        [ Attributes.attribute "position" <| "0 0 " ++ cameraZ
+                                        , Attributes.attribute "wasd-controls-enabled" "false"
                                         ]
                                         []
                                     ]
@@ -247,7 +261,15 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             addToLayeredSvg
                                 imageRenderData.layer
                                 (Html.node "a-box"
-                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    [ Attributes.attribute "material" <|
+                                        String.concat
+                                            [ "src:"
+                                            , "#image-" ++ imageName
+                                            , ";"
+                                            , "transparent:"
+                                            , "true"
+                                            , ";"
+                                            ]
                                     , Attributes.attribute "position" position
                                     ]
                                     []
@@ -299,11 +321,20 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             addToLayeredSvg
                                 imageRenderData.layer
                                 (node "a-image"
-                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    [ Attributes.attribute "material" <|
+                                        String.concat
+                                            [ "src:"
+                                            , "#image-" ++ imageName
+                                            , ";"
+                                            , "transparent:"
+                                            , "true"
+                                            , ";"
+                                            ]
                                     , Attributes.attribute "position" position
                                     ]
                                     [ node "a-camera"
-                                        [ Attributes.attribute "position" "0 0 4"
+                                        [ Attributes.attribute "position" <| "0 0 " ++ cameraZ
+                                        , Attributes.attribute "wasd-controls-enabled" "false"
                                         ]
                                         []
                                     ]
@@ -314,7 +345,15 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                             addToLayeredSvg
                                 imageRenderData.layer
                                 (node "a-image"
-                                    [ Attributes.attribute "src" <| "#image-" ++ imageName
+                                    [ Attributes.attribute "material" <|
+                                        String.concat
+                                            [ "src:"
+                                            , "#image-" ++ imageName
+                                            , ";"
+                                            , "transparent:"
+                                            , "true"
+                                            , ";"
+                                            ]
                                     , Attributes.attribute "position" position
                                     ]
                                     []
