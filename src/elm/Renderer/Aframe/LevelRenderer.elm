@@ -169,52 +169,58 @@ drawLevel tick config level images =
 
 getImage : Int -> Config -> Position -> Position -> Offset -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
 getImage tick config viewPosition position pixelOffset level images acc =
-    Common.getActorsThatAffect position level
-        |> List.foldr
-            (\actor innerAcc ->
-                Render.getRenderComponent actor
-                    |> Maybe.andThen
-                        (\renderData ->
-                            case renderData of
-                                Actor.ImageRenderComponent data ->
-                                    Just data
+    let
+        actorsThatAffect =
+            Common.getActorsThatAffect position level
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> Maybe.andThen
-                        (\imageRenderData ->
-                            Common.getTransformComponent actor
-                                |> Maybe.andThen
-                                    (\transformData ->
-                                        if transformData.position == position then
-                                            Just transformData
+        actorsThatAffectCount =
+            List.length actorsThatAffect
+    in
+    List.foldr
+        (\actor innerAcc ->
+            Render.getRenderComponent actor
+                |> Maybe.andThen
+                    (\renderData ->
+                        case renderData of
+                            Actor.ImageRenderComponent data ->
+                                Just data
 
-                                        else
-                                            Nothing
-                                    )
-                                |> Maybe.andThen
-                                    (\transformData ->
-                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor innerAcc
-                                    )
-                        )
-                    |> Maybe.withDefault innerAcc
-            )
-            acc
+                            _ ->
+                                Nothing
+                    )
+                |> Maybe.andThen
+                    (\imageRenderData ->
+                        Common.getTransformComponent actor
+                            |> Maybe.andThen
+                                (\transformData ->
+                                    if transformData.position == position then
+                                        Just transformData
+
+                                    else
+                                        Nothing
+                                )
+                            |> Maybe.andThen
+                                (\transformData ->
+                                    Just <| getImageOp tick imageRenderData transformData viewPosition pixelOffset actor actorsThatAffectCount innerAcc
+                                )
+                    )
+                |> Maybe.withDefault innerAcc
+        )
+        acc
+        actorsThatAffect
 
 
 getImageOp :
     Int
-    -> Config
     -> Actor.ImageRenderComponentData
     -> Actor.TransformComponentData
     -> Position
     -> Offset
-    -> Actor.Images
     -> Actor.Actor
+    -> Int
     -> LayeredSvg msg
     -> LayeredSvg msg
-getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor acc =
+getImageOp tick imageRenderData transformData viewPosition pixelOffset actor actorCount acc =
     let
         notMovingOp _ =
             getImageName tick imageRenderData.default
@@ -268,6 +274,13 @@ getImageOp tick config imageRenderData transformData viewPosition pixelOffset im
                                             , ";"
                                             , "transparent:"
                                             , "true"
+                                            , ";"
+                                            , "opacity:"
+                                            , if actorCount /= 1 then
+                                                "0.5"
+
+                                              else
+                                                "1.0"
                                             , ";"
                                             ]
                                     , Attributes.attribute "position" position
