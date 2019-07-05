@@ -218,8 +218,8 @@ addActor components givenLevel =
                     |> Maybe.map
                         (\transform ->
                             updateViewCoordinate
-                                { x = (transform.position.x - round (toFloat level.view.width / 2)) * level.view.pixelSize
-                                , y = (transform.position.y - round (toFloat level.view.height / 2)) * level.view.pixelSize
+                                { x = (transform.position.x - round (toFloat level.config.width / 2)) * level.config.pixelSize
+                                , y = (transform.position.y - round (toFloat level.config.height / 2)) * level.config.pixelSize
                                 }
                                 level.view
                                 |> (\b a -> setView a b) level

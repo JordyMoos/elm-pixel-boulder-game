@@ -18,16 +18,16 @@ import Svg.Attributes as Attributes
 import Util.Util as Util
 
 
-renderLevel : Int -> Config -> Level -> Actor.Images -> Html msg
-renderLevel currentTick config level images =
+renderLevel : Int -> Level -> Actor.Images -> Html msg
+renderLevel currentTick level images =
     Util.fastConcat
-        [ [ drawLoadImages config images ]
-        , drawBackground currentTick config images level.background
-        , drawLevel currentTick config level images
+        [ [ drawLoadImages level.config images ]
+        , drawBackground currentTick level.config images level.background
+        , drawLevel currentTick level images
         ]
         |> Svg.svg
-            [ Attributes.width <| String.fromInt <| (config.width + (config.additionalViewBorder * 2)) * config.pixelSize
-            , Attributes.height <| String.fromInt <| (config.height + (config.additionalViewBorder * 2)) * config.pixelSize
+            [ Attributes.width <| String.fromInt <| (level.config.width + (level.config.additionalViewBorder * 2)) * level.config.pixelSize
+            , Attributes.height <| String.fromInt <| (level.config.height + (level.config.additionalViewBorder * 2)) * level.config.pixelSize
             , Attributes.x "0"
             , Attributes.y "0"
             , Attributes.version "1.1"
@@ -84,17 +84,17 @@ drawBackground tick config images backgroundData =
                 |> Maybe.withDefault []
 
 
-drawLevel : Int -> Config -> Level -> Actor.Images -> List (Svg msg)
-drawLevel tick config level images =
+drawLevel : Int -> Level -> Actor.Images -> List (Svg msg)
+drawLevel tick level images =
     let
         view =
             level.view
 
         xPixelOffset =
-            modBy view.pixelSize view.coordinate.x
+            modBy level.config.pixelSize view.coordinate.x
 
         yPixelOffset =
-            modBy view.pixelSize view.coordinate.y
+            modBy level.config.pixelSize view.coordinate.y
 
         viewPixelOffset =
             { x = xPixelOffset * -1
@@ -102,10 +102,10 @@ drawLevel tick config level images =
             }
 
         xBasePosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.x - config.additionalViewBorder
+            Coordinate.pixelToTile level.config.pixelSize view.coordinate.x - level.config.additionalViewBorder
 
         yBasePosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.y - config.additionalViewBorder
+            Coordinate.pixelToTile level.config.pixelSize view.coordinate.y - level.config.additionalViewBorder
 
         viewPosition =
             { x =
@@ -123,17 +123,17 @@ drawLevel tick config level images =
             }
 
         xEndPosition =
-            xBasePosition + level.view.width + (config.additionalViewBorder * 2)
+            xBasePosition + level.config.width + (level.config.additionalViewBorder * 2)
 
         yEndPosition =
-            yBasePosition + level.view.height + (config.additionalViewBorder * 2)
+            yBasePosition + level.config.height + (level.config.additionalViewBorder * 2)
     in
     List.foldr
         (\y acc ->
             List.range xBasePosition xEndPosition
                 |> List.foldr
                     (\x innerAcc ->
-                        getDrawOps tick config viewPosition { x = x, y = y } viewPixelOffset level images innerAcc
+                        getDrawOps tick viewPosition { x = x, y = y } viewPixelOffset level images innerAcc
                     )
                     acc
         )
@@ -142,8 +142,8 @@ drawLevel tick config level images =
         |> toSortedList
 
 
-getImage : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
-getImage tick config viewPosition position pixelOffset level images acc =
+getImage : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getImage tick viewPosition position pixelOffset level images acc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor innerAcc ->
@@ -170,7 +170,7 @@ getImage tick config viewPosition position pixelOffset level images acc =
                                     )
                                 |> Maybe.andThen
                                     (\transformData ->
-                                        Just <| getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor innerAcc
+                                        Just <| getImageOp tick level.config imageRenderData transformData viewPosition pixelOffset images actor innerAcc
                                     )
                         )
                     |> Maybe.withDefault innerAcc
@@ -260,15 +260,15 @@ getImageNamesDataByDirection direction imageRenderData =
         |> Maybe.withDefault imageRenderData.default
 
 
-getDrawOps : Int -> Config -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
-getDrawOps tick config viewPosition position pixelOffset level images acc =
+getDrawOps : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getDrawOps tick viewPosition position pixelOffset level images acc =
     acc
-        |> getPixel tick config viewPosition position pixelOffset level
-        |> getImage tick config viewPosition position pixelOffset level images
+        |> getPixel tick viewPosition position pixelOffset level
+        |> getImage tick viewPosition position pixelOffset level images
 
 
-getPixel : Int -> Config -> Position -> Position -> Coordinate -> Level -> LayeredSvg msg -> LayeredSvg msg
-getPixel tick config viewPosition position pixelOffset level givenAcc =
+getPixel : Int -> Position -> Position -> Coordinate -> Level -> LayeredSvg msg -> LayeredSvg msg
+getPixel tick viewPosition position pixelOffset level givenAcc =
     Common.getActorsThatAffect position level
         |> List.foldr
             (\actor acc ->
@@ -317,7 +317,7 @@ getPixel tick config viewPosition position pixelOffset level givenAcc =
                         Just <| ( Tuple.first layerAndColor, combineColors (Tuple.second layerAndColor) (Tuple.second accColor) )
             )
             Nothing
-        |> Maybe.map (\layerAndColor -> addToLayeredSvg (Tuple.first layerAndColor) (asPixel config viewPosition position pixelOffset (Tuple.second layerAndColor)) givenAcc)
+        |> Maybe.map (\layerAndColor -> addToLayeredSvg (Tuple.first layerAndColor) (asPixel level.config viewPosition position pixelOffset (Tuple.second layerAndColor)) givenAcc)
         |> Maybe.withDefault givenAcc
 
 

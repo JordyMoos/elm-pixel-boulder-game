@@ -382,6 +382,19 @@
         "interestedIn": "diamond",
         "minimumQuantity": 11
       }
+    },
+    {
+      "type": "onInventoryUpdated",
+      "eventActionData": {
+        "type": "loadLevel",
+        "data": {
+          "nextLevel": "official/002"
+        }
+      },
+      "inventoryUpdatedData": {
+        "interestedIn": "diamond",
+        "minimumQuantity": 1
+      }
     }
   ]
 }
