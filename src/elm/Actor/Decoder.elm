@@ -531,6 +531,8 @@ controlDataDecoder =
     Decode.succeed ControlComponentData
         |> JDP.optional "settings" controlSettingsDecoder emptyControlSettings
         |> JDP.required "control" controlTypeDecoder
+        |> JDP.optional "steps" Decode.int 1
+        |> JDP.optional "queue" (Decode.list directionDecoder) []
 
 
 controlSettingsDecoder : Decoder ControlSettings

@@ -24,10 +24,13 @@ import Maybe.Extra
 import Util.Util as Util
 
 
-type alias Action =
-    { direction : Direction
-    , peak : Bool
-    }
+type alias Queue =
+    List Direction
+
+
+type Action
+    = Peak Direction
+    | Goto Direction Queue
 
 
 updateControlComponent : Int -> InputController.Model -> ControlComponentData -> Actor -> Level -> Level
@@ -71,15 +74,53 @@ getWalkOverStrength actor =
 
 getControlAction : InputController.Model -> ControlComponentData -> Actor -> Level -> Maybe ( Action, Actor )
 getControlAction inputController controlData actor level =
-    case controlData.control of
-        InputControl ->
-            getInputControlAction inputController actor
+    let
+        fromQueue : Maybe ( Action, Actor )
+        fromQueue =
+            case controlData.queue of
+                head :: remaining ->
+                    Just
+                        ( Goto head remaining
+                        , actor
+                        )
 
-        WalkAroundAiControl aiData ->
-            getWalkAroundAiAction controlData aiData actor level
+                [] ->
+                    Nothing
 
-        GravityAiControl ->
-            getGravityAiAction actor level
+        newControlAction : () -> Maybe ( Action, Actor )
+        newControlAction =
+            \() ->
+                case controlData.control of
+                    InputControl ->
+                        getInputControlAction controlData inputController actor
+
+                    WalkAroundAiControl aiData ->
+                        getWalkAroundAiAction controlData aiData actor level
+
+                    GravityAiControl ->
+                        getGravityAiAction controlData actor level
+    in
+    Maybe.Extra.orLazy fromQueue newControlAction
+
+
+setQueue : Actor -> Queue -> Actor
+setQueue actor queue =
+    let
+        innerSetQueue : ControlComponentData -> Actor
+        innerSetQueue controlData =
+            actor.components
+                |> Dict.insert
+                    "control"
+                    (ControlComponent
+                        { controlData
+                            | queue = queue
+                        }
+                    )
+                |> Common.updateComponents actor
+    in
+    getControlComponent actor
+        |> Maybe.map innerSetQueue
+        |> Maybe.withDefault actor
 
 
 withActor : Actor -> Action -> ( Action, Actor )
@@ -87,10 +128,22 @@ withActor actor action =
     ( action, actor )
 
 
-getInputControlAction : InputController.Model -> Actor -> Maybe ( Action, Actor )
-getInputControlAction inputController actor =
+toQueue : ControlComponentData -> Direction -> Queue
+toQueue controlData direction =
+    List.repeat (controlData.steps - 1) direction
+
+
+getInputControlAction : ControlComponentData -> InputController.Model -> Actor -> Maybe ( Action, Actor )
+getInputControlAction controlData inputController actor =
     InputController.getCurrentDirection inputController
-        |> Maybe.map (\direction -> { direction = direction, peak = InputController.isKeyPressed inputController InputController.submitKey })
+        |> Maybe.map
+            (\direction ->
+                if InputController.isKeyPressed inputController InputController.submitKey then
+                    Peak direction
+
+                else
+                    Goto direction (toQueue controlData direction)
+            )
         |> Maybe.map (withActor actor)
 
 
@@ -120,11 +173,11 @@ getWalkAroundAiAction controlData aiData actor level =
     aiData.nextDirectionOffsets
         |> List.map positionFromDirectionOffset
         |> List.Extra.find (\direction -> canGoInDirection actor direction level)
-        |> Maybe.map (\direction -> ( { direction = direction, peak = False }, updateActor direction ))
+        |> Maybe.map (\direction -> ( Goto direction (toQueue controlData direction), updateActor direction ))
 
 
-getGravityAiAction : Actor -> Level -> Maybe ( Action, Actor )
-getGravityAiAction actor level =
+getGravityAiAction : ControlComponentData -> Actor -> Level -> Maybe ( Action, Actor )
+getGravityAiAction controlData actor level =
     Common.getPosition actor
         |> Maybe.map
             (\position ->
@@ -156,7 +209,7 @@ getGravityAiAction actor level =
         |> Maybe.Extra.toList
         |> Util.fastConcat
         |> List.Extra.find (\( _, predicates ) -> Util.lazyAll predicates)
-        |> Maybe.map (\( direction, _ ) -> ( { direction = direction, peak = False }, actor ))
+        |> Maybe.map (\( direction, _ ) -> ( Goto direction (toQueue controlData direction), actor ))
 
 
 isAllowedToBePushedByAi : Direction -> Actor -> Bool
@@ -179,32 +232,40 @@ isAllowedToBePushedByAi direction actor =
 
 handleAction : Int -> Level -> ( Action, Actor ) -> Level
 handleAction currentTick level ( action, actor ) =
-    if action.peak then
-        handleStationedDirection currentTick level actor action.direction
+    case action of
+        Peak direction ->
+            handleStationedDirection currentTick level actor direction
 
-    else
-        handleMovementDirection currentTick level actor action.direction
+        Goto direction queue ->
+            handleMovementDirection currentTick level actor direction queue
 
 
-handleMovementDirection : Int -> Level -> Actor -> Direction -> Level
-handleMovementDirection currentTick level actor direction =
+handleMovementDirection : Int -> Level -> Actor -> Direction -> Queue -> Level
+handleMovementDirection currentTick level actor direction queue =
+    let
+        clearQueueFromActor : () -> Level
+        clearQueueFromActor _ =
+            setQueue actor []
+                |> Common.updateActor level.actors
+                |> Common.updateActors level
+    in
     case Common.getActorsThatAffectNeighborPosition actor direction level of
         -- No one there
         [] ->
-            MovementComponent.startMovingTowards currentTick actor direction level
+            MovementComponent.startMovingTowards currentTick (setQueue actor queue) direction level
 
         -- Only one actor
         [ otherActor ] ->
             if canBeWalkedOver actor otherActor then
-                MovementComponent.startMovingTowards currentTick actor direction level
+                MovementComponent.startMovingTowards currentTick (setQueue actor queue) direction level
 
             else if canPush actor otherActor direction level then
                 level
                     |> MovementComponent.startMovingTowards currentTick otherActor direction
-                    |> MovementComponent.startMovingTowards currentTick actor direction
+                    |> MovementComponent.startMovingTowards currentTick (setQueue actor queue) direction
 
             else
-                level
+                clearQueueFromActor ()
 
         -- Multiple actors. Can only walk over
         multipleActors ->
@@ -213,10 +274,10 @@ handleMovementDirection currentTick level actor direction =
                     List.all (\otherActor -> canBeWalkedOver actor otherActor) multipleActors
             in
             if canWalkOverAll then
-                MovementComponent.startMovingTowards currentTick actor direction level
+                MovementComponent.startMovingTowards currentTick (setQueue actor queue) direction level
 
             else
-                level
+                clearQueueFromActor ()
 
 
 handleStationedDirection : Int -> Level -> Actor -> Direction -> Level

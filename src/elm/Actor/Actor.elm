@@ -331,6 +331,8 @@ type alias AdventAiData =
 type alias ControlComponentData =
     { settings : ControlSettings
     , control : ControlType
+    , steps : Int
+    , queue : List Direction
     }
 
 
