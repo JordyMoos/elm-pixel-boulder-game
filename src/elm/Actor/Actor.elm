@@ -96,7 +96,8 @@ type alias Actors =
 
 
 type ActorType
-    = StaticActor
+    = EnvironmentActor
+    | StaticActor
     | DynamicActor
 
 
@@ -113,7 +114,8 @@ type alias PositionIndex =
 
 
 type alias PositionIndices =
-    { static : PositionIndex
+    { environment : PositionIndex
+    , static : PositionIndex
     , dynamic : PositionIndex
     }
 

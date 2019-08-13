@@ -88,6 +88,11 @@ updateActors level actors =
     { level | actors = actors }
 
 
+updateEnvironmentPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
+updateEnvironmentPositionIndex environment indices =
+    { indices | environment = environment }
+
+
 updateStaticPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
 updateStaticPositionIndex static indices =
     { indices | static = static }
@@ -253,6 +258,11 @@ incrementNextActorId level =
 addActorToIndices : Position -> Actor -> Level -> Level
 addActorToIndices position actor level =
     case getActorType actor of
+        EnvironmentActor ->
+            addActorToEnvironmentIndex level position actor.id
+                |> Pilf.flip updateEnvironmentPositionIndex level.positionIndices
+                |> updatePositionIndices level
+
         StaticActor ->
             addActorToStaticIndex level position actor.id
                 |> Pilf.flip updateStaticPositionIndex level.positionIndices
@@ -281,6 +291,11 @@ addActorToIndex index position actorId =
         index
 
 
+addActorToEnvironmentIndex : Level -> Position -> ActorId -> PositionIndex
+addActorToEnvironmentIndex level =
+    addActorToIndex level.positionIndices.environment
+
+
 addActorToStaticIndex : Level -> Position -> ActorId -> PositionIndex
 addActorToStaticIndex level =
     addActorToIndex level.positionIndices.static
@@ -294,11 +309,14 @@ addActorToDynamicIndex level =
 getActorType : Actor -> ActorType
 getActorType actor =
     let
-        hasUpdateableComponents =
+        hasUpdateableComponents innerActor =
             List.any
                 (\component ->
                     case component of
                         Actor.AiComponent _ ->
+                            True
+
+                        Actor.AreaComponent _ ->
                             True
 
                         Actor.CameraComponent _ ->
@@ -334,14 +352,43 @@ getActorType actor =
                         _ ->
                             False
                 )
-                (Dict.values actor.components)
-    in
-    case hasUpdateableComponents of
-        True ->
-            DynamicActor
+                (Dict.values innerActor.components)
 
-        False ->
-            StaticActor
+        hasStaticComponents innerActor =
+            List.any
+                (\component ->
+                    case component of
+                        CollectibleComponent _ ->
+                            True
+
+                        PhysicsComponent _ ->
+                            True
+
+                        RigidComponent ->
+                            True
+
+                        ExplodableComponent ->
+                            True
+
+                        HealthComponent _ ->
+                            True
+
+                        AttackComponent _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+                (Dict.values innerActor.components)
+    in
+    if hasUpdateableComponents actor then
+        DynamicActor
+
+    else if hasStaticComponents actor then
+        StaticActor
+
+    else
+        EnvironmentActor
 
 
 

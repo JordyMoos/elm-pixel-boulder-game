@@ -22,7 +22,8 @@ emptyLevel config coordinate =
     { nextActorId = 0
     , actors = Dict.fromList []
     , positionIndices =
-        { static = Dict.fromList []
+        { environment = Dict.fromList []
+        , static = Dict.fromList []
         , dynamic = Dict.fromList []
         }
     , view =
