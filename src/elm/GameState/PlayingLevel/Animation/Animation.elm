@@ -45,7 +45,7 @@ updateTick currentTick model level =
                 (addActor
                     currentTick
                     model
-                    (Position.addPosition position (Coordinate.asPosition level.view.pixelSize level.view.coordinate))
+                    (Position.addPosition position (Coordinate.asPosition level.config.pixelSize level.view.coordinate))
                     level
                 )
 

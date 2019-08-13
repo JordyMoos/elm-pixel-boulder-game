@@ -11,7 +11,7 @@ import String.Extra
 
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
 initLevel config levelConfig =
-    emptyLevel config levelConfig.viewCoordinate
+    emptyLevel (Maybe.withDefault config levelConfig.config) levelConfig.viewCoordinate
         |> setBackground levelConfig.background
         |> setActors levelConfig
         |> setEventManager levelConfig
@@ -28,13 +28,11 @@ emptyLevel config coordinate =
         }
     , view =
         { coordinate = coordinate
-        , pixelSize = config.pixelSize
-        , width = config.width
-        , height = config.height
         }
     , background = Actor.Decoder.defaultBackground
     , eventManager = Actor.emptyEventManager
     , events = []
+    , config = config
     }
 
 

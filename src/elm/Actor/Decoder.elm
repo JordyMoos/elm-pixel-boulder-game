@@ -36,6 +36,7 @@ import Actor.Actor as Actor
         , LevelFinishedDescriptionProvider(..)
         , LifetimeAction(..)
         , LifetimeComponentData
+        , LoadLevelData
         , MovementComponentData
         , MovingDownState(..)
         , MovingState(..)
@@ -55,6 +56,7 @@ import Actor.Actor as Actor
         , WalkAroundAiControlData
         )
 import Color exposing (Color)
+import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position as Position exposing (Position)
@@ -86,6 +88,7 @@ levelConfigDecoder =
         |> JDP.optional "images" imagesDecoder Dict.empty
         |> JDP.optional "background" renderDataDecoder defaultBackground
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
+        |> JDP.optional "config" (Decode.maybe configDecoder) Nothing
 
 
 defaultBackground : RenderComponentData
@@ -95,6 +98,15 @@ defaultBackground =
         , ticksPerColor = 1
         , layer = 0
         }
+
+
+configDecoder : Decoder Config
+configDecoder =
+    Decode.succeed Config
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
+        |> JDP.required "pixelSize" Decode.int
+        |> JDP.required "additionalViewBorder" Decode.int
 
 
 entitiesDecoder : Decoder Entities
@@ -692,6 +704,9 @@ eventActionDecoder =
                     "completed" ->
                         Decode.map LevelCompleted <| Decode.field "data" eventActionCompletedDataDecoder
 
+                    "loadLevel" ->
+                        Decode.map LoadLevel <| Decode.field "data" eventActionLoadLevelDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode subscriber action, but the type "
@@ -715,6 +730,12 @@ eventActionCompletedDataDecoder =
         |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
+
+
+eventActionLoadLevelDataDecoder : Decoder LoadLevelData
+eventActionLoadLevelDataDecoder =
+    Decode.succeed LoadLevelData
+        |> JDP.required "nextLevel" Decode.string
 
 
 descriptionProviderDecoder : Decoder LevelFinishedDescriptionProvider

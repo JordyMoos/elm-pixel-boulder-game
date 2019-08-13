@@ -29,6 +29,7 @@ type Action
     | GotoPauseMenu Actor.Level
     | Failed Actor.Level Actor.LevelFailedData
     | Completed Actor.Level Actor.LevelCompletedData
+    | GotoLevel String
 
 
 init : Config -> Actor.LevelConfig -> Model
@@ -120,6 +121,9 @@ mapEventActionToAction model ( eventManager, eventAction ) =
                 (setEventManager eventManager model.level)
                 data
 
+        Actor.LoadLevel data ->
+            GotoLevel data.nextLevel
+
 
 clearEvents : Actor.Level -> Actor.Level
 clearEvents level =
@@ -138,4 +142,4 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.config model.level model.levelConfig.images
+    LevelRenderer.renderLevel currentTick model.level model.levelConfig.images

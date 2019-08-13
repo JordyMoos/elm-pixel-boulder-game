@@ -43,6 +43,7 @@ module Actor.Actor exposing
     , LevelFinishedDescriptionProvider(..)
     , LifetimeAction(..)
     , LifetimeComponentData
+    , LoadLevelData
     , MovementComponentData
     , MovingDownState(..)
     , MovingState(..)
@@ -103,9 +104,6 @@ type ActorType
 
 type alias View =
     { coordinate : Coordinate
-    , pixelSize : Int
-    , width : Int
-    , height : Int
     }
 
 
@@ -154,6 +152,7 @@ type alias LevelConfig =
     , images : Images
     , background : RenderComponentData
     , subscribers : Subscribers
+    , config : Maybe Config
     }
 
 
@@ -165,6 +164,7 @@ type alias Level =
     , background : RenderComponentData
     , eventManager : EventManager
     , events : Events
+    , config : Config
     }
 
 
@@ -601,6 +601,7 @@ type EventAction
     = LevelContinue
     | LevelFailed LevelFailedData
     | LevelCompleted LevelCompletedData
+    | LoadLevel LoadLevelData
 
 
 type alias LevelFailedData =
@@ -615,6 +616,11 @@ type alias LevelCompletedData =
     , nextLevel : String
     , entityNames : List String
     , animationSetup : AnimationSetup
+    }
+
+
+type alias LoadLevelData =
+    { nextLevel : String
     }
 
 

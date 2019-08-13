@@ -28,7 +28,7 @@ updateCameraComponent camera actor level =
                         view.coordinate
 
                     pixelSize =
-                        view.pixelSize
+                        level.config.pixelSize
 
                     movementOffset =
                         movementToPixels pixelSize actor
@@ -37,10 +37,10 @@ updateCameraComponent camera actor level =
                         camera.borderSize * pixelSize
 
                     width =
-                        view.width * pixelSize
+                        level.config.width * pixelSize
 
                     height =
-                        view.height * pixelSize
+                        level.config.height * pixelSize
 
                     xMin =
                         view.coordinate.x + borderSize
@@ -55,7 +55,7 @@ updateCameraComponent camera actor level =
                         view.coordinate.y + borderSize
 
                     yMax =
-                        view.coordinate.y + width - borderSize
+                        view.coordinate.y + height - borderSize
 
                     entityY =
                         transformData.position.y * pixelSize + movementOffset.y
@@ -82,7 +82,7 @@ updateCameraComponent camera actor level =
                             entityY - borderSize
 
                         else if clampYResult == yMax then
-                            entityY + borderSize - width
+                            entityY + borderSize - height
 
                         else
                             viewCoordinate.y

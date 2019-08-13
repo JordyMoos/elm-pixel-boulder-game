@@ -68,6 +68,9 @@ updateTick currentTick inputModel model =
                             | state = PauseMenuState <| PauseMenu.init model.config level
                         }
 
+                Playing.GotoLevel levelName ->
+                    LoadLevel levelName
+
                 Playing.Failed level data ->
                     Stay
                         { model
