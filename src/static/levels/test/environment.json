@@ -1,50 +1,135 @@
 {
-  "entities": {
-    "player": [
-      {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": [
-            "hero-03"
-          ],
-          "ticksPerImage": 6
-        },
-        "layer": 5
-      }}}
+  "entities":{
+    "player":[
+      {
+        "type":"tag",
+        "data":{
+          "name":"player"
+        }
+      },
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
+                  "hero-66", "hero-67"
+                ],
+                "ticksPerImage": 6
+              },
+              "direction": {
+                "left": {
+                  "names": [
+                    "hero-06",
+                    "hero-07"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "up": {
+                  "names": [
+                    "hero-32"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "right": {
+                  "names": [
+                    "hero-18",
+                    "hero-19"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "down": {
+                  "names": [
+                    "hero-00",
+                    "hero-01"
+                  ],
+                  "ticksPerImage": 6
+                }
+              }
+            }
+          },
+          "layer":5,
+          "width":1,
+          "height":1
+        }
+      },
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
+      {"type": "rigid"},
+      {"type": "explodable"},
+      {"type": "camera", "data": {"borderSize": 5}},
+      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
     ],
-    "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-a-0"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}}
-    ],
-    "camera": [
-      {"type": "camera", "data": {"borderSize": 1}}
+    "enemy":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-a-0"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer":3,
+          "width":1,
+          "height":1
+        }
+      }
     ]
   },
-  "signs": {
-    "p": "player",
-    "e": "enemy",
-    "c": "camera"
+  "signs":{
+    "p":"player",
+    "e":"enemy"
   },
-  "images": {
+  "images":{
+    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
+    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
     "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
-    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
-    "background-big": "./images/spriters-resource.com/background-big.png"
+    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
+    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
+    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
+    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
+    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
+    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
+    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
+    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
+    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
+    "enemy-a-0":"./images/spriters-resource.com/enemy-a-0.png",
+    "background-big":"./images/spriters-resource.com/background-big.png"
   },
-  "background": [{
-    "type": "image",
-    "data": {
-      "default": {
-        "names": ["background-big"]
-      }
-    }
-  }],
-  "scene": [
-    "p    e",
-    "   c  "
+  "background":
+    {
+      "object": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-big"
+            ]
+          }
+        }
+      },
+      "layer":0,
+      "width":12,
+      "height":12
+    },
+  "scene":[
+    "p    e"
   ]
 }

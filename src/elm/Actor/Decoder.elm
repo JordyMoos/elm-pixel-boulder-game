@@ -24,7 +24,7 @@ import Actor.Actor as Actor
         , GameOfLifeAiAction
         , GameOfLifeAiData
         , HealthComponentData
-        , ImageRenderComponentData
+        , ImageObjectData
         , Images
         , ImagesData
         , Inventory
@@ -41,8 +41,9 @@ import Actor.Actor as Actor
         , MovingDownState(..)
         , MovingState(..)
         , PhysicsComponentData
-        , PixelRenderComponentData
-        , RenderComponentData(..)
+        , PixelObjectData
+        , RenderComponentData
+        , RenderObject(..)
         , Scene
         , Shape(..)
         , Signs
@@ -93,11 +94,15 @@ levelConfigDecoder =
 
 defaultBackground : RenderComponentData
 defaultBackground =
-    PixelRenderComponent
-        { colors = [ Color.white ]
-        , ticksPerColor = 1
-        , layer = 0
-        }
+    { object =
+        PixelRenderObject
+            { colors = [ Color.white ]
+            , ticksPerColor = 1
+            }
+    , layer = 1
+    , width = 1
+    , height = 1
+    }
 
 
 configDecoder : Decoder Config
@@ -204,38 +209,45 @@ componentDecoder =
 
 renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
+    Decode.succeed RenderComponentData
+        |> JDP.required "object" renderObjectDecoder
+        |> JDP.optional "layer" Decode.int 1
+        |> JDP.optional "width" Decode.int 1
+        |> JDP.optional "height" Decode.int 1
+
+
+renderObjectDecoder : Decoder RenderObject
+renderObjectDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
                     "pixel" ->
-                        Decode.map PixelRenderComponent <| Decode.field "data" renderPixelDataDecoder
+                        Decode.map PixelRenderObject <| Decode.field "data" renderPixelDataDecoder
 
                     "image" ->
-                        Decode.map ImageRenderComponent <| Decode.field "data" renderImageDataDecoder
+                        Decode.map ImageRenderObject <| Decode.field "data" renderImageDataDecoder
 
                     _ ->
                         Decode.fail <|
-                            "Trying to decode render, but the type "
+                            "Trying to decode render, but the objectType "
                                 ++ theType
                                 ++ " is not supported."
             )
 
 
-renderPixelDataDecoder : Decoder PixelRenderComponentData
+renderPixelDataDecoder : Decoder PixelObjectData
 renderPixelDataDecoder =
-    Decode.succeed PixelRenderComponentData
+    Decode.succeed PixelObjectData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
-        |> JDP.optional "layer" Decode.int 1
 
 
-renderImageDataDecoder : Decoder ImageRenderComponentData
+renderImageDataDecoder : Decoder ImageObjectData
 renderImageDataDecoder =
-    Decode.succeed ImageRenderComponentData
+    Decode.succeed ImageObjectData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
-        |> JDP.optional "layer" Decode.int 1
 
 
 type alias DirectionNames =

@@ -52,7 +52,7 @@ module Actor.Actor exposing
     , PixelObjectData
     , PositionIndex
     , PositionIndices
-    , RenderComponentData(..)
+    , RenderComponentData
     , RenderObject(..)
     , Scene
     , Shape(..)
