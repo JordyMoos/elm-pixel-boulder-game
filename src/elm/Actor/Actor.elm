@@ -30,7 +30,7 @@ module Actor.Actor exposing
     , GameOfLifeAiData
     , Health
     , HealthComponentData
-    , ImageRenderComponentData
+    , ImageObjectData
     , Images
     , ImagesData
     , Inventory
@@ -49,10 +49,11 @@ module Actor.Actor exposing
     , MovingState(..)
     , MovingTowardsData
     , PhysicsComponentData
-    , PixelRenderComponentData
+    , PixelObjectData
     , PositionIndex
     , PositionIndices
     , RenderComponentData(..)
+    , RenderObject(..)
     , Scene
     , Shape(..)
     , Signs
@@ -489,28 +490,34 @@ type MovingDownState
 -}
 
 
-type RenderComponentData
-    = PixelRenderComponent PixelRenderComponentData
-    | ImageRenderComponent ImageRenderComponentData
+type alias RenderComponentData =
+    { object : RenderObject
+    , layer : Int
+    , width : Int
+    , height : Int
+    }
 
 
-type alias PixelRenderComponentData =
+type RenderObject
+    = PixelRenderObject PixelObjectData
+    | ImageRenderObject ImageObjectData
+
+
+type alias PixelObjectData =
     { colors : List Color
     , ticksPerColor : Int
-    , layer : Int
+    }
+
+
+type alias ImageObjectData =
+    { default : ImagesData
+    , direction : Dict Int ImagesData
     }
 
 
 type alias ImagesData =
     { names : List String
     , ticksPerImage : Int
-    }
-
-
-type alias ImageRenderComponentData =
-    { default : ImagesData
-    , direction : Dict Int ImagesData
-    , layer : Int
     }
 
 

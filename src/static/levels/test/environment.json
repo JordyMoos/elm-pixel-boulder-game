@@ -35,14 +35,14 @@
     "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
     "background-big": "./images/spriters-resource.com/background-big.png"
   },
-  "background": {
+  "background": [{
     "type": "image",
     "data": {
       "default": {
         "names": ["background-big"]
       }
     }
-  },
+  }],
   "scene": [
     "p    e",
     "   c  "
