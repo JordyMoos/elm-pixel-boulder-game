@@ -84,17 +84,6 @@ drawBackground tick config images backgroundData =
                 |> Maybe.withDefault []
 
 
-
-{-
-   Environment actors wil ik een grotere afstand laten zoeken.
-   Zodat environment plaatjes meer dan 1 tile in beslag kunnen nemen.
-   De filter voor environment index is dan dus een grotere positie instelling
-
-   Hoe groot het is wordt bij leveliniitialize berekenend door de grootste "image width"
-   te pakken van alle plaatjes en dat op te slaan ergens bij het level.
--}
-
-
 drawLevel : Int -> Level -> Actor.Images -> List (Svg msg)
 drawLevel tick level images =
     let
@@ -138,21 +127,13 @@ drawLevel tick level images =
 
         yEndPosition =
             yBasePosition + level.config.height + (level.config.additionalViewBorder * 2)
-
-        _ =
-            Debug.log "draw grid"
-                { xBasePosition = xBasePosition
-                , xEndPosition = xEndPosition
-                , yBasePosition = yBasePosition
-                , yEndPosition = yEndPosition
-                }
     in
     List.foldr
         (\y acc ->
             List.range xBasePosition xEndPosition
                 |> List.foldr
                     (\x innerAcc ->
-                        drawPosition tick viewPosition { x = x, y = y } viewPixelOffset level images innerAcc
+                        getDrawOps tick viewPosition { x = x, y = y } viewPixelOffset level images innerAcc
                     )
                     acc
         )
@@ -161,53 +142,65 @@ drawLevel tick level images =
         |> toSortedList
 
 
-type alias RenderRequirements =
-    { tick : Int
-    , viewPosition : Position
-    , position : Position
-    , pixelOffset : Coordinate
-    , render : Actor.RenderComponentData
-    , transform : Actor.TransformComponentData
-    , maybeTowards : Maybe Actor.MovingTowardsData
-    }
-
-
-drawPosition : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
-drawPosition tick viewPosition position pixelOffset level images acc =
-    let
-        asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
-        asRenderRequirements actor =
-            Maybe.map3
-                (RenderRequirements tick viewPosition position pixelOffset)
-                (Render.getRenderComponent actor)
-                (Common.getTransformComponent actor)
-                (Common.getMovementComponent actor
-                    |> Maybe.map Common.getMovingTowardsData
-                    |> Maybe.withDefault Nothing
-                    |> Just
-                )
-    in
-    Common.getActorsByPosition position level
-        |> List.filterMap asRenderRequirements
+getImage : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getImage tick viewPosition position pixelOffset level images acc =
+    Common.getActorsThatAffect position level
         |> List.foldr
-            (\renderRequirements innerAcc -> drawRenderRequirements renderRequirements images level innerAcc)
+            (\actor innerAcc ->
+                Render.getRenderComponent actor
+                    |> Maybe.andThen
+                        (\renderData ->
+                            case renderData of
+                                Actor.ImageRenderComponent data ->
+                                    Just data
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> Maybe.andThen
+                        (\imageRenderData ->
+                            Common.getTransformComponent actor
+                                |> Maybe.andThen
+                                    (\transformData ->
+                                        if transformData.position == position then
+                                            Just transformData
+
+                                        else
+                                            Nothing
+                                    )
+                                |> Maybe.andThen
+                                    (\transformData ->
+                                        Just <| getImageOp tick level.config imageRenderData transformData viewPosition pixelOffset images actor innerAcc
+                                    )
+                        )
+                    |> Maybe.withDefault innerAcc
+            )
             acc
 
 
-drawRenderRequirements : RenderRequirements -> Actor.Images -> Level -> LayeredSvg msg -> LayeredSvg msg
-drawRenderRequirements renderRequirements images level acc =
+getImageOp :
+    Int
+    -> Config
+    -> Actor.ImageRenderComponentData
+    -> Actor.TransformComponentData
+    -> Position
+    -> Coordinate
+    -> Actor.Images
+    -> Actor.Actor
+    -> LayeredSvg msg
+    -> LayeredSvg msg
+getImageOp tick config imageRenderData transformData viewPosition pixelOffset images actor acc =
     let
-        imageNotMovingOp : Actor.ImageRenderComponentData -> LayeredSvg msg
-        imageNotMovingOp imageData =
-            getImageName renderRequirements.tick imageData.default
+        notMovingOp _ =
+            getImageName tick imageRenderData.default
                 |> Maybe.map
                     (\imageName ->
                         addToLayeredSvg
-                            imageData.layer
+                            imageRenderData.layer
                             (Svg.use
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
-                                , Attributes.y <| String.fromInt <| (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
+                                , Attributes.x <| String.fromInt <| (transformData.position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
+                                , Attributes.y <| String.fromInt <| (transformData.position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
                                 ]
                                 []
                             )
@@ -215,17 +208,16 @@ drawRenderRequirements renderRequirements images level acc =
                     )
                 |> Maybe.withDefault acc
 
-        imageMovingOp : Actor.ImageRenderComponentData -> Actor.MovingTowardsData -> LayeredSvg msg
-        imageMovingOp imageData towardsData =
+        movingOp towardsData =
             let
                 calculateWithCompletion : Int -> Int -> Int
                 calculateWithCompletion a b =
                     let
                         aFloat =
-                            toFloat (a * level.config.pixelSize)
+                            toFloat (a * config.pixelSize)
 
                         bFloat =
-                            toFloat (b * level.config.pixelSize)
+                            toFloat (b * config.pixelSize)
 
                         diffFloat =
                             bFloat - aFloat
@@ -238,86 +230,27 @@ drawRenderRequirements renderRequirements images level acc =
                     in
                     result
             in
-            getImageNamesDataByDirection towardsData.direction imageData
-                |> getImageName renderRequirements.tick
+            getImageNamesDataByDirection towardsData.direction imageRenderData
+                |> getImageName tick
                 |> Maybe.map
                     (\imageName ->
                         addToLayeredSvg
-                            imageData.layer
+                            imageRenderData.layer
                             (Svg.use
                                 [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| calculateWithCompletion (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) (towardsData.position.x - renderRequirements.viewPosition.x) + renderRequirements.pixelOffset.x
-                                , Attributes.y <| String.fromInt <| calculateWithCompletion (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) (towardsData.position.y - renderRequirements.viewPosition.y) + renderRequirements.pixelOffset.y
+                                , Attributes.x <| String.fromInt <| calculateWithCompletion (transformData.position.x - viewPosition.x) (towardsData.position.x - viewPosition.x) + pixelOffset.x
+                                , Attributes.y <| String.fromInt <| calculateWithCompletion (transformData.position.y - viewPosition.y) (towardsData.position.y - viewPosition.y) + pixelOffset.y
                                 ]
                                 []
                             )
                             acc
                     )
                 |> Maybe.withDefault acc
-
-        pixelNotMovingOp : Actor.PixelRenderComponentData -> LayeredSvg msg
-        pixelNotMovingOp pixelData =
-            let
-                pixelElement : Svg msg
-                pixelElement =
-                    asPixel
-                        level.config
-                        renderRequirements.viewPosition
-                        renderRequirements.position
-                        renderRequirements.pixelOffset
-                        (getColor renderRequirements.tick pixelData)
-            in
-            addToLayeredSvg pixelData.layer pixelElement acc
-
-        pixelMovingOp : Actor.PixelRenderComponentData -> Actor.MovingTowardsData -> LayeredSvg msg
-        pixelMovingOp pixelData towardsData =
-            let
-                originElement : Svg msg
-                originElement =
-                    asPixel
-                        level.config
-                        renderRequirements.viewPosition
-                        renderRequirements.position
-                        renderRequirements.pixelOffset
-                        (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
-
-                destinationElement : Svg msg
-                destinationElement =
-                    asPixel
-                        level.config
-                        renderRequirements.viewPosition
-                        towardsData.position
-                        renderRequirements.pixelOffset
-                        (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
-            in
-            acc
-                |> addToLayeredSvg pixelData.layer originElement
-                |> addToLayeredSvg pixelData.layer destinationElement
     in
-    case ( renderRequirements.render, renderRequirements.maybeTowards ) of
-        ( Actor.PixelRenderComponent pixelData, Nothing ) ->
-            pixelNotMovingOp pixelData
-
-        ( Actor.PixelRenderComponent pixelData, Just towardsData ) ->
-            pixelMovingOp pixelData towardsData
-
-        ( Actor.ImageRenderComponent imageData, Nothing ) ->
-            imageNotMovingOp imageData
-
-        ( Actor.ImageRenderComponent imageData, Just towardsData ) ->
-            imageMovingOp imageData towardsData
-
-
-withCompletionPercentage : Float -> Color -> Color
-withCompletionPercentage completionPercentage color =
-    let
-        rgba =
-            Color.toRgba color
-
-        updatedAlpha =
-            { rgba | alpha = rgba.alpha / 100.0 * completionPercentage }
-    in
-    Color.fromRgba updatedAlpha
+    Common.getMovementComponent actor
+        |> Maybe.andThen Common.getMovingTowardsData
+        |> Maybe.map movingOp
+        |> Maybe.withDefault (notMovingOp ())
 
 
 getImageNamesDataByDirection : Direction -> Actor.ImageRenderComponentData -> Actor.ImagesData
@@ -325,6 +258,13 @@ getImageNamesDataByDirection direction imageRenderData =
     Direction.getIDFromDirection direction
         |> (\a -> Dict.get a imageRenderData.direction)
         |> Maybe.withDefault imageRenderData.default
+
+
+getDrawOps : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> LayeredSvg msg -> LayeredSvg msg
+getDrawOps tick viewPosition position pixelOffset level images acc =
+    acc
+        |> getPixel tick viewPosition position pixelOffset level
+        |> getImage tick viewPosition position pixelOffset level images
 
 
 getPixel : Int -> Position -> Position -> Coordinate -> Level -> LayeredSvg msg -> LayeredSvg msg

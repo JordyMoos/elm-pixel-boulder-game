@@ -10,6 +10,8 @@ module Actor.Common exposing
     , getActorsThatAffectNeighborPosition
     , getCameraComponent
     , getDynamicActorIdsByXY
+    , getEnvironmentActorIdsByPosition
+    , getEnvironmentActorsByPosition
     , getMovementComponent
     , getMovingTowardsData
     , getPosition
@@ -476,6 +478,21 @@ getActorsThatAffect position level =
                             |> Maybe.Extra.isJust
                     ]
             )
+
+
+getEnvironmentActorsByPosition : Position -> Level -> List Actor
+getEnvironmentActorsByPosition position level =
+    getEnvironmentActorIdsByPosition position level
+        |> List.map
+            (\actorId ->
+                getActorById actorId level
+            )
+        |> Maybe.Extra.values
+
+
+getEnvironmentActorIdsByPosition : Position -> Level -> List ActorId
+getEnvironmentActorIdsByPosition position level =
+    Util.dictGetWithDefault level.positionIndices.environment ( position.x, position.y ) []
 
 
 isEmpty : Position -> Level -> Bool
