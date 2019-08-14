@@ -28,8 +28,6 @@ addExplosion x y level =
                             , ticksPerColor = 4
                             }
                     , layer = 10
-                    , width = 1
-                    , height = 1
                     }
               )
             , ( "lifetime", LifetimeComponent { remainingTicks = 16, action = RemoveActorLifetimeAction } )

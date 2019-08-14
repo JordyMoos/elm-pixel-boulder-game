@@ -30,6 +30,7 @@ module Actor.Actor exposing
     , GameOfLifeAiData
     , Health
     , HealthComponentData
+    , Image
     , ImageObjectData
     , Images
     , ImagesData
@@ -140,7 +141,14 @@ type alias Scene =
 
 
 type alias Images =
-    Dict String String
+    Dict String Image
+
+
+type alias Image =
+    { path : String
+    , width : Int
+    , height : Int
+    }
 
 
 type alias LevelConfig =
@@ -493,8 +501,6 @@ type MovingDownState
 type alias RenderComponentData =
     { object : RenderObject
     , layer : Int
-    , width : Int
-    , height : Int
     }
 
 

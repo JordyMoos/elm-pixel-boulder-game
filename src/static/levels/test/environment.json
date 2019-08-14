@@ -53,9 +53,7 @@
               }
             }
           },
-          "layer":5,
-          "width":1,
-          "height":1
+          "layer":5
         }
       },
       {"type": "control", "data": {
@@ -86,32 +84,111 @@
               }
             }
           },
-          "layer":3,
-          "width":1,
-          "height":1
+          "layer":3
+        }
+      }
+    ],
+    "girl":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "girl"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer":3
         }
       }
     ]
   },
   "signs":{
     "p":"player",
-    "e":"enemy"
+    "e":"enemy",
+    "g":"girl"
   },
   "images":{
-    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
-    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
-    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
-    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
-    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
-    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
-    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
-    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
-    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
-    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
-    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
-    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
-    "enemy-a-0":"./images/spriters-resource.com/enemy-a-0.png",
-    "background-big":"./images/spriters-resource.com/background-big.png"
+    "hero-00": {
+      "path": "./images/spriters-resource.com/hero/hero-00.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-01": {
+      "path": "./images/spriters-resource.com/hero/hero-01.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-03": {
+      "path": "./images/spriters-resource.com/hero/hero-03.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-06": {
+      "path": "./images/spriters-resource.com/hero/hero-06.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-07": {
+      "path": "./images/spriters-resource.com/hero/hero-07.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-18": {
+      "path": "./images/spriters-resource.com/hero/hero-18.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-19": {
+      "path": "./images/spriters-resource.com/hero/hero-19.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-32": {
+      "path": "./images/spriters-resource.com/hero/hero-32.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-43": {
+      "path": "./images/spriters-resource.com/hero/hero-43.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-44": {
+      "path": "./images/spriters-resource.com/hero/hero-44.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-66": {
+      "path": "./images/spriters-resource.com/hero/hero-66.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-67": {
+      "path": "./images/spriters-resource.com/hero/hero-67.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-0": {
+      "path": "./images/spriters-resource.com/enemy-a-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "girl": {
+      "path": "./images/girl.png",
+      "width": 54,
+      "height": 59
+    },
+    "background-big": {
+      "path": "./images/spriters-resource.com/background-big.png",
+      "width": 384,
+      "height": 384
+    }
   },
   "background":
     {
@@ -125,11 +202,11 @@
           }
         }
       },
-      "layer":0,
-      "width":12,
-      "height":12
+      "layer":0
     },
   "scene":[
-    "p    e"
+    "p    e",
+    "      ",
+    "  g   "
   ]
 }

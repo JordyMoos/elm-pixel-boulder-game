@@ -24,7 +24,7 @@ type alias LayeredSvg msg =
 renderLevel : Int -> Level -> Actor.Images -> Html msg
 renderLevel currentTick level images =
     Util.fastConcat
-        [ [ drawLoadImages level.config images ]
+        [ [ drawLoadImages images ]
         , drawBackground currentTick level.config images level.background
         , drawLevel currentTick level images
         ]
@@ -33,24 +33,24 @@ renderLevel currentTick level images =
             , Attributes.height <| String.fromInt <| (level.config.height + (level.config.additionalViewBorder * 2)) * level.config.pixelSize
             , Attributes.x "0"
             , Attributes.y "0"
-            , Attributes.version "1.1"
+            , Attributes.version "2.0"
             ]
 
 
-drawLoadImages : Config -> Actor.Images -> Svg msg
-drawLoadImages config images =
+drawLoadImages : Actor.Images -> Svg msg
+drawLoadImages images =
     Dict.toList images
-        |> List.map (drawLoadImage config)
+        |> List.map drawLoadImage
         |> Svg.defs []
 
 
-drawLoadImage : Config -> ( String, String ) -> Svg msg
-drawLoadImage config ( name, path ) =
+drawLoadImage : ( String, Actor.Image ) -> Svg msg
+drawLoadImage ( name, image ) =
     Svg.image
-        [ Attributes.width <| String.fromInt <| config.pixelSize
-        , Attributes.height <| String.fromInt <| config.pixelSize
+        [ Attributes.width <| String.fromInt image.width
+        , Attributes.height <| String.fromInt image.height
         , Attributes.id <| "image-" ++ name
-        , Attributes.xlinkHref path
+        , Attributes.xlinkHref image.path
         ]
         []
 
@@ -75,9 +75,9 @@ drawBackground tick config images backgroundData =
                 |> Maybe.map
                     (\image ->
                         [ Svg.image
-                            [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
-                            , Attributes.height <| String.fromInt <| config.height * config.pixelSize
-                            , Attributes.xlinkHref image
+                            [ Attributes.width <| String.fromInt <| image.width
+                            , Attributes.height <| String.fromInt <| image.height
+                            , Attributes.xlinkHref image.path
                             , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             ]

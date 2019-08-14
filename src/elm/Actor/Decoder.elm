@@ -24,6 +24,7 @@ import Actor.Actor as Actor
         , GameOfLifeAiAction
         , GameOfLifeAiData
         , HealthComponentData
+        , Image
         , ImageObjectData
         , Images
         , ImagesData
@@ -99,9 +100,7 @@ defaultBackground =
             { colors = [ Color.white ]
             , ticksPerColor = 1
             }
-    , layer = 1
-    , width = 1
-    , height = 1
+    , layer = 0
     }
 
 
@@ -212,8 +211,6 @@ renderDataDecoder =
     Decode.succeed RenderComponentData
         |> JDP.required "object" renderObjectDecoder
         |> JDP.optional "layer" Decode.int 1
-        |> JDP.optional "width" Decode.int 1
-        |> JDP.optional "height" Decode.int 1
 
 
 renderObjectDecoder : Decoder RenderObject
@@ -662,7 +659,15 @@ sceneDecoder =
 
 imagesDecoder : Decoder Images
 imagesDecoder =
-    Decode.dict Decode.string
+    Decode.dict imageDecoder
+
+
+imageDecoder : Decoder Image
+imageDecoder =
+    Decode.succeed Image
+        |> JDP.required "path" Decode.string
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
 
 
 subscriberDecoder : Decoder Subscriber
