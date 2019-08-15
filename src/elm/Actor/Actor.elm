@@ -32,8 +32,11 @@ module Actor.Actor exposing
     , HealthComponentData
     , Image
     , ImageObjectData
+    , ImagePositionOffset(..)
+    , ImageType(..)
     , Images
     , ImagesData
+    , InputControlData
     , Inventory
     , InventoryUpdatedSubscriberData
     , KeyedComponent
@@ -49,6 +52,7 @@ module Actor.Actor exposing
     , MovingDownState(..)
     , MovingState(..)
     , MovingTowardsData
+    , PatternImageData
     , PhysicsComponentData
     , PixelObjectData
     , PositionIndex
@@ -148,7 +152,25 @@ type alias Image =
     { path : String
     , width : Int
     , height : Int
+    , imageType : ImageType
     }
+
+
+type ImageType
+    = RegularImage
+    | PatternImage PatternImageData
+
+
+type alias PatternImageData =
+    { xOffset : ImagePositionOffset
+    , yOffset : ImagePositionOffset
+    }
+
+
+type ImagePositionOffset
+    = FixedOffset Int
+    | MultipliedByViewX Float
+    | MultipliedByViewY Float
 
 
 type alias LevelConfig =
@@ -354,9 +376,14 @@ type alias ControlSettings =
 
 
 type ControlType
-    = InputControl
+    = InputControl InputControlData
     | WalkAroundAiControl WalkAroundAiControlData
     | GravityAiControl
+
+
+type alias InputControlData =
+    { allowedDirections : List Direction
+    }
 
 
 type alias WalkAroundAiControlData =
@@ -374,7 +401,10 @@ type alias WalkAroundAiControlData =
 
 
 type alias CameraComponentData =
-    { borderSize : Int
+    { borderLeft : Int
+    , borderUp : Int
+    , borderRight : Int
+    , borderDown : Int
     }
 
 

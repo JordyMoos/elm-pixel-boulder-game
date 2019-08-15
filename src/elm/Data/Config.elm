@@ -6,4 +6,5 @@ type alias Config =
     , height : Int
     , pixelSize : Int
     , additionalViewBorder : Int
+    , additionalEnvironment : Int
     }

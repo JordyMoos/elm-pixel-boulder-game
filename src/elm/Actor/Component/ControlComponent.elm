@@ -7,6 +7,7 @@ import Actor.Actor as Actor
         , ControlComponentData
         , ControlSettings
         , ControlType(..)
+        , InputControlData
         , Level
         , WalkAroundAiControlData
         )
@@ -91,8 +92,8 @@ getControlAction inputController controlData actor level =
         newControlAction =
             \() ->
                 case controlData.control of
-                    InputControl ->
-                        getInputControlAction controlData inputController actor
+                    InputControl inputControlData ->
+                        getInputControlAction controlData inputController inputControlData actor
 
                     WalkAroundAiControl aiData ->
                         getWalkAroundAiAction controlData aiData actor level
@@ -133,9 +134,9 @@ toQueue controlData direction =
     List.repeat (controlData.steps - 1) direction
 
 
-getInputControlAction : ControlComponentData -> InputController.Model -> Actor -> Maybe ( Action, Actor )
-getInputControlAction controlData inputController actor =
-    InputController.getCurrentDirection inputController
+getInputControlAction : ControlComponentData -> InputController.Model -> InputControlData -> Actor -> Maybe ( Action, Actor )
+getInputControlAction controlData inputController inputControlData actor =
+    InputController.getCurrentDirection inputController inputControlData.allowedDirections
         |> Maybe.map
             (\direction ->
                 if InputController.isKeyPressed inputController InputController.submitKey then
@@ -218,7 +219,7 @@ isAllowedToBePushedByAi direction actor =
         |> Maybe.map
             (\controlData ->
                 case controlData.control of
-                    InputControl ->
+                    InputControl _ ->
                         False
 
                     WalkAroundAiControl _ ->

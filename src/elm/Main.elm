@@ -73,6 +73,7 @@ init flags =
             , height = flags.height
             , pixelSize = flags.pixelSize
             , additionalViewBorder = flags.additionalViewBorder
+            , additionalEnvironment = 0
             }
 
         model =

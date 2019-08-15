@@ -25,7 +25,7 @@ type alias LayeredSvg msg =
 renderLevel : Int -> Level -> Actor.Images -> Html msg
 renderLevel currentTick level images =
     Util.fastConcat
-        [ [ drawLoadImages images ]
+        [ [ drawLoadImages level.view images ]
         , drawBackgrounds currentTick level.config images level.backgrounds
         , drawLevel currentTick level images
         ]
@@ -38,34 +38,67 @@ renderLevel currentTick level images =
             ]
 
 
-drawLoadImages : Actor.Images -> Svg msg
-drawLoadImages images =
+drawLoadImages : Actor.View -> Actor.Images -> Svg msg
+drawLoadImages view images =
     Dict.toList images
-        |> List.map drawLoadImage
+        |> List.map (drawLoadImage view)
         |> Svg.defs []
 
 
-drawLoadImage : ( String, Actor.Image ) -> Svg msg
-drawLoadImage ( name, image ) =
-    Svg.image
-        [ Attributes.width <| String.fromInt image.width
-        , Attributes.height <| String.fromInt image.height
-        , Attributes.id <| "image-" ++ name
-        , Attributes.xlinkHref image.path
-        ]
-        []
+drawLoadImage : Actor.View -> ( String, Actor.Image ) -> Svg msg
+drawLoadImage view ( name, image ) =
+    case image.imageType of
+        Actor.RegularImage ->
+            Svg.image
+                [ Attributes.width <| String.fromInt image.width
+                , Attributes.height <| String.fromInt image.height
+                , Attributes.id <| "image-" ++ name
+                , Attributes.xlinkHref image.path
+                ]
+                []
+
+        Actor.PatternImage patternImageData ->
+            Svg.pattern
+                [ Attributes.width <| String.fromInt image.width
+                , Attributes.height <| String.fromInt image.height
+                , Attributes.id <| "pattern-" ++ name
+                , Attributes.x <| getOffset view patternImageData.xOffset
+                , Attributes.y <| getOffset view patternImageData.yOffset
+                , Attributes.patternUnits "userSpaceOnUse"
+                ]
+                [ Svg.image
+                    [ Attributes.width <| String.fromInt image.width
+                    , Attributes.height <| String.fromInt image.height
+                    , Attributes.id <| "image-" ++ name
+                    , Attributes.xlinkHref image.path
+                    ]
+                    []
+                ]
+
+
+getOffset : Actor.View -> Actor.ImagePositionOffset -> String
+getOffset view imagePositionOffset =
+    case imagePositionOffset of
+        Actor.FixedOffset intOffset ->
+            String.fromInt intOffset
+
+        Actor.MultipliedByViewX multiplier ->
+            String.fromFloat <| Basics.toFloat view.coordinate.x * multiplier
+
+        Actor.MultipliedByViewY multiplier ->
+            String.fromFloat <| Basics.toFloat view.coordinate.y * multiplier
 
 
 drawBackgrounds : Int -> Config -> Actor.Images -> List Actor.RenderComponentData -> List (Svg msg)
 drawBackgrounds tick config images backgrounds =
     List.map
-        (drawBackground tick config images)
+        (drawBackground tick config)
         backgrounds
         |> Maybe.Extra.values
 
 
-drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> Maybe (Svg msg)
-drawBackground tick config images backgroundData =
+drawBackground : Int -> Config -> Actor.RenderComponentData -> Maybe (Svg msg)
+drawBackground tick config backgroundData =
     case backgroundData.object of
         Actor.PixelRenderObject data ->
             Svg.rect
@@ -80,13 +113,12 @@ drawBackground tick config images backgroundData =
 
         Actor.ImageRenderObject data ->
             getImageName tick data.default
-                |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
-                    (\image ->
-                        Svg.image
-                            [ Attributes.width <| String.fromInt <| image.width
-                            , Attributes.height <| String.fromInt <| image.height
-                            , Attributes.xlinkHref image.path
+                    (\imageName ->
+                        Svg.rect
+                            [ Attributes.fill <| "url(#pattern-" ++ imageName ++ ")"
+                            , Attributes.width "1024"
+                            , Attributes.height "768"
                             , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             ]
@@ -141,7 +173,7 @@ drawLevel tick level images =
         drawEnvironment givenAcc =
             List.foldr
                 (\y acc ->
-                    List.range xBasePosition xEndPosition
+                    List.range (xBasePosition - level.config.additionalEnvironment) xEndPosition
                         |> List.foldr
                             (\x innerAcc ->
                                 drawActors
@@ -157,7 +189,7 @@ drawLevel tick level images =
                             acc
                 )
                 givenAcc
-                (List.range yBasePosition yEndPosition)
+                (List.range (yBasePosition - level.config.additionalEnvironment) yEndPosition)
 
         drawOtherActors givenAcc =
             List.foldr

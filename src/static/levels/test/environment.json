@@ -1,81 +1,5 @@
 {
   "entities":{
-    "player":[
-      {
-        "type":"tag",
-        "data":{
-          "name":"player"
-        }
-      },
-      {
-        "type":"render",
-        "data":{
-          "object": {
-            "type": "image",
-            "data": {
-              "default": {
-                "names": [
-                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-                  "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-                  "hero-66", "hero-67"
-                ],
-                "ticksPerImage": 6
-              },
-              "direction": {
-                "left": {
-                  "names": [
-                    "hero-06",
-                    "hero-07"
-                  ],
-                  "ticksPerImage": 6
-                },
-                "up": {
-                  "names": [
-                    "hero-32"
-                  ],
-                  "ticksPerImage": 6
-                },
-                "right": {
-                  "names": [
-                    "hero-18",
-                    "hero-19"
-                  ],
-                  "ticksPerImage": 6
-                },
-                "down": {
-                  "names": [
-                    "hero-00",
-                    "hero-01"
-                  ],
-                  "ticksPerImage": 6
-                }
-              }
-            }
-          },
-          "layer":5
-        }
-      }
-    ],
-    "enemy":[
-      {
-        "type":"render",
-        "data":{
-          "object": {
-            "type": "image",
-            "data": {
-              "default": {
-                "names": [
-                  "enemy-a-0"
-                ],
-                "ticksPerImage": 6
-              }
-            }
-          },
-          "layer":3
-        }
-      }
-    ],
     "girl":[
       {
         "type":"render",
@@ -85,163 +9,172 @@
             "data": {
               "default": {
                 "names": [
-                  "girl-0",
-                  "girl-1",
-                  "girl-2",
-                  "girl-3",
-                  "girl-4",
-                  "girl-5"
+                  "girl-00",
+                  "girl-01",
+                  "girl-02",
+                  "girl-03",
+                  "girl-04",
+                  "girl-05"
                 ],
                 "ticksPerImage": 10
               },
               "direction": {
                 "right": {
                   "names": [
-                    "girl-6",
-                    "girl-7",
-                    "girl-8",
-                    "girl-9",
+                    "girl-06",
+                    "girl-07",
+                    "girl-08",
+                    "girl-09",
                     "girl-10"
+                  ],
+                  "ticksPerImage": 8
+                },
+                "left": {
+                  "names": [
+                    "girl-11",
+                    "girl-12",
+                    "girl-13",
+                    "girl-14",
+                    "girl-15"
                   ],
                   "ticksPerImage": 8
                 }
               }
             }
           },
-          "layer":3
+          "layer":100
         }
       },
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "steps": 16,
         "control": {
-          "type": "input"
+          "type": "input",
+          "data": {
+            "allowedDirections": ["left", "right"]
+          }
         }
       }},
-      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "movement", "data": {"movingTicks": 2}},
       {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
       {"type": "rigid"},
-      {"type": "camera", "data": {"borderSize": 5}},
+      {"type": "camera", "data": {
+        "borderLeft": 2,
+        "borderUp": 10,
+        "borderRight": 13,
+        "borderDown": 1
+      }},
       {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    ],
+    "floor":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "floor-1"
+                ]
+              }
+            }
+          },
+          "layer":1
+        }
+      }
+    ],
+    "slide-006":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "slide-006"
+                ]
+              }
+            }
+          },
+          "layer":20
+        }
+      }
+    ],
+    "slide-008":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "slide-008"
+                ]
+              }
+            }
+          },
+          "layer":20
+        }
+      }
     ]
   },
   "signs":{
-    "p":"player",
-    "e":"enemy",
-    "g":"girl"
+    "g":"girl",
+    "-":"floor",
+    "6":"slide-006",
+    "8":"slide-008"
   },
   "images":{
-    "hero-00": {
-      "path": "./images/spriters-resource.com/hero/hero-00.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-01": {
-      "path": "./images/spriters-resource.com/hero/hero-01.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-03": {
-      "path": "./images/spriters-resource.com/hero/hero-03.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-06": {
-      "path": "./images/spriters-resource.com/hero/hero-06.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-07": {
-      "path": "./images/spriters-resource.com/hero/hero-07.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-18": {
-      "path": "./images/spriters-resource.com/hero/hero-18.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-19": {
-      "path": "./images/spriters-resource.com/hero/hero-19.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-32": {
-      "path": "./images/spriters-resource.com/hero/hero-32.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-43": {
-      "path": "./images/spriters-resource.com/hero/hero-43.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-44": {
-      "path": "./images/spriters-resource.com/hero/hero-44.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-66": {
-      "path": "./images/spriters-resource.com/hero/hero-66.png",
-      "width": 32,
-      "height": 32
-    },
-    "hero-67": {
-      "path": "./images/spriters-resource.com/hero/hero-67.png",
-      "width": 32,
-      "height": 32
-    },
-    "enemy-a-0": {
-      "path": "./images/spriters-resource.com/enemy-a-0.png",
-      "width": 32,
-      "height": 32
-    },
-    "girl-0": {
-      "path": "./images/prehistoric/girl/girl-0.png",
+    "girl-00": {
+      "path": "./images/prehistoric/girl/girl-00.png",
       "width": 59,
       "height": 64
     },
-    "girl-1": {
-      "path": "./images/prehistoric/girl/girl-1.png",
+    "girl-01": {
+      "path": "./images/prehistoric/girl/girl-01.png",
       "width": 59,
       "height": 64
     },
-    "girl-2": {
-      "path": "./images/prehistoric/girl/girl-2.png",
+    "girl-02": {
+      "path": "./images/prehistoric/girl/girl-02.png",
       "width": 59,
       "height": 64
     },
-    "girl-3": {
-      "path": "./images/prehistoric/girl/girl-3.png",
+    "girl-03": {
+      "path": "./images/prehistoric/girl/girl-03.png",
       "width": 59,
       "height": 64
     },
-    "girl-4": {
-      "path": "./images/prehistoric/girl/girl-4.png",
+    "girl-04": {
+      "path": "./images/prehistoric/girl/girl-04.png",
       "width": 59,
       "height": 64
     },
-    "girl-5": {
-      "path": "./images/prehistoric/girl/girl-5.png",
+    "girl-05": {
+      "path": "./images/prehistoric/girl/girl-05.png",
       "width": 59,
       "height": 64
     },
-    "girl-6": {
-      "path": "./images/prehistoric/girl/girl-6.png",
+    "girl-06": {
+      "path": "./images/prehistoric/girl/girl-06.png",
       "width": 59,
       "height": 64
     },
-    "girl-7": {
-      "path": "./images/prehistoric/girl/girl-7.png",
+    "girl-07": {
+      "path": "./images/prehistoric/girl/girl-07.png",
       "width": 59,
       "height": 64
     },
-    "girl-8": {
-      "path": "./images/prehistoric/girl/girl-8.png",
+    "girl-08": {
+      "path": "./images/prehistoric/girl/girl-08.png",
       "width": 59,
       "height": 64
     },
-    "girl-9": {
-      "path": "./images/prehistoric/girl/girl-9.png",
+    "girl-09": {
+      "path": "./images/prehistoric/girl/girl-09.png",
       "width": 59,
       "height": 64
     },
@@ -250,20 +183,99 @@
       "width": 59,
       "height": 64
     },
+    "girl-11": {
+      "path": "./images/prehistoric/girl/girl-11.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-12": {
+      "path": "./images/prehistoric/girl/girl-12.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-13": {
+      "path": "./images/prehistoric/girl/girl-13.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-14": {
+      "path": "./images/prehistoric/girl/girl-14.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-15": {
+      "path": "./images/prehistoric/girl/girl-15.png",
+      "width": 59,
+      "height": 64
+    },
+    "floor-1": {
+      "path": "./images/prehistoric/environment/floor-1.png",
+      "width": 64,
+      "height": 64
+    },
     "background-forest": {
-      "path": "./images/prehistoric/background/forest.png",
-      "width": 800,
-      "height": 600
+      "path": "./images/prehistoric/background/scaled-1024/forest.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "xOffset": {
+            "type": "view_x_multiplier",
+            "data": -1
+          },
+          "yOffset": {
+            "type": "fixed",
+            "data": 0
+          }
+        }
+      }
     },
     "background-mountain": {
-      "path": "./images/prehistoric/background/mountain.png",
-      "width": 800,
-      "height": 600
+      "path": "./images/prehistoric/background/scaled-1024/mountain.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "xOffset": {
+            "type": "view_x_multiplier",
+            "data": -0.1
+          },
+          "yOffset": {
+            "type": "fixed",
+            "data": 0
+          }
+        }
+      }
     },
     "background-sky-1": {
-      "path": "./images/prehistoric/background/sky-1.png",
+      "path": "./images/prehistoric/background/scaled-1024/sky-1.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "xOffset": {
+            "type": "view_x_multiplier",
+            "data": -0.01
+          },
+          "yOffset": {
+            "type": "fixed",
+            "data": 0
+          }
+        }
+      }
+    },
+    "slide-006": {
+      "path": "./images/slides/006.png",
+      "width": 770,
+      "height": 482
+    },
+    "slide-008": {
+      "path": "./images/slides/008.png",
       "width": 800,
-      "height": 600
+      "height": 583
     }
   },
   "backgrounds": [
@@ -308,13 +320,21 @@
     }
   ],
   "scene":[
-    "p    e",
-    "      ",
-    "  g   "
+    "                  6               8",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "  g",
+    "----------------------------------------------------------------------------------"
   ],
   "config": {
-    "width": 15,
-    "height": 11,
+    "width": 16,
+    "height": 12,
     "pixelSize": 64,
     "additionalViewBorder": 0
   }

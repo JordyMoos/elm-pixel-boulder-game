@@ -160,10 +160,14 @@ update msg model =
             handleWasPressed keyCode model
 
 
-getCurrentDirection : Model -> Maybe Direction
-getCurrentDirection model =
+getCurrentDirection : Model -> List Direction -> Maybe Direction
+getCurrentDirection model allowedDirections =
     keyCodeToDirection
         |> Dict.toList
+        |> List.filter
+            (\( _, direction ) ->
+                List.member direction allowedDirections
+            )
         |> List.map
             (\( code, direction ) ->
                 model.keys
@@ -171,7 +175,7 @@ getCurrentDirection model =
                     |> Maybe.map (\counter -> ( counter, direction ))
             )
         |> Maybe.Extra.values
-        |> List.sortBy (\( code, direction ) -> code)
+        |> List.sortBy (\( code, _ ) -> code)
         |> List.head
         |> Maybe.map Tuple.second
 

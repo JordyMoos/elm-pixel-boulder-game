@@ -33,8 +33,17 @@ updateCameraComponent camera actor level =
                     movementOffset =
                         movementToPixels pixelSize actor
 
-                    borderSize =
-                        camera.borderSize * pixelSize
+                    borderSizeLeft =
+                        camera.borderLeft * pixelSize
+
+                    borderSizeUp =
+                        camera.borderUp * pixelSize
+
+                    borderSizeRight =
+                        (camera.borderRight + 1) * pixelSize
+
+                    borderSizeDown =
+                        (camera.borderDown + 1) * pixelSize
 
                     width =
                         level.config.width * pixelSize
@@ -43,19 +52,19 @@ updateCameraComponent camera actor level =
                         level.config.height * pixelSize
 
                     xMin =
-                        view.coordinate.x + borderSize
+                        view.coordinate.x + borderSizeLeft
 
                     xMax =
-                        view.coordinate.x + width - borderSize
+                        view.coordinate.x + width - borderSizeRight
 
                     entityX =
                         transformData.position.x * pixelSize + movementOffset.x
 
                     yMin =
-                        view.coordinate.y + borderSize
+                        view.coordinate.y + borderSizeUp
 
                     yMax =
-                        view.coordinate.y + height - borderSize
+                        view.coordinate.y + height - borderSizeDown
 
                     entityY =
                         transformData.position.y * pixelSize + movementOffset.y
@@ -69,20 +78,20 @@ updateCameraComponent camera actor level =
                     -- If the entity is within the limits then we do not move the screen
                     newX =
                         if clampXResult == xMin then
-                            entityX - borderSize
+                            entityX - borderSizeLeft
 
                         else if clampXResult == xMax then
-                            entityX + borderSize - width
+                            entityX + borderSizeRight - width
 
                         else
                             viewCoordinate.x
 
                     newY =
                         if clampYResult == yMin then
-                            entityY - borderSize
+                            entityY - borderSizeUp
 
                         else if clampYResult == yMax then
-                            entityY + borderSize - height
+                            entityY + borderSizeDown - height
 
                         else
                             viewCoordinate.y

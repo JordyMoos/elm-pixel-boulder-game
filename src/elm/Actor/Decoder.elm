@@ -26,8 +26,11 @@ import Actor.Actor as Actor
         , HealthComponentData
         , Image
         , ImageObjectData
+        , ImagePositionOffset(..)
+        , ImageType(..)
         , Images
         , ImagesData
+        , InputControlData
         , Inventory
         , InventoryUpdatedSubscriberData
         , KeyedComponent
@@ -41,6 +44,7 @@ import Actor.Actor as Actor
         , MovementComponentData
         , MovingDownState(..)
         , MovingState(..)
+        , PatternImageData
         , PhysicsComponentData
         , PixelObjectData
         , RenderComponentData
@@ -61,7 +65,7 @@ import Color exposing (Color)
 import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
-import Data.Position as Position exposing (Position)
+import Data.Position exposing (Position)
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
@@ -112,6 +116,7 @@ configDecoder =
         |> JDP.required "height" Decode.int
         |> JDP.required "pixelSize" Decode.int
         |> JDP.required "additionalViewBorder" Decode.int
+        |> JDP.hardcoded 20
 
 
 entitiesDecoder : Decoder Entities
@@ -392,7 +397,10 @@ positionDecoder =
 cameraDataDecoder : Decoder CameraComponentData
 cameraDataDecoder =
     Decode.succeed CameraComponentData
-        |> JDP.optional "borderSize" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderLeft" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderUp" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderRight" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderDown" Decode.int defaultCameraBorderSize
 
 
 physicsDataDecoder : Decoder PhysicsComponentData
@@ -578,7 +586,7 @@ controlTypeDecoder =
             (\theType ->
                 case theType of
                     "input" ->
-                        Decode.succeed InputControl
+                        Decode.map InputControl <| Decode.field "data" inputControlDataDecoder
 
                     "walkAroundAi" ->
                         Decode.map WalkAroundAiControl <| Decode.field "data" walkAroundAiDataDecoder
@@ -592,6 +600,12 @@ controlTypeDecoder =
                                 ++ theType
                                 ++ " is not supported."
             )
+
+
+inputControlDataDecoder : Decoder InputControlData
+inputControlDataDecoder =
+    Decode.succeed InputControlData
+        |> JDP.optional "allowedDirections" (Decode.list directionDecoder) []
 
 
 walkAroundAiDataDecoder : Decoder WalkAroundAiControlData
@@ -669,6 +683,67 @@ imageDecoder =
         |> JDP.required "path" Decode.string
         |> JDP.required "width" Decode.int
         |> JDP.required "height" Decode.int
+        |> JDP.optional "imageType" imageTypeDecoder defaultImageType
+
+
+imageTypeDecoder : Decoder ImageType
+imageTypeDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "regular" ->
+                        Decode.succeed RegularImage
+
+                    "pattern" ->
+                        Decode.map PatternImage <| Decode.field "data" decodePatternImageData
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode imageType, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+defaultImageType : ImageType
+defaultImageType =
+    RegularImage
+
+
+decodePatternImageData : Decoder PatternImageData
+decodePatternImageData =
+    Decode.succeed PatternImageData
+        |> JDP.optional "xOffset" decodeImagePositionOffset defaultPatternImageOffset
+        |> JDP.optional "yOffset" decodeImagePositionOffset defaultPatternImageOffset
+
+
+defaultPatternImageOffset : ImagePositionOffset
+defaultPatternImageOffset =
+    FixedOffset 0
+
+
+decodeImagePositionOffset : Decoder ImagePositionOffset
+decodeImagePositionOffset =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "fixed" ->
+                        Decode.map FixedOffset <| Decode.field "data" Decode.int
+
+                    "view_x_multiplier" ->
+                        Decode.map MultipliedByViewX <| Decode.field "data" Decode.float
+
+                    "view_y_multiplier" ->
+                        Decode.map MultipliedByViewY <| Decode.field "data" Decode.float
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode imageType, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
 
 
 subscriberDecoder : Decoder Subscriber
