@@ -55,19 +55,7 @@
           },
           "layer":5
         }
-      },
-      {"type": "control", "data": {
-        "settings": {"pushStrength": 50, "walkOverStrength": 50},
-        "control": {
-          "type": "input"
-        }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
-      {"type": "rigid"},
-      {"type": "explodable"},
-      {"type": "camera", "data": {"borderSize": 5}},
-      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+      }
     ],
     "enemy":[
       {
@@ -97,15 +85,43 @@
             "data": {
               "default": {
                 "names": [
-                  "girl"
+                  "girl-0",
+                  "girl-1",
+                  "girl-2",
+                  "girl-3",
+                  "girl-4",
+                  "girl-5"
                 ],
-                "ticksPerImage": 6
+                "ticksPerImage": 10
+              },
+              "direction": {
+                "right": {
+                  "names": [
+                    "girl-6",
+                    "girl-7",
+                    "girl-8",
+                    "girl-9",
+                    "girl-10"
+                  ],
+                  "ticksPerImage": 8
+                }
               }
             }
           },
           "layer":3
         }
-      }
+      },
+      {"type": "control", "data": {
+        "settings": {"pushStrength": 50, "walkOverStrength": 50},
+        "control": {
+          "type": "input"
+        }
+      }},
+      {"type": "movement", "data": {"movingTicks": 8}},
+      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
+      {"type": "rigid"},
+      {"type": "camera", "data": {"borderSize": 5}},
+      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
     ]
   },
   "signs":{
@@ -179,10 +195,60 @@
       "width": 32,
       "height": 32
     },
-    "girl": {
-      "path": "./images/prehistoric/girl/girl.png",
-      "width": 54,
-      "height": 59
+    "girl-0": {
+      "path": "./images/prehistoric/girl/girl-0.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-1": {
+      "path": "./images/prehistoric/girl/girl-1.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-2": {
+      "path": "./images/prehistoric/girl/girl-2.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-3": {
+      "path": "./images/prehistoric/girl/girl-3.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-4": {
+      "path": "./images/prehistoric/girl/girl-4.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-5": {
+      "path": "./images/prehistoric/girl/girl-5.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-6": {
+      "path": "./images/prehistoric/girl/girl-6.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-7": {
+      "path": "./images/prehistoric/girl/girl-7.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-8": {
+      "path": "./images/prehistoric/girl/girl-8.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-9": {
+      "path": "./images/prehistoric/girl/girl-9.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-10": {
+      "path": "./images/prehistoric/girl/girl-10.png",
+      "width": 59,
+      "height": 64
     },
     "background-forest": {
       "path": "./images/prehistoric/background/forest.png",
