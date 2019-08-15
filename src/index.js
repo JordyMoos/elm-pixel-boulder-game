@@ -27,6 +27,7 @@ const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
 const hideControls = !! urlParams.get('hideControls');
 const hideEdit = !! urlParams.get('hideEdit');
+const hideOverflow = !! urlParams.get('hideOverflow');
 const lazy = !! urlParams.get('lazy');
 let editorMode = urlParams.get('editorMode') === 'advanced' ? 'advanced' : 'easy';
 let notEditorMode = getOtherMode(editorMode);
@@ -313,6 +314,9 @@ if (hideControls) {
 }
 if (hideEdit) {
   document.getElementById('edit-level-container').style.display = 'none';
+}
+if (hideOverflow) {
+  document.getElementsByTagName('body')[0].style.overflow = 'hidden';
 }
 
 if (startLevel !== null) {

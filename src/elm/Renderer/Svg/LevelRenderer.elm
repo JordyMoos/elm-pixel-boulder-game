@@ -92,20 +92,24 @@ getOffset view imagePositionOffset =
 drawBackgrounds : Int -> Config -> Actor.Images -> List Actor.RenderComponentData -> List (Svg msg)
 drawBackgrounds tick config images backgrounds =
     List.map
-        (drawBackground tick config)
+        (drawBackground tick config images)
         backgrounds
         |> Maybe.Extra.values
 
 
-drawBackground : Int -> Config -> Actor.RenderComponentData -> Maybe (Svg msg)
-drawBackground tick config backgroundData =
+drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> Maybe (Svg msg)
+drawBackground tick config images backgroundData =
+    let
+        xy =
+            config.additionalViewBorder * config.pixelSize
+    in
     case backgroundData.object of
         Actor.PixelRenderObject data ->
             Svg.rect
                 [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
                 , Attributes.height <| String.fromInt <| config.height * config.pixelSize
-                , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
-                , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
+                , Attributes.x <| String.fromInt <| xy
+                , Attributes.y <| String.fromInt <| xy
                 , Attributes.fill <| Color.toCssString <| getColor tick data
                 ]
                 []
@@ -113,17 +117,33 @@ drawBackground tick config backgroundData =
 
         Actor.ImageRenderObject data ->
             getImageName tick data.default
-                |> Maybe.map
-                    (\imageName ->
-                        Svg.rect
-                            [ Attributes.fill <| "url(#pattern-" ++ imageName ++ ")"
-                            , Attributes.width "1024"
-                            , Attributes.height "768"
-                            , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
-                            , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
+                |> Maybe.andThen (imageNameToSvg xy xy images)
+
+
+imageNameToSvg : Int -> Int -> Actor.Images -> String -> Maybe (Svg msg)
+imageNameToSvg x y images imageName =
+    Dict.get imageName images
+        |> Maybe.map
+            (\image ->
+                case image.imageType of
+                    Actor.RegularImage ->
+                        Svg.use
+                            [ Attributes.xlinkHref <| "#image-" ++ imageName
+                            , Attributes.x <| String.fromInt <| x + image.xOffset
+                            , Attributes.y <| String.fromInt <| y + image.yOffset
                             ]
                             []
-                    )
+
+                    Actor.PatternImage _ ->
+                        Svg.rect
+                            [ Attributes.fill <| "url(#pattern-" ++ imageName ++ ")"
+                            , Attributes.width <| String.fromInt image.width
+                            , Attributes.height <| String.fromInt image.height
+                            , Attributes.x <| String.fromInt <| x + image.xOffset
+                            , Attributes.y <| String.fromInt <| y + image.yOffset
+                            ]
+                            []
+            )
 
 
 drawLevel : Int -> Level -> Actor.Images -> List (Svg msg)
@@ -256,20 +276,16 @@ drawRenderRequirements renderRequirements images level acc =
     let
         imageNotMovingOp : Actor.ImageObjectData -> LayeredSvg msg
         imageNotMovingOp imageData =
+            let
+                x =
+                    (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
+
+                y =
+                    (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
+            in
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map
-                    (\imageName ->
-                        addToLayeredSvg
-                            renderRequirements.render.layer
-                            (Svg.use
-                                [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
-                                , Attributes.y <| String.fromInt <| (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
-                                ]
-                                []
-                            )
-                            acc
-                    )
+                |> Maybe.andThen (imageNameToSvg x y images)
+                |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
                 |> Maybe.withDefault acc
 
         imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> LayeredSvg msg
@@ -294,22 +310,17 @@ drawRenderRequirements renderRequirements images level acc =
                             round <| aFloat + offset
                     in
                     result
+
+                x =
+                    calculateWithCompletion (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) (towardsData.position.x - renderRequirements.viewPosition.x) + renderRequirements.pixelOffset.x
+
+                y =
+                    calculateWithCompletion (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) (towardsData.position.y - renderRequirements.viewPosition.y) + renderRequirements.pixelOffset.y
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map
-                    (\imageName ->
-                        addToLayeredSvg
-                            renderRequirements.render.layer
-                            (Svg.use
-                                [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| calculateWithCompletion (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) (towardsData.position.x - renderRequirements.viewPosition.x) + renderRequirements.pixelOffset.x
-                                , Attributes.y <| String.fromInt <| calculateWithCompletion (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) (towardsData.position.y - renderRequirements.viewPosition.y) + renderRequirements.pixelOffset.y
-                                ]
-                                []
-                            )
-                            acc
-                    )
+                |> Maybe.andThen (imageNameToSvg x y images)
+                |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
                 |> Maybe.withDefault acc
 
         pixelNotMovingOp : Actor.PixelObjectData -> LayeredSvg msg
@@ -412,6 +423,11 @@ asPixel config viewPosition position pixelOffset color =
         , Attributes.fill <| Color.toCssString color
         ]
         []
+
+
+addToLayeredSvgFlipped : Int -> LayeredSvg msg -> Svg msg -> LayeredSvg msg
+addToLayeredSvgFlipped layer acc svg =
+    addToLayeredSvg layer svg acc
 
 
 addToLayeredSvg : Int -> Svg msg -> LayeredSvg msg -> LayeredSvg msg

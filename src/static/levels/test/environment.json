@@ -27,7 +27,7 @@
                     "girl-09",
                     "girl-10"
                   ],
-                  "ticksPerImage": 8
+                  "ticksPerImage": 6
                 },
                 "left": {
                   "names": [
@@ -37,7 +37,7 @@
                     "girl-14",
                     "girl-15"
                   ],
-                  "ticksPerImage": 8
+                  "ticksPerImage": 6
                 }
               }
             }
@@ -131,32 +131,38 @@
     "girl-00": {
       "path": "./images/prehistoric/girl/girl-00.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-01": {
       "path": "./images/prehistoric/girl/girl-01.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-02": {
       "path": "./images/prehistoric/girl/girl-02.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-03": {
       "path": "./images/prehistoric/girl/girl-03.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-04": {
       "path": "./images/prehistoric/girl/girl-04.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-05": {
       "path": "./images/prehistoric/girl/girl-05.png",
       "width": 59,
-      "height": 64
+      "height": 64,
+      "yOffset": 2
     },
     "girl-06": {
       "path": "./images/prehistoric/girl/girl-06.png",
@@ -222,7 +228,7 @@
         "data": {
           "xOffset": {
             "type": "view_x_multiplier",
-            "data": -1
+            "data": -0.5
           },
           "yOffset": {
             "type": "fixed",
@@ -240,7 +246,7 @@
         "data": {
           "xOffset": {
             "type": "view_x_multiplier",
-            "data": -0.1
+            "data": -0.05
           },
           "yOffset": {
             "type": "fixed",
@@ -258,7 +264,7 @@
         "data": {
           "xOffset": {
             "type": "view_x_multiplier",
-            "data": -0.01
+            "data": -0.005
           },
           "yOffset": {
             "type": "fixed",

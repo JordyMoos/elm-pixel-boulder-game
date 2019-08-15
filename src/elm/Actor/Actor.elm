@@ -153,6 +153,8 @@ type alias Image =
     , width : Int
     , height : Int
     , imageType : ImageType
+    , xOffset : Int
+    , yOffset : Int
     }
 
 
