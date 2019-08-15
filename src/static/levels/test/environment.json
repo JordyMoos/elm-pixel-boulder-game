@@ -180,33 +180,76 @@
       "height": 32
     },
     "girl": {
-      "path": "./images/girl.png",
+      "path": "./images/prehistoric/girl/girl.png",
       "width": 54,
       "height": 59
     },
-    "background-big": {
-      "path": "./images/spriters-resource.com/background-big.png",
-      "width": 384,
-      "height": 384
+    "background-forest": {
+      "path": "./images/prehistoric/background/forest.png",
+      "width": 800,
+      "height": 600
+    },
+    "background-mountain": {
+      "path": "./images/prehistoric/background/mountain.png",
+      "width": 800,
+      "height": 600
+    },
+    "background-sky-1": {
+      "path": "./images/prehistoric/background/sky-1.png",
+      "width": 800,
+      "height": 600
     }
   },
-  "background":
+  "backgrounds": [
     {
       "object": {
         "type": "image",
         "data": {
           "default": {
             "names": [
-              "background-big"
+              "background-sky-1"
+            ]
+          }
+        }
+      },
+      "layer":-2
+    },
+    {
+      "object": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-mountain"
+            ]
+          }
+        }
+      },
+      "layer":-1
+    },
+    {
+      "object": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-forest"
             ]
           }
         }
       },
       "layer":0
-    },
+    }
+  ],
   "scene":[
     "p    e",
     "      ",
     "  g   "
-  ]
+  ],
+  "config": {
+    "width": 15,
+    "height": 11,
+    "pixelSize": 64,
+    "additionalViewBorder": 0
+  }
 }

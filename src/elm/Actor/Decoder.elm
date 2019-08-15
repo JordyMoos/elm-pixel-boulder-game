@@ -1,4 +1,4 @@
-module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
+module Actor.Decoder exposing (defaultBackgrounds, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
@@ -88,20 +88,21 @@ levelConfigDecoder =
         |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
         |> JDP.optional "updateBorder" Decode.int defaultUpdateBorder
         |> JDP.optional "images" imagesDecoder Dict.empty
-        |> JDP.optional "background" renderDataDecoder defaultBackground
+        |> JDP.optional "backgrounds" (Decode.list renderDataDecoder) defaultBackgrounds
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
         |> JDP.optional "config" (Decode.maybe configDecoder) Nothing
 
 
-defaultBackground : RenderComponentData
-defaultBackground =
-    { object =
-        PixelRenderObject
-            { colors = [ Color.white ]
-            , ticksPerColor = 1
-            }
-    , layer = 0
-    }
+defaultBackgrounds : List RenderComponentData
+defaultBackgrounds =
+    [ { object =
+            PixelRenderObject
+                { colors = [ Color.white ]
+                , ticksPerColor = 1
+                }
+      , layer = 0
+      }
+    ]
 
 
 configDecoder : Decoder Config

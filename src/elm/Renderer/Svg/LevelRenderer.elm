@@ -11,6 +11,7 @@ import Data.Position exposing (Position)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import List.Extra
+import Maybe.Extra
 import String
 import Svg exposing (Svg)
 import Svg.Attributes as Attributes
@@ -25,7 +26,7 @@ renderLevel : Int -> Level -> Actor.Images -> Html msg
 renderLevel currentTick level images =
     Util.fastConcat
         [ [ drawLoadImages images ]
-        , drawBackground currentTick level.config images level.background
+        , drawBackgrounds currentTick level.config images level.backgrounds
         , drawLevel currentTick level images
         ]
         |> Svg.svg
@@ -55,11 +56,19 @@ drawLoadImage ( name, image ) =
         []
 
 
-drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> List (Svg msg)
+drawBackgrounds : Int -> Config -> Actor.Images -> List Actor.RenderComponentData -> List (Svg msg)
+drawBackgrounds tick config images backgrounds =
+    List.map
+        (drawBackground tick config images)
+        backgrounds
+        |> Maybe.Extra.values
+
+
+drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> Maybe (Svg msg)
 drawBackground tick config images backgroundData =
     case backgroundData.object of
         Actor.PixelRenderObject data ->
-            [ Svg.rect
+            Svg.rect
                 [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
                 , Attributes.height <| String.fromInt <| config.height * config.pixelSize
                 , Attributes.x <| String.fromInt <| config.additionalViewBorder * config.pixelSize
@@ -67,14 +76,14 @@ drawBackground tick config images backgroundData =
                 , Attributes.fill <| Color.toCssString <| getColor tick data
                 ]
                 []
-            ]
+                |> Just
 
         Actor.ImageRenderObject data ->
             getImageName tick data.default
                 |> Maybe.andThen (\a -> Dict.get a images)
                 |> Maybe.map
                     (\image ->
-                        [ Svg.image
+                        Svg.image
                             [ Attributes.width <| String.fromInt <| image.width
                             , Attributes.height <| String.fromInt <| image.height
                             , Attributes.xlinkHref image.path
@@ -82,9 +91,7 @@ drawBackground tick config images backgroundData =
                             , Attributes.y <| String.fromInt <| config.additionalViewBorder * config.pixelSize
                             ]
                             []
-                        ]
                     )
-                |> Maybe.withDefault []
 
 
 drawLevel : Int -> Level -> Actor.Images -> List (Svg msg)

@@ -159,7 +159,7 @@ type alias LevelConfig =
     , viewCoordinate : Coordinate
     , updateBorder : Int
     , images : Images
-    , background : RenderComponentData
+    , backgrounds : List RenderComponentData
     , subscribers : Subscribers
     , config : Maybe Config
     }
@@ -170,7 +170,7 @@ type alias Level =
     , actors : Actors
     , positionIndices : PositionIndices
     , view : View
-    , background : RenderComponentData
+    , backgrounds : List RenderComponentData
     , eventManager : EventManager
     , events : Events
     , config : Config
