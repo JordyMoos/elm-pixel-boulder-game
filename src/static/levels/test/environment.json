@@ -13,14 +13,14 @@
                   "girl-01",
                   "girl-02",
                   "girl-03",
-                  "girl-04",
-                  "girl-05"
+                  "girl-04"
                 ],
                 "ticksPerImage": 10
               },
               "direction": {
                 "right": {
                   "names": [
+                    "girl-05",
                     "girl-06",
                     "girl-07",
                     "girl-08",
@@ -35,7 +35,8 @@
                     "girl-12",
                     "girl-13",
                     "girl-14",
-                    "girl-15"
+                    "girl-15",
+                    "girl-16"
                   ],
                   "ticksPerImage": 6
                 }
@@ -119,13 +120,70 @@
           "layer":20
         }
       }
+    ],
+    "tree-fg-1":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-1"
+                ]
+              }
+            }
+          },
+          "layer":5
+        }
+      }
+    ],
+    "tree-fg-2":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-2"
+                ]
+              }
+            }
+          },
+          "layer":5
+        }
+      }
+    ],
+    "tree-fg-3":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-3"
+                ]
+              }
+            }
+          },
+          "layer":5
+        }
+      }
     ]
   },
   "signs":{
     "g":"girl",
     "-":"floor",
     "6":"slide-006",
-    "8":"slide-008"
+    "8":"slide-008",
+    "t":"tree-fg-1",
+    "r":"tree-fg-2",
+    "e":"tree-fg-3"
   },
   "images":{
     "girl-00": {
@@ -214,6 +272,11 @@
       "width": 59,
       "height": 64
     },
+    "girl-16": {
+      "path": "./images/prehistoric/girl/girl-16.png",
+      "width": 59,
+      "height": 64
+    },
     "floor-1": {
       "path": "./images/prehistoric/environment/floor-1.png",
       "width": 64,
@@ -282,6 +345,23 @@
       "path": "./images/slides/008.png",
       "width": 800,
       "height": 583
+    },
+    "tree-fg-1": {
+      "path": "./images/prehistoric/environment/tree-fg-1.png",
+      "width": 112,
+      "height": 112,
+      "yOffset": 17
+    },
+    "tree-fg-2": {
+      "path": "./images/prehistoric/environment/tree-fg-2.png",
+      "width": 112,
+      "height": 192
+    },
+    "tree-fg-3": {
+      "path": "./images/prehistoric/environment/tree-fg-3.png",
+      "width": 112,
+      "height": 368,
+      "yOffset": 17
     }
   },
   "backgrounds": [
@@ -330,11 +410,11 @@
     "",
     "",
     "",
+    "e                       e   e    e   e   ee e    e   e   ee   e e",
     "",
     "",
-    "",
-    "",
-    "",
+    "                    r",
+    "                 t   t       t            t t              t",
     "  g",
     "----------------------------------------------------------------------------------"
   ],
