@@ -48,7 +48,7 @@
       },
       {"type": "control", "data": {
         "settings": {"pushStrength": 50, "walkOverStrength": 50},
-        "steps": 16,
+        "steps": 20,
         "control": {
           "type": "input",
           "data": {
@@ -82,6 +82,24 @@
             }
           },
           "layer":1
+        }
+      }
+    ],
+    "board":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "board"
+                ]
+              }
+            }
+          },
+          "layer":19
         }
       }
     ],
@@ -179,6 +197,7 @@
   "signs":{
     "g":"girl",
     "-":"floor",
+    "b":"board",
     "6":"slide-006",
     "8":"slide-008",
     "t":"tree-fg-1",
@@ -336,10 +355,18 @@
         }
       }
     },
+    "board": {
+      "path": "./images/slides/board.png",
+      "width": 768,
+      "height": 480,
+      "xOffset": 48,
+      "yOffset": -16
+    },
     "slide-006": {
       "path": "./images/slides/006.png",
-      "width": 770,
-      "height": 482
+      "width": 715,
+      "height": 448,
+      "xOffset": 10
     },
     "slide-008": {
       "path": "./images/slides/008.png",
@@ -406,15 +433,15 @@
     }
   ],
   "scene":[
-    "                  6               8",
+    "                     b6                   8",
     "",
     "",
     "",
-    "e                       e   e    e   e   ee e    e   e   ee   e e",
+    "e                             e   e    e   e   ee e    e   e   ee   e e",
     "",
     "",
-    "                    r",
-    "                 t   t       t            t t              t",
+    "                          r",
+    "                       t   t       t            t t              t",
     "  g",
     "----------------------------------------------------------------------------------"
   ],

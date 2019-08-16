@@ -14,10 +14,8 @@ port module InputController exposing
     , update
     )
 
-import Browser.Events
 import Data.Direction as Direction exposing (Direction)
 import Dict exposing (Dict)
-import Json.Decode as Decode
 import Maybe.Extra
 import Ports
 
