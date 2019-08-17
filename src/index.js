@@ -1,6 +1,7 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
+const aframe = require('aframe');
 const easyCacheKey = 'easy-level-cache-4';
 const advancedCacheKey = 'level-cache-4';
 

@@ -40,6 +40,7 @@ import Actor.Actor as Actor
         , LevelFinishedDescriptionProvider(..)
         , LifetimeAction(..)
         , LifetimeComponentData
+        , LinkImageData
         , LoadLevelData
         , MovementComponentData
         , MovingDownState(..)
@@ -49,6 +50,7 @@ import Actor.Actor as Actor
         , PixelObjectData
         , RenderComponentData
         , RenderObject(..)
+        , Renderer(..)
         , Scene
         , Shape(..)
         , Signs
@@ -95,6 +97,27 @@ levelConfigDecoder =
         |> JDP.optional "backgrounds" (Decode.list renderDataDecoder) defaultBackgrounds
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
         |> JDP.optional "config" (Decode.maybe configDecoder) Nothing
+        |> JDP.optional "renderer" decodeRenderer SvgRenderer
+
+
+decodeRenderer : Decoder Renderer
+decodeRenderer =
+    Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "svg" ->
+                        Decode.succeed SvgRenderer
+
+                    "aframe" ->
+                        Decode.succeed AframeRenderer
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode renderer, but renderer "
+                                ++ theType
+                                ++ " is not supported"
+            )
 
 
 defaultBackgrounds : List RenderComponentData
@@ -700,6 +723,9 @@ imageTypeDecoder =
                     "pattern" ->
                         Decode.map PatternImage <| Decode.field "data" decodePatternImageData
 
+                    "link" ->
+                        Decode.map LinkImage <| Decode.field "data" decodeLinkImageData
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode imageType, but the type "
@@ -718,6 +744,12 @@ decodePatternImageData =
     Decode.succeed PatternImageData
         |> JDP.optional "xOffset" decodeImagePositionOffset defaultPatternImageOffset
         |> JDP.optional "yOffset" decodeImagePositionOffset defaultPatternImageOffset
+
+
+decodeLinkImageData : Decoder LinkImageData
+decodeLinkImageData =
+    Decode.succeed LinkImageData
+        |> JDP.required "href" Decode.string
 
 
 defaultPatternImageOffset : ImagePositionOffset

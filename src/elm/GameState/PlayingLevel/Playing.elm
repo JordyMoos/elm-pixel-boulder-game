@@ -14,7 +14,8 @@ import Data.Config exposing (Config)
 import Html exposing (Html)
 import InputController
 import LevelInitializer
-import Renderer.Svg.LevelRenderer as LevelRenderer
+import Renderer.Aframe.LevelRenderer as AframeLevelRenderer
+import Renderer.Svg.LevelRenderer as SvgLevelRenderer
 
 
 type alias Model =
@@ -142,4 +143,9 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.level model.levelConfig.images
+    case model.levelConfig.renderer of
+        Actor.SvgRenderer ->
+            SvgLevelRenderer.renderLevel currentTick model.level model.levelConfig.images
+
+        Actor.AframeRenderer ->
+            AframeLevelRenderer.renderLevel currentTick model.level model.levelConfig.images

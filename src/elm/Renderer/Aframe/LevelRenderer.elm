@@ -1,4 +1,4 @@
-module Renderer.Svg.LevelRenderer exposing (renderLevel)
+module Renderer.Aframe.LevelRenderer exposing (renderLevel)
 
 import Actor.Actor as Actor exposing (Level)
 import Actor.Common as Common

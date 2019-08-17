@@ -47,6 +47,7 @@ module Actor.Actor exposing
     , LevelFinishedDescriptionProvider(..)
     , LifetimeAction(..)
     , LifetimeComponentData
+    , LinkImageData
     , LoadLevelData
     , MovementComponentData
     , MovingDownState(..)
@@ -59,6 +60,7 @@ module Actor.Actor exposing
     , PositionIndices
     , RenderComponentData
     , RenderObject(..)
+    , Renderer(..)
     , Scene
     , Shape(..)
     , Signs
@@ -161,6 +163,7 @@ type alias Image =
 type ImageType
     = RegularImage
     | PatternImage PatternImageData
+    | LinkImage LinkImageData
 
 
 type alias PatternImageData =
@@ -175,6 +178,11 @@ type ImagePositionOffset
     | MultipliedByViewY Float
 
 
+type alias LinkImageData =
+    { href : String
+    }
+
+
 type alias LevelConfig =
     { entities : Entities
     , signLength : Int
@@ -186,7 +194,13 @@ type alias LevelConfig =
     , backgrounds : List RenderComponentData
     , subscribers : Subscribers
     , config : Maybe Config
+    , renderer : Renderer
     }
+
+
+type Renderer
+    = SvgRenderer
+    | AframeRenderer
 
 
 type alias Level =
@@ -541,6 +555,10 @@ type RenderObject
     | ImageRenderObject ImageObjectData
 
 
+
+--    | ThreeDRenderObject ThreeDObjectData
+
+
 type alias PixelObjectData =
     { colors : List Color
     , ticksPerColor : Int
@@ -557,6 +575,10 @@ type alias ImagesData =
     { names : List String
     , ticksPerImage : Int
     }
+
+
+type alias ThreeDObjectData =
+    {}
 
 
 
