@@ -145,7 +145,7 @@ view : Int -> Model -> Html msg
 view currentTick model =
     case model.levelConfig.renderer of
         Actor.SvgRenderer ->
-            SvgLevelRenderer.renderLevel currentTick model.level model.levelConfig.images
+            SvgLevelRenderer.renderLevel currentTick model.level model.levelConfig
 
-        Actor.AframeRenderer ->
-            AframeLevelRenderer.renderLevel currentTick model.level model.levelConfig.images
+        Actor.AframeRenderer aframeData ->
+            AframeLevelRenderer.renderLevel currentTick model.level model.levelConfig

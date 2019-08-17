@@ -1,6 +1,6 @@
 {
   "entities":{
-    "hero":[
+    "girl":[
       {
         "type":"render",
         "data":{
@@ -483,5 +483,16 @@
     "pixelSize": 64,
     "additionalViewBorder": 0
   },
-  "renderer": "aframe"
+  "renderer": {
+    "type": "aframe",
+    "data": {
+      "camera": {
+        "offset": {
+          "x": 0,
+          "y": 0.5,
+          "z": 3
+        }
+      }
+    }
+  }
 }

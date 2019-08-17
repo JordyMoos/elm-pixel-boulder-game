@@ -1,6 +1,6 @@
 module Renderer.Aframe.LevelRenderer exposing (renderLevel)
 
-import Actor.Actor as Actor exposing (Level)
+import Actor.Actor as Actor exposing (Level, LevelConfig)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Color exposing (Color)
@@ -9,167 +9,85 @@ import Data.Coordinate as Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Dict exposing (Dict)
-import Html exposing (Html)
+import Html exposing (Html, node)
+import Html.Attributes as Attributes
 import List.Extra
 import Maybe.Extra
 import String
-import Svg exposing (Svg)
-import Svg.Attributes as Attributes
 import Util.Util as Util
 
 
-type alias LayeredSvg msg =
-    Dict Int (List (Svg msg))
-
-
-renderLevel : Int -> Level -> Actor.Images -> Html msg
-renderLevel currentTick level images =
+renderLevel : Int -> Level -> LevelConfig -> Html msg
+renderLevel currentTick level levelConfig =
     Util.fastConcat
-        [ [ drawLoadImages level.view images ]
-        , drawBackgrounds currentTick level.config images level.backgrounds
-        , drawLevel currentTick level images
+        [ [ drawAssets levelConfig ]
+        , drawLevel currentTick level levelConfig
+        , [ drawCamera level levelConfig ]
         ]
-        |> Svg.svg
-            [ Attributes.width <| String.fromInt <| (level.config.width + (level.config.additionalViewBorder * 2)) * level.config.pixelSize
-            , Attributes.height <| String.fromInt <| (level.config.height + (level.config.additionalViewBorder * 2)) * level.config.pixelSize
-            , Attributes.x "0"
-            , Attributes.y "0"
-            , Attributes.version "2.0"
-            ]
+        |> node "a-scene" []
 
 
-drawLoadImages : Actor.View -> Actor.Images -> Svg msg
-drawLoadImages view images =
-    Dict.toList images
-        |> List.map (drawLoadImage view)
-        |> Svg.defs []
+drawAssets : LevelConfig -> Html msg
+drawAssets levelConfig =
+    Dict.toList levelConfig.images
+        |> List.map drawLoadImage
+        |> node "a-assets" []
 
 
-drawLoadImage : Actor.View -> ( String, Actor.Image ) -> Svg msg
-drawLoadImage view ( name, image ) =
+drawLoadImage : ( String, Actor.Image ) -> Html msg
+drawLoadImage ( name, image ) =
     case image.imageType of
         Actor.RegularImage ->
-            Svg.image
-                [ Attributes.width <| String.fromInt image.width
-                , Attributes.height <| String.fromInt image.height
-                , Attributes.id <| "image-" ++ name
-                , Attributes.xlinkHref image.path
+            node "img"
+                [ Attributes.id <| "image-" ++ name
+                , Attributes.src image.path
                 ]
                 []
 
         Actor.PatternImage patternImageData ->
-            Svg.pattern
-                [ Attributes.width <| String.fromInt image.width
-                , Attributes.height <| String.fromInt image.height
-                , Attributes.id <| "pattern-" ++ name
-                , Attributes.x <| getOffset view patternImageData.xOffset
-                , Attributes.y <| getOffset view patternImageData.yOffset
-                , Attributes.patternUnits "userSpaceOnUse"
+            node "img"
+                [ Attributes.id <| "image-" ++ name
+                , Attributes.src image.path
                 ]
-                [ Svg.image
-                    [ Attributes.width <| String.fromInt image.width
-                    , Attributes.height <| String.fromInt image.height
-                    , Attributes.id <| "image-" ++ name
-                    , Attributes.xlinkHref image.path
-                    ]
-                    []
-                ]
+                []
 
         Actor.LinkImage linkData ->
-            Svg.image
-                [ Attributes.width <| String.fromInt image.width
-                , Attributes.height <| String.fromInt image.height
-                , Attributes.id <| "image-" ++ name
-                , Attributes.xlinkHref image.path
+            node "img"
+                [ Attributes.id <| "image-" ++ name
+                , Attributes.src image.path
                 ]
                 []
 
 
-getOffset : Actor.View -> Actor.ImagePositionOffset -> String
-getOffset view imagePositionOffset =
-    case imagePositionOffset of
-        Actor.FixedOffset intOffset ->
-            String.fromInt intOffset
-
-        Actor.MultipliedByViewX multiplier ->
-            String.fromFloat <| Basics.toFloat view.coordinate.x * multiplier
-
-        Actor.MultipliedByViewY multiplier ->
-            String.fromFloat <| Basics.toFloat view.coordinate.y * multiplier
-
-
-drawBackgrounds : Int -> Config -> Actor.Images -> List Actor.RenderComponentData -> List (Svg msg)
-drawBackgrounds tick config images backgrounds =
-    List.map
-        (drawBackground tick config images)
-        backgrounds
-        |> Maybe.Extra.values
-
-
-drawBackground : Int -> Config -> Actor.Images -> Actor.RenderComponentData -> Maybe (Svg msg)
-drawBackground tick config images backgroundData =
+drawCamera : Level -> LevelConfig -> Html msg
+drawCamera level levelConfig =
     let
-        xy =
-            config.additionalViewBorder * config.pixelSize
+        _ =
+            Debug.log "camera" <| Debug.toString level.view.coordinate
+
+        _ =
+            Debug.log "config" <| Debug.toString level.config
+
+        x =
+            (level.view.coordinate.x // level.config.pixelSize) + (level.config.width // 2)
+
+        y =
+            (level.view.coordinate.y // level.config.pixelSize) + level.config.height
     in
-    case backgroundData.object of
-        Actor.PixelRenderObject data ->
-            Svg.rect
-                [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
-                , Attributes.height <| String.fromInt <| config.height * config.pixelSize
-                , Attributes.x <| String.fromInt <| xy
-                , Attributes.y <| String.fromInt <| xy
-                , Attributes.fill <| Color.toCssString <| getColor tick data
+    node "a-camera"
+        [ Attributes.attribute "position" <|
+            String.join " "
+                [ String.fromInt x
+                , String.fromInt y
+                , "10"
                 ]
-                []
-                |> Just
-
-        Actor.ImageRenderObject data ->
-            getImageName tick data.default
-                |> Maybe.andThen (imageNameToSvg xy xy images)
+        , Attributes.attribute "wasd-controls" "enabled: false;"
+        ]
+        []
 
 
-imageNameToSvg : Int -> Int -> Actor.Images -> String -> Maybe (Svg msg)
-imageNameToSvg x y images imageName =
-    Dict.get imageName images
-        |> Maybe.map
-            (\image ->
-                case image.imageType of
-                    Actor.RegularImage ->
-                        Svg.use
-                            [ Attributes.xlinkHref <| "#image-" ++ imageName
-                            , Attributes.x <| String.fromInt <| x + image.xOffset
-                            , Attributes.y <| String.fromInt <| y + image.yOffset
-                            ]
-                            []
-
-                    Actor.PatternImage _ ->
-                        Svg.rect
-                            [ Attributes.fill <| "url(#pattern-" ++ imageName ++ ")"
-                            , Attributes.width <| String.fromInt image.width
-                            , Attributes.height <| String.fromInt image.height
-                            , Attributes.x <| String.fromInt <| x + image.xOffset
-                            , Attributes.y <| String.fromInt <| y + image.yOffset
-                            ]
-                            []
-
-                    Actor.LinkImage linkData ->
-                        Svg.a
-                            [ Attributes.xlinkHref linkData.href
-                            , Attributes.target "_blank"
-                            ]
-                            [ Svg.use
-                                [ Attributes.xlinkHref <| "#image-" ++ imageName
-                                , Attributes.x <| String.fromInt <| x + image.xOffset
-                                , Attributes.y <| String.fromInt <| y + image.yOffset
-                                ]
-                                []
-                            ]
-            )
-
-
-drawLevel : Int -> Level -> Actor.Images -> List (Svg msg)
-drawLevel tick level images =
+drawLevel : Int -> Level -> LevelConfig -> List (Html msg)
+drawLevel tick level levelConfig =
     let
         view =
             level.view
@@ -224,7 +142,7 @@ drawLevel tick level images =
                                     { x = x, y = y }
                                     viewPixelOffset
                                     level
-                                    images
+                                    levelConfig
                                     (Common.getEnvironmentActorsByPosition { x = x, y = y } level)
                                     innerAcc
                             )
@@ -245,7 +163,7 @@ drawLevel tick level images =
                                     { x = x, y = y }
                                     viewPixelOffset
                                     level
-                                    images
+                                    levelConfig
                                     (Common.getActorsByPosition { x = x, y = y } level)
                                     innerAcc
                             )
@@ -254,10 +172,10 @@ drawLevel tick level images =
                 givenAcc
                 (List.range yBasePosition yEndPosition)
     in
-    Dict.empty
-        |> drawEnvironment
-        |> drawOtherActors
-        |> toSortedList
+    Util.fastConcat
+        [ drawEnvironment []
+        , drawOtherActors []
+        ]
 
 
 type alias RenderRequirements =
@@ -271,8 +189,8 @@ type alias RenderRequirements =
     }
 
 
-drawActors : Int -> Position -> Position -> Coordinate -> Level -> Actor.Images -> List Actor.Actor -> LayeredSvg msg -> LayeredSvg msg
-drawActors tick viewPosition position pixelOffset level images actors acc =
+drawActors : Int -> Position -> Position -> Coordinate -> Level -> LevelConfig -> List Actor.Actor -> List (Html msg) -> List (Html msg)
+drawActors tick viewPosition position pixelOffset level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
@@ -289,28 +207,36 @@ drawActors tick viewPosition position pixelOffset level images actors acc =
     actors
         |> List.filterMap asRenderRequirements
         |> List.foldr
-            (\renderRequirements innerAcc -> drawRenderRequirements renderRequirements images level innerAcc)
+            (\renderRequirements innerAcc -> drawRenderRequirements renderRequirements levelConfig level innerAcc)
             acc
 
 
-drawRenderRequirements : RenderRequirements -> Actor.Images -> Level -> LayeredSvg msg -> LayeredSvg msg
-drawRenderRequirements renderRequirements images level acc =
+drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List (Html msg) -> List (Html msg)
+drawRenderRequirements renderRequirements levelConfig level acc =
     let
-        imageNotMovingOp : Actor.ImageObjectData -> LayeredSvg msg
+        imageNotMovingOp : Actor.ImageObjectData -> List (Html msg)
         imageNotMovingOp imageData =
             let
+                {-
+                   Must handle the offset.
+                   The offset is in pixels while this format understands tiles.
+                   So the pixels offset must be divided by the tilesize (for example 32)
+                -}
                 x =
-                    (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
+                    renderRequirements.transform.position.x
 
+                --                    (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
                 y =
-                    (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
+                    renderRequirements.transform.position.y
+
+                --                    (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
             in
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.andThen (imageNameToSvg x y images)
-                |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
+                |> Maybe.map (renderImage (toFloat x) (toFloat y) levelConfig.images)
+                |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
-        imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> LayeredSvg msg
+        imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> List (Html msg)
         imageMovingOp imageData towardsData =
             let
                 calculateWithCompletion : Int -> Int -> Int
@@ -333,22 +259,33 @@ drawRenderRequirements renderRequirements images level acc =
                     in
                     result
 
+                {-
+                   Must handle the offset.
+                   The offset is in pixels while this format understands tiles.
+                   So the pixels offset must be divided by the tilesize (for example 32)
+                -}
                 x =
                     calculateWithCompletion (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) (towardsData.position.x - renderRequirements.viewPosition.x) + renderRequirements.pixelOffset.x
 
                 y =
                     calculateWithCompletion (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) (towardsData.position.y - renderRequirements.viewPosition.y) + renderRequirements.pixelOffset.y
+
+                xAsTile =
+                    toFloat x / toFloat level.config.pixelSize
+
+                yAsTile =
+                    toFloat y / toFloat level.config.pixelSize
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.andThen (imageNameToSvg x y images)
-                |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
+                |> Maybe.map (renderImage xAsTile yAsTile levelConfig.images)
+                |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
-        pixelNotMovingOp : Actor.PixelObjectData -> LayeredSvg msg
+        pixelNotMovingOp : Actor.PixelObjectData -> List (Html msg)
         pixelNotMovingOp pixelData =
             let
-                pixelElement : Svg msg
+                pixelElement : Html msg
                 pixelElement =
                     asPixel
                         level.config
@@ -357,12 +294,12 @@ drawRenderRequirements renderRequirements images level acc =
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData)
             in
-            addToLayeredSvg renderRequirements.render.layer pixelElement acc
+            pixelElement :: acc
 
-        pixelMovingOp : Actor.PixelObjectData -> Actor.MovingTowardsData -> LayeredSvg msg
+        pixelMovingOp : Actor.PixelObjectData -> Actor.MovingTowardsData -> List (Html msg)
         pixelMovingOp pixelData towardsData =
             let
-                originElement : Svg msg
+                originElement : Html msg
                 originElement =
                     asPixel
                         level.config
@@ -371,7 +308,7 @@ drawRenderRequirements renderRequirements images level acc =
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
 
-                destinationElement : Svg msg
+                destinationElement : Html msg
                 destinationElement =
                     asPixel
                         level.config
@@ -380,9 +317,7 @@ drawRenderRequirements renderRequirements images level acc =
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
             in
-            acc
-                |> addToLayeredSvg renderRequirements.render.layer originElement
-                |> addToLayeredSvg renderRequirements.render.layer destinationElement
+            originElement :: destinationElement :: acc
     in
     case ( renderRequirements.render.object, renderRequirements.maybeTowards ) of
         ( Actor.PixelRenderObject pixelData, Nothing ) ->
@@ -396,6 +331,53 @@ drawRenderRequirements renderRequirements images level acc =
 
         ( Actor.ImageRenderObject imageData, Just towardsData ) ->
             imageMovingOp imageData towardsData
+
+
+renderImage : Float -> Float -> Actor.Images -> String -> List (Html msg)
+renderImage x y images imageName =
+    let
+        asImage : Actor.Image -> List (Html.Attribute msg) -> Html msg
+        asImage image additionalAttributes =
+            node "a-box"
+                (List.append
+                    [ Attributes.attribute "material" <|
+                        String.join ""
+                            [ "src: #image-"
+                            , imageName
+                            , "; transparent: true;"
+                            ]
+                    , Attributes.attribute "position" <|
+                        String.join " "
+                            [ String.fromFloat <| x + (toFloat image.xOffset / 64)
+                            , String.fromFloat <| y + (toFloat image.yOffset / 64) -- 64 should be config.pixelSize
+                            , "0"
+                            ]
+                    ]
+                    additionalAttributes
+                )
+                []
+    in
+    Dict.get imageName images
+        |> Maybe.map
+            (\image ->
+                case image.imageType of
+                    Actor.RegularImage ->
+                        asImage image []
+
+                    Actor.PatternImage _ ->
+                        asImage image []
+
+                    Actor.LinkImage linkData ->
+                        asImage image
+                            [ Attributes.attribute "link" <|
+                                String.join ""
+                                    [ "href: "
+                                    , linkData.href
+                                    , ";"
+                                    ]
+                            ]
+            )
+        |> Maybe.Extra.toList
 
 
 withCompletionPercentage : Float -> Color -> Color
@@ -435,36 +417,20 @@ noColor =
     Color.white
 
 
-asPixel : Config -> Position -> Position -> Coordinate -> Color -> Svg msg
+asPixel : Config -> Position -> Position -> Coordinate -> Color -> Html msg
 asPixel config viewPosition position pixelOffset color =
-    Svg.rect
-        [ Attributes.width <| String.fromInt config.pixelSize
-        , Attributes.height <| String.fromInt config.pixelSize
-        , Attributes.x <| String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
-        , Attributes.y <| String.fromInt <| (position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
-        , Attributes.fill <| Color.toCssString color
+    node "a-box"
+        [ Attributes.attribute "material" <|
+            String.join ""
+                [ "color: "
+                , Color.toCssString color
+                , "; transparent: true;"
+                ]
+        , Attributes.attribute "position" <|
+            String.join " "
+                [ String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
+                , String.fromInt <| (position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
+                , "0"
+                ]
         ]
         []
-
-
-addToLayeredSvgFlipped : Int -> LayeredSvg msg -> Svg msg -> LayeredSvg msg
-addToLayeredSvgFlipped layer acc svg =
-    addToLayeredSvg layer svg acc
-
-
-addToLayeredSvg : Int -> Svg msg -> LayeredSvg msg -> LayeredSvg msg
-addToLayeredSvg layer svg =
-    Dict.update layer
-        (\maybeList ->
-            case maybeList of
-                Nothing ->
-                    Just [ svg ]
-
-                Just list ->
-                    Just <| svg :: list
-        )
-
-
-toSortedList : LayeredSvg msg -> List (Svg msg)
-toSortedList =
-    Dict.values >> Util.fastConcat

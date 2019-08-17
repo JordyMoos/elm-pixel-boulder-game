@@ -3,6 +3,9 @@ module Actor.Decoder exposing (defaultBackgrounds, levelConfigDecoder)
 import Actor.Actor as Actor
     exposing
         ( AdventAiData
+        , AframeCamera
+        , AframeCameraOffset
+        , AframeRendererData
         , AiComponentData
         , AiType(..)
         , AnimationSetup
@@ -102,7 +105,7 @@ levelConfigDecoder =
 
 decodeRenderer : Decoder Renderer
 decodeRenderer =
-    Decode.string
+    Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
@@ -110,7 +113,7 @@ decodeRenderer =
                         Decode.succeed SvgRenderer
 
                     "aframe" ->
-                        Decode.succeed AframeRenderer
+                        Decode.map AframeRenderer <| Decode.field "data" aframeRendererDecoder
 
                     _ ->
                         Decode.fail <|
@@ -118,6 +121,36 @@ decodeRenderer =
                                 ++ theType
                                 ++ " is not supported"
             )
+
+
+aframeRendererDecoder : Decoder AframeRendererData
+aframeRendererDecoder =
+    Decode.succeed AframeRendererData
+        |> JDP.optional "camera" aframeCameraDecoder defaultAframeCamera
+
+
+aframeCameraDecoder : Decoder AframeCamera
+aframeCameraDecoder =
+    Decode.succeed AframeCamera
+        |> JDP.optional "offset" aframeCameraOffsetDecoder defaultAframeCamera.offset
+
+
+aframeCameraOffsetDecoder : Decoder AframeCameraOffset
+aframeCameraOffsetDecoder =
+    Decode.succeed AframeCameraOffset
+        |> JDP.optional "x" Decode.float defaultAframeCamera.offset.x
+        |> JDP.optional "y" Decode.float defaultAframeCamera.offset.y
+        |> JDP.optional "x" Decode.float defaultAframeCamera.offset.z
+
+
+defaultAframeCamera : AframeCamera
+defaultAframeCamera =
+    { offset =
+        { x = 0.0
+        , y = 0.0
+        , z = 0.0
+        }
+    }
 
 
 defaultBackgrounds : List RenderComponentData

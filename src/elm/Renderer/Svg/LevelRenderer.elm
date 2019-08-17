@@ -22,8 +22,8 @@ type alias LayeredSvg msg =
     Dict Int (List (Svg msg))
 
 
-renderLevel : Int -> Level -> Actor.Images -> Html msg
-renderLevel currentTick level images =
+renderLevel : Int -> Level -> Actor.LevelConfig -> Html msg
+renderLevel currentTick level { images } =
     Util.fastConcat
         [ [ drawLoadImages level.view images ]
         , drawBackgrounds currentTick level.config images level.backgrounds

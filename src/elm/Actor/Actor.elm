@@ -4,6 +4,9 @@ module Actor.Actor exposing
     , ActorType(..)
     , Actors
     , AdventAiData
+    , AframeCamera
+    , AframeCameraOffset
+    , AframeRendererData
     , AiComponentData
     , AiType(..)
     , AnimationSetup
@@ -200,7 +203,23 @@ type alias LevelConfig =
 
 type Renderer
     = SvgRenderer
-    | AframeRenderer
+    | AframeRenderer AframeRendererData
+
+
+type alias AframeRendererData =
+    { camera : AframeCamera
+    }
+
+
+type alias AframeCamera =
+    { offset : AframeCameraOffset }
+
+
+type alias AframeCameraOffset =
+    { x : Float
+    , y : Float
+    , z : Float
+    }
 
 
 type alias Level =

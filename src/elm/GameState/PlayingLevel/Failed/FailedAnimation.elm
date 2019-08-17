@@ -79,4 +79,4 @@ setLevel model level =
 
 view : Int -> Model -> Html msg
 view currentTick model =
-    LevelRenderer.renderLevel currentTick model.level model.levelConfig.images
+    LevelRenderer.renderLevel currentTick model.level model.levelConfig
