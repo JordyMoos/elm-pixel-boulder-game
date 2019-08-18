@@ -304,9 +304,8 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 pixelElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionCoordinate
-                        renderRequirements.position
-                        renderRequirements.pixelOffset
+                        xPoint
+                        yPoint
                         (getColor renderRequirements.tick pixelData)
             in
             pixelElement :: acc
@@ -318,18 +317,16 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 originElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionCoordinate
-                        renderRequirements.position
-                        renderRequirements.pixelOffset
+                        xPoint
+                        yPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
 
                 destinationElement : Html msg
                 destinationElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionCoordinate
-                        towardsData.position
-                        renderRequirements.pixelOffset
+                        xPoint
+                        yPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
             in
             originElement :: destinationElement :: acc
@@ -440,8 +437,8 @@ noColor =
     Color.white
 
 
-asPixel : Config -> Position -> Position -> Coordinate -> Color -> Html msg
-asPixel config viewPositionCoordinate position pixelOffset color =
+asPixel : Config -> Float -> Float -> Color -> Html msg
+asPixel config xPoint yPoint color =
     node "a-box"
         [ Attributes.attribute "material" <|
             String.join ""
@@ -451,8 +448,8 @@ asPixel config viewPositionCoordinate position pixelOffset color =
                 ]
         , Attributes.attribute "position" <|
             String.join " "
-                [ String.fromInt <| (position.x - viewPositionCoordinate.x) * config.pixelSize + pixelOffset.x
-                , String.fromInt <| ((position.y - viewPositionCoordinate.y) * config.pixelSize + pixelOffset.y) * -1
+                [ String.fromFloat xPoint
+                , String.fromFloat (yPoint * -1)
                 , "0"
                 ]
         ]
