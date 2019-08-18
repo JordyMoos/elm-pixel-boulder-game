@@ -78,9 +78,6 @@ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
 
         y2 =
             toFloat viewPositionCoordinate.y + (toFloat level.config.height / 2.0) - yOffset
-
-        _ =
-            Debug.log "viewPositionCoordinate" <| Debug.toString viewPositionCoordinate
     in
     node "a-camera"
         [ Attributes.attribute "position" <|
