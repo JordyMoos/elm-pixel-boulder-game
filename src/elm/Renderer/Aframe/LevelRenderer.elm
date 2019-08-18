@@ -62,12 +62,6 @@ drawLoadImage ( name, image ) =
 drawCamera : Level -> LevelConfig -> Html msg
 drawCamera level levelConfig =
     let
-        _ =
-            Debug.log "camera" <| Debug.toString level.view.coordinate
-
-        _ =
-            Debug.log "config" <| Debug.toString level.config
-
         x =
             (level.view.coordinate.x // level.config.pixelSize) + (level.config.width // 2)
 
@@ -180,7 +174,7 @@ drawLevel tick level levelConfig =
 
 type alias RenderRequirements =
     { tick : Int
-    , viewPosition : Position
+    , viewPositionPixels : Position
     , position : Position
     , pixelOffset : Coordinate
     , render : Actor.RenderComponentData
@@ -214,71 +208,52 @@ drawActors tick viewPosition position pixelOffset level levelConfig actors acc =
 drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List (Html msg) -> List (Html msg)
 drawRenderRequirements renderRequirements levelConfig level acc =
     let
-        z =
+        asXPoint : Int -> Float
+        asXPoint givenX =
+            toFloat givenX - (toFloat renderRequirements.viewPositionPixels.x / 64.0) + (toFloat renderRequirements.pixelOffset.x / 64.0)
+
+        asYPoint : Int -> Float
+        asYPoint givenY =
+            toFloat givenY - (toFloat renderRequirements.viewPositionPixels.y / 64.0) + (toFloat renderRequirements.pixelOffset.y / 64.0)
+
+        xPoint =
+            asXPoint renderRequirements.transform.position.x
+
+        yPoint =
+            asYPoint renderRequirements.transform.position.y
+
+        zPoint =
             toFloat renderRequirements.render.layer / 64.0
 
         imageNotMovingOp : Actor.ImageObjectData -> List (Html msg)
         imageNotMovingOp imageData =
-            let
-                {-
-                   Must handle the offset.
-                   The offset is in pixels while this format understands tiles.
-                   So the pixels offset must be divided by the tilesize (for example 32)
-                -}
-                x =
-                    toFloat renderRequirements.transform.position.x - (toFloat renderRequirements.viewPosition.x / 64.0) + (toFloat renderRequirements.pixelOffset.x / 64.0)
-
-                y =
-                    toFloat renderRequirements.transform.position.y - (toFloat renderRequirements.viewPosition.y / 64.0) + (toFloat renderRequirements.pixelOffset.y / 64.0)
-            in
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map (renderImage x y z levelConfig.images)
+                |> Maybe.map (renderImage xPoint yPoint zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
         imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> List (Html msg)
         imageMovingOp imageData towardsData =
             let
-                calculateWithCompletion : Int -> Int -> Int
-                calculateWithCompletion a b =
-                    let
-                        aFloat =
-                            toFloat (a * level.config.pixelSize)
+                xDestPoint =
+                    asXPoint towardsData.position.x
 
-                        bFloat =
-                            toFloat (b * level.config.pixelSize)
+                yDestPoint =
+                    asYPoint towardsData.position.y
 
-                        diffFloat =
-                            bFloat - aFloat
+                asMovementLocation : Float -> Float -> Float -> Float
+                asMovementLocation xCurrent xDest completion =
+                    (xDest - xCurrent) / 100.0 * completion + xCurrent
 
-                        offset =
-                            diffFloat * (towardsData.completionPercentage / 100)
+                xFinal =
+                    asMovementLocation xPoint xDestPoint towardsData.completionPercentage
 
-                        result =
-                            round <| aFloat + offset
-                    in
-                    result
-
-                {-
-                   Must handle the offset.
-                   The offset is in pixels while this format understands tiles.
-                   So the pixels offset must be divided by the tilesize (for example 32)
-                -}
-                x =
-                    calculateWithCompletion (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) (towardsData.position.x - renderRequirements.viewPosition.x) + renderRequirements.pixelOffset.x
-
-                y =
-                    calculateWithCompletion (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) (towardsData.position.y - renderRequirements.viewPosition.y) + renderRequirements.pixelOffset.y
-
-                xAsTile =
-                    toFloat x / toFloat level.config.pixelSize
-
-                yAsTile =
-                    toFloat y / toFloat level.config.pixelSize
+                yFinal =
+                    asMovementLocation yPoint yDestPoint towardsData.completionPercentage
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage xAsTile yAsTile z levelConfig.images)
+                |> Maybe.map (renderImage xFinal yFinal zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -289,7 +264,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 pixelElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPosition
+                        renderRequirements.viewPositionPixels
                         renderRequirements.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData)
@@ -303,7 +278,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 originElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPosition
+                        renderRequirements.viewPositionPixels
                         renderRequirements.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
@@ -312,7 +287,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 destinationElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPosition
+                        renderRequirements.viewPositionPixels
                         towardsData.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
