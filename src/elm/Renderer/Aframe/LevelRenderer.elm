@@ -78,7 +78,7 @@ drawCamera level levelConfig =
         [ Attributes.attribute "position" <|
             String.join " "
                 [ String.fromInt x
-                , String.fromInt y
+                , String.fromInt (y * -1)
                 , "10"
                 ]
         , Attributes.attribute "wasd-controls" "enabled: false;"
@@ -214,6 +214,9 @@ drawActors tick viewPosition position pixelOffset level levelConfig actors acc =
 drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List (Html msg) -> List (Html msg)
 drawRenderRequirements renderRequirements levelConfig level acc =
     let
+        z =
+            toFloat renderRequirements.render.layer / 64.0
+
         imageNotMovingOp : Actor.ImageObjectData -> List (Html msg)
         imageNotMovingOp imageData =
             let
@@ -223,16 +226,13 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                    So the pixels offset must be divided by the tilesize (for example 32)
                 -}
                 x =
-                    renderRequirements.transform.position.x
+                    toFloat renderRequirements.transform.position.x - (toFloat renderRequirements.viewPosition.x / 64.0) + (toFloat renderRequirements.pixelOffset.x / 64.0)
 
-                --                    (renderRequirements.transform.position.x - renderRequirements.viewPosition.x) * level.config.pixelSize + renderRequirements.pixelOffset.x
                 y =
-                    renderRequirements.transform.position.y
-
-                --                    (renderRequirements.transform.position.y - renderRequirements.viewPosition.y) * level.config.pixelSize + renderRequirements.pixelOffset.y
+                    toFloat renderRequirements.transform.position.y - (toFloat renderRequirements.viewPosition.y / 64.0) + (toFloat renderRequirements.pixelOffset.y / 64.0)
             in
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map (renderImage (toFloat x) (toFloat y) levelConfig.images)
+                |> Maybe.map (renderImage x y z levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -278,7 +278,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage xAsTile yAsTile levelConfig.images)
+                |> Maybe.map (renderImage xAsTile yAsTile z levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -333,12 +333,12 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             imageMovingOp imageData towardsData
 
 
-renderImage : Float -> Float -> Actor.Images -> String -> List (Html msg)
-renderImage x y images imageName =
+renderImage : Float -> Float -> Float -> Actor.Images -> String -> List (Html msg)
+renderImage x y z images imageName =
     let
         asImage : Actor.Image -> List (Html.Attribute msg) -> Html msg
         asImage image additionalAttributes =
-            node "a-box"
+            node "a-image"
                 (List.append
                     [ Attributes.attribute "material" <|
                         String.join ""
@@ -348,9 +348,17 @@ renderImage x y images imageName =
                             ]
                     , Attributes.attribute "position" <|
                         String.join " "
-                            [ String.fromFloat <| x + (toFloat image.xOffset / 64)
-                            , String.fromFloat <| y + (toFloat image.yOffset / 64) -- 64 should be config.pixelSize
-                            , "0"
+                            [ String.fromFloat <| x + (toFloat image.xOffset / 64.0) - (toFloat image.width / 64.0 / 2.0)
+                            , String.fromFloat <| (y + (toFloat image.yOffset / 64.0) + (toFloat image.height / 64.0 / 2.0)) * -1.0 -- 64 should be config.pixelSize
+                            , String.fromFloat z
+                            ]
+                    , Attributes.attribute "geometry" <|
+                        String.join ""
+                            [ "width: "
+                            , String.fromFloat <| (toFloat image.width / 64)
+                            , "; height: "
+                            , String.fromFloat <| (toFloat image.height / 64) -- 64 should be config.pixelSize
+                            , ";"
                             ]
                     ]
                     additionalAttributes
@@ -429,7 +437,7 @@ asPixel config viewPosition position pixelOffset color =
         , Attributes.attribute "position" <|
             String.join " "
                 [ String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
-                , String.fromInt <| (position.y - viewPosition.y) * config.pixelSize + pixelOffset.y
+                , String.fromInt <| ((position.y - viewPosition.y) * config.pixelSize + pixelOffset.y) * -1
                 , "0"
                 ]
         ]
