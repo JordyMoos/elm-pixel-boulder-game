@@ -1,0 +1,469 @@
+{
+  "entities":{
+    "player":[
+      {
+        "type":"tag",
+        "data":{
+          "name":"player"
+        }
+      },
+      {
+        "type":"render",
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
+                {
+                  "red":78,
+                  "green":154,
+                  "blue":6
+                }
+              ]
+            }
+          },
+          "layer":5
+        }
+      },
+      {
+        "type":"control",
+        "data":{
+          "settings":{
+            "pushStrength":50,
+            "walkOverStrength":50
+          },
+          "control":{
+            "type":"input",
+            "data": {
+              "allowedDirections":[
+                "left",
+                "up",
+                "right",
+                "down"
+              ]}
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"collector",
+        "data":{
+          "interestedIn":[
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"explodable"
+      },
+      {
+        "type":"camera",
+        "data":{
+          "borderSize":5
+        }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":10,
+          "shape":"square"
+        }
+      }
+    ],
+    "rock":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 186,
+                  "green": 189,
+                  "blue": 182
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"gravityAi",
+            "data": {}
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":20,
+          "shape":"circle"
+        }
+      },
+      {
+        "type":"smash-down"
+      }
+    ],
+    "explosion":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 204,
+                  "green": 0,
+                  "blue": 0
+                },
+                {
+                  "red": 206,
+                  "green": 92,
+                  "blue": 0
+                },
+                {
+                  "red": 237,
+                  "green": 212,
+                  "blue": 0
+                }
+              ],
+              "ticksPerColor": 4
+            }
+          }
+        }
+      },
+      {
+        "type":"lifetime",
+        "data":{
+          "remainingTicks":16
+        }
+      },
+      {
+        "type":"damage",
+        "data":{
+          "damageStrength":80
+        }
+      }
+    ],
+    "enemy":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 206,
+                  "green": 92,
+                  "blue": 0
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":20,
+          "shape":"circle"
+        }
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"walkAroundAi",
+            "data":{
+              "previousDirection":"left",
+              "nextDirectionOffsets":[
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"explodable"
+      },
+      {
+        "type":"trigger-explodable",
+        "data":{
+          "triggerStrength":20
+        }
+      }
+    ],
+    "dirt":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 233,
+                  "green": 185,
+                  "blue": 110
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"collectible",
+        "data":{
+          "name":"dirt"
+        }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":1,
+          "shape":"square"
+        }
+      }
+    ],
+    "wall":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 98,
+                  "green": 100,
+                  "blue": 87
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":50,
+          "shape":"square"
+        }
+      }
+    ],
+    "strongwall":[
+      {
+        "type":"render",
+        "data":{
+          "object":{
+          "type":"pixel",
+          "data":{
+            "colors":[
+              {
+                "red":0,
+                "green":0,
+                "blue":0
+              }
+
+            ]
+      }
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":100,
+          "shape":"square"
+        }
+      }
+    ],
+    "diamond":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 52,
+                  "green": 101,
+                  "blue": 164
+                },
+                {
+                  "red": 114,
+                  "green": 159,
+                  "blue": 207
+                }
+              ],
+              "ticksPerColor": 24
+            }
+          }
+        }
+      },
+      {
+        "type":"collectible",
+        "data":{
+          "name":"diamond"
+        }
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"gravityAi"
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":20,
+          "shape":"circle"
+        }
+      }
+    ],
+    "failed":[
+      {
+        "type":"render",
+        "data":{
+          "object": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 0,
+                  "green": 0,
+                  "blue": 0
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":1000,
+          "shape":"square"
+        }
+      },
+      {
+        "type":"damage",
+        "data":{
+          "damageStrength":1000
+        }
+      }
+    ]
+  },
+  "signs":{
+    "p":"player",
+    "o":"rock",
+    "=":"dynamite",
+    "x":"explosion",
+    "e":"enemy",
+    "c":"pet",
+    ".":"dirt",
+    "|":"wall",
+    "#":"strongwall",
+    "*":"diamond"
+  },
+  "background":[{
+    "type":"pixel",
+    "data":{
+      "object": {
+        "colors": [
+          {
+            "red": 255,
+            "green": 255,
+            "blue": 255
+          }
+        ]
+      }
+    }
+  }],
+  "scene":[
+    "#########################################",
+    "#.......................................#",
+    "#.................******e   ............#",
+    "#|||||||||........******    ............#",
+    "#|**| o  o..............................#",
+    "#|**| || |....ooooooooo.p...............#",
+    "#|**| || |....ooooooooo.......*.........#",
+    "#|**| || |....oooooooo..................#",
+    "#|**| ||=|...................*..........#",
+    "#|**| ||||...           ................#",
+    "#|**| ||*|...           .........*......#",
+    "#|**|e||*|...           ................#",
+    "#|||||||||...           ................#",
+    "#.......................................#",
+    "#....*......    e       .......*........#",
+    "#............*..........................#",
+    "#.......................................#",
+    "#########################################"
+  ],
+  "renderer":{
+    "type":"aframe",
+    "data":{
+      "camera":{
+        "offset":{
+          "x":0,
+          "y":0.5,
+          "z":3
+        }
+      }
+    }
+  }
+}

@@ -22,7 +22,6 @@ renderLevel currentTick level levelConfig =
     Util.fastConcat
         [ [ drawAssets levelConfig ]
         , drawLevel currentTick level levelConfig
-        , [ drawCamera level levelConfig ]
         ]
         |> node "a-scene" []
 
@@ -59,25 +58,53 @@ drawLoadImage ( name, image ) =
                 []
 
 
-drawCamera : Level -> LevelConfig -> Html msg
-drawCamera level levelConfig =
+drawCamera : Level -> LevelConfig -> Position -> Position -> Html msg
+drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
     let
         x =
             (toFloat level.view.coordinate.x / toFloat level.config.pixelSize) + (toFloat level.config.width / 2.0)
 
         y =
             (toFloat level.view.coordinate.y / toFloat level.config.pixelSize) + (toFloat level.config.height / 2.0)
+
+        xOffset =
+            toFloat viewPixelOffset.x / toFloat level.config.pixelSize
+
+        yOffset =
+            toFloat viewPixelOffset.y / toFloat level.config.pixelSize
+
+        x2 =
+            toFloat viewPositionCoordinate.x + (toFloat level.config.width / 2.0) - xOffset
+
+        y2 =
+            toFloat viewPositionCoordinate.y + (toFloat level.config.height / 2.0) - yOffset
+
+        _ =
+            Debug.log "viewPositionCoordinate" <| Debug.toString viewPositionCoordinate
     in
     node "a-camera"
         [ Attributes.attribute "position" <|
             String.join " "
-                [ String.fromFloat x
-                , String.fromFloat (y * -1)
-                , "6"
+                [ String.fromFloat x2
+                , String.fromFloat (y2 * -1)
+                , "7"
                 ]
         , Attributes.attribute "wasd-controls" "enabled: false;"
         ]
         []
+
+
+
+--    node "a-camera"
+--        [ Attributes.attribute "position" <|
+--            String.join " "
+--                [ String.fromFloat x
+--                , String.fromFloat (y * -1)
+--                , "20"
+--                ]
+--        , Attributes.attribute "wasd-controls" "enabled: false;"
+--        ]
+--        []
 
 
 drawLevel : Int -> Level -> LevelConfig -> List (Html msg)
@@ -103,7 +130,7 @@ drawLevel tick level levelConfig =
         yBasePosition =
             Coordinate.pixelToTile level.config.pixelSize view.coordinate.y - level.config.additionalViewBorder
 
-        viewPosition =
+        viewPositionCoordinate =
             { x =
                 if view.coordinate.x < 0 && viewPixelOffset.x /= 0 then
                     xBasePosition - 1
@@ -132,7 +159,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    viewPosition
+                                    viewPositionCoordinate
                                     { x = x, y = y }
                                     viewPixelOffset
                                     level
@@ -153,7 +180,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    viewPosition
+                                    viewPositionCoordinate
                                     { x = x, y = y }
                                     viewPixelOffset
                                     level
@@ -169,12 +196,13 @@ drawLevel tick level levelConfig =
     Util.fastConcat
         [ drawEnvironment []
         , drawOtherActors []
+        , [ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset ]
         ]
 
 
 type alias RenderRequirements =
     { tick : Int
-    , viewPositionPixels : Position
+    , viewPositionCoordinate : Position
     , position : Position
     , pixelOffset : Coordinate
     , render : Actor.RenderComponentData
@@ -184,12 +212,12 @@ type alias RenderRequirements =
 
 
 drawActors : Int -> Position -> Position -> Coordinate -> Level -> LevelConfig -> List Actor.Actor -> List (Html msg) -> List (Html msg)
-drawActors tick viewPosition position pixelOffset level levelConfig actors acc =
+drawActors tick viewPositionCoordinate position pixelOffset level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements tick viewPosition position pixelOffset)
+                (RenderRequirements tick viewPositionCoordinate position pixelOffset)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -214,12 +242,14 @@ drawRenderRequirements renderRequirements levelConfig level acc =
 
         asXPoint : Int -> Float
         asXPoint givenX =
-            toFloat givenX - (toFloat renderRequirements.viewPositionPixels.x / pixelSize) + (toFloat renderRequirements.pixelOffset.x / pixelSize)
+            toFloat givenX
 
+        -- toFloat renderRequirements.viewPositionCoordinate.x + (toFloat renderRequirements.pixelOffset.x / pixelSize)
         asYPoint : Int -> Float
         asYPoint givenY =
-            toFloat givenY - (toFloat renderRequirements.viewPositionPixels.y / pixelSize) + (toFloat renderRequirements.pixelOffset.y / pixelSize)
+            toFloat givenY
 
+        -- toFloat renderRequirements.viewPositionCoordinate.y + (toFloat renderRequirements.pixelOffset.y / pixelSize)
         xPoint =
             asXPoint renderRequirements.transform.position.x
 
@@ -263,7 +293,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage pixelSize xFinal2 yFinal2 zPoint levelConfig.images)
+                |> Maybe.map (renderImage pixelSize xFinal yFinal zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -274,7 +304,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 pixelElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionPixels
+                        renderRequirements.viewPositionCoordinate
                         renderRequirements.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData)
@@ -288,7 +318,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 originElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionPixels
+                        renderRequirements.viewPositionCoordinate
                         renderRequirements.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
@@ -297,7 +327,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 destinationElement =
                     asPixel
                         level.config
-                        renderRequirements.viewPositionPixels
+                        renderRequirements.viewPositionCoordinate
                         towardsData.position
                         renderRequirements.pixelOffset
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
@@ -411,19 +441,41 @@ noColor =
 
 
 asPixel : Config -> Position -> Position -> Coordinate -> Color -> Html msg
-asPixel config viewPosition position pixelOffset color =
+asPixel config viewPositionCoordinate position pixelOffset color =
     node "a-box"
         [ Attributes.attribute "material" <|
             String.join ""
                 [ "color: "
-                , Color.toCssString color
+                , toCssString color
                 , "; transparent: true;"
                 ]
         , Attributes.attribute "position" <|
             String.join " "
-                [ String.fromInt <| (position.x - viewPosition.x) * config.pixelSize + pixelOffset.x
-                , String.fromInt <| ((position.y - viewPosition.y) * config.pixelSize + pixelOffset.y) * -1
+                [ String.fromInt <| (position.x - viewPositionCoordinate.x) * config.pixelSize + pixelOffset.x
+                , String.fromInt <| ((position.y - viewPositionCoordinate.y) * config.pixelSize + pixelOffset.y) * -1
                 , "0"
                 ]
         ]
         []
+
+
+toCssString : Color -> String
+toCssString color =
+    let
+        rgba =
+            Color.toRgba color
+
+        pct x =
+            ((x * 10000) |> round |> toFloat)
+                / 100
+                |> round
+    in
+    String.concat
+        [ "rgb("
+        , String.fromInt (pct rgba.red)
+        , "%,"
+        , String.fromInt (pct rgba.green)
+        , "%,"
+        , String.fromInt (pct rgba.blue)
+        , "%)"
+        ]

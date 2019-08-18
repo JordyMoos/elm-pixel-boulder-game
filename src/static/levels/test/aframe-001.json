@@ -737,7 +737,7 @@
     "width":16,
     "height":12,
     "pixelSize":32,
-    "additionalViewBorder":0
+    "additionalViewBorder":2
   },
   "renderer":{
     "type":"aframe",
