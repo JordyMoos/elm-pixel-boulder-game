@@ -483,5 +483,7 @@
     "pixelSize": 64,
     "additionalViewBorder": 0
   },
-  "renderer": "aframe"
+  "renderer": {
+    "type": "svg"
+  }
 }

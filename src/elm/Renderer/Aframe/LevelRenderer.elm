@@ -63,17 +63,17 @@ drawCamera : Level -> LevelConfig -> Html msg
 drawCamera level levelConfig =
     let
         x =
-            (level.view.coordinate.x // level.config.pixelSize) + (level.config.width // 2)
+            (toFloat level.view.coordinate.x / toFloat level.config.pixelSize) + (toFloat level.config.width / 2.0)
 
         y =
-            (level.view.coordinate.y // level.config.pixelSize) + level.config.height
+            (toFloat level.view.coordinate.y / toFloat level.config.pixelSize) + (toFloat level.config.height / 2.0)
     in
     node "a-camera"
         [ Attributes.attribute "position" <|
             String.join " "
-                [ String.fromInt x
-                , String.fromInt (y * -1)
-                , "10"
+                [ String.fromFloat x
+                , String.fromFloat (y * -1)
+                , "7"
                 ]
         , Attributes.attribute "wasd-controls" "enabled: false;"
         ]
@@ -248,12 +248,18 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 xFinal =
                     asMovementLocation xPoint xDestPoint towardsData.completionPercentage
 
+                xFinal2 =
+                    xFinal - (toFloat renderRequirements.pixelOffset.x / 64.0)
+
                 yFinal =
                     asMovementLocation yPoint yDestPoint towardsData.completionPercentage
+
+                yFinal2 =
+                    yFinal - (toFloat renderRequirements.pixelOffset.y / 64.0)
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage xFinal yFinal zPoint levelConfig.images)
+                |> Maybe.map (renderImage xFinal2 yFinal2 zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -323,7 +329,7 @@ renderImage x y z images imageName =
                             ]
                     , Attributes.attribute "position" <|
                         String.join " "
-                            [ String.fromFloat <| x + (toFloat image.xOffset / 64.0) - (toFloat image.width / 64.0 / 2.0)
+                            [ String.fromFloat <| x + (toFloat image.xOffset / 64.0) + (toFloat image.width / 64.0 / 2.0)
                             , String.fromFloat <| (y + (toFloat image.yOffset / 64.0) + (toFloat image.height / 64.0 / 2.0)) * -1.0 -- 64 should be config.pixelSize
                             , String.fromFloat z
                             ]

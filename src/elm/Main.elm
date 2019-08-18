@@ -134,7 +134,6 @@ update msg model =
         ( AnimationFrameUpdate timeDelta, _ ) ->
             updateGameState timeDelta model
                 |> updateFps timeDelta
-                |> createView
 
         ( _, _ ) ->
             ( model
@@ -270,6 +269,14 @@ updateGameState timeDelta givenModel =
                 (List.take givenModel.maxUpdatesPerView <| List.repeat ((givenModel.timeBuffer + round timeDelta) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
                         ( updateTimeBuffer (round timeDelta) gameSpeed newModel, newCmd )
+                   )
+                |> (\( newModel, newCmd ) ->
+                        if ((givenModel.timeBuffer + round timeDelta) // gameSpeed) > 0 then
+                            ( newModel, newCmd )
+                                |> createView
+
+                        else
+                            ( newModel, newCmd )
                    )
 
         Nothing ->
