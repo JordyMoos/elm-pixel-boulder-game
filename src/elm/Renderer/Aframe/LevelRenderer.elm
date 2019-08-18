@@ -73,7 +73,7 @@ drawCamera level levelConfig =
             String.join " "
                 [ String.fromFloat x
                 , String.fromFloat (y * -1)
-                , "7"
+                , "6"
                 ]
         , Attributes.attribute "wasd-controls" "enabled: false;"
         ]
@@ -208,13 +208,17 @@ drawActors tick viewPosition position pixelOffset level levelConfig actors acc =
 drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List (Html msg) -> List (Html msg)
 drawRenderRequirements renderRequirements levelConfig level acc =
     let
+        pixelSize : Float
+        pixelSize =
+            toFloat level.config.pixelSize
+
         asXPoint : Int -> Float
         asXPoint givenX =
-            toFloat givenX - (toFloat renderRequirements.viewPositionPixels.x / 64.0) + (toFloat renderRequirements.pixelOffset.x / 64.0)
+            toFloat givenX - (toFloat renderRequirements.viewPositionPixels.x / pixelSize) + (toFloat renderRequirements.pixelOffset.x / pixelSize)
 
         asYPoint : Int -> Float
         asYPoint givenY =
-            toFloat givenY - (toFloat renderRequirements.viewPositionPixels.y / 64.0) + (toFloat renderRequirements.pixelOffset.y / 64.0)
+            toFloat givenY - (toFloat renderRequirements.viewPositionPixels.y / pixelSize) + (toFloat renderRequirements.pixelOffset.y / pixelSize)
 
         xPoint =
             asXPoint renderRequirements.transform.position.x
@@ -223,12 +227,12 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             asYPoint renderRequirements.transform.position.y
 
         zPoint =
-            toFloat renderRequirements.render.layer / 64.0
+            toFloat renderRequirements.render.layer / pixelSize
 
         imageNotMovingOp : Actor.ImageObjectData -> List (Html msg)
         imageNotMovingOp imageData =
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map (renderImage xPoint yPoint zPoint levelConfig.images)
+                |> Maybe.map (renderImage pixelSize xPoint yPoint zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -249,17 +253,17 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                     asMovementLocation xPoint xDestPoint towardsData.completionPercentage
 
                 xFinal2 =
-                    xFinal - (toFloat renderRequirements.pixelOffset.x / 64.0)
+                    xFinal - (toFloat renderRequirements.pixelOffset.x / pixelSize)
 
                 yFinal =
                     asMovementLocation yPoint yDestPoint towardsData.completionPercentage
 
                 yFinal2 =
-                    yFinal - (toFloat renderRequirements.pixelOffset.y / 64.0)
+                    yFinal - (toFloat renderRequirements.pixelOffset.y / pixelSize)
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage xFinal2 yFinal2 zPoint levelConfig.images)
+                |> Maybe.map (renderImage pixelSize xFinal2 yFinal2 zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
@@ -314,8 +318,8 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             imageMovingOp imageData towardsData
 
 
-renderImage : Float -> Float -> Float -> Actor.Images -> String -> List (Html msg)
-renderImage x y z images imageName =
+renderImage : Float -> Float -> Float -> Float -> Actor.Images -> String -> List (Html msg)
+renderImage pixelSize x y z images imageName =
     let
         asImage : Actor.Image -> List (Html.Attribute msg) -> Html msg
         asImage image additionalAttributes =
@@ -329,16 +333,16 @@ renderImage x y z images imageName =
                             ]
                     , Attributes.attribute "position" <|
                         String.join " "
-                            [ String.fromFloat <| x + (toFloat image.xOffset / 64.0) + (toFloat image.width / 64.0 / 2.0)
-                            , String.fromFloat <| (y + (toFloat image.yOffset / 64.0) + (toFloat image.height / 64.0 / 2.0)) * -1.0 -- 64 should be config.pixelSize
+                            [ String.fromFloat <| x + (toFloat image.xOffset / pixelSize) + (toFloat image.width / pixelSize / 2.0)
+                            , String.fromFloat <| (y + (toFloat image.yOffset / pixelSize) + (toFloat image.height / pixelSize / 2.0)) * -1.0
                             , String.fromFloat z
                             ]
                     , Attributes.attribute "geometry" <|
                         String.join ""
                             [ "width: "
-                            , String.fromFloat <| (toFloat image.width / 64)
+                            , String.fromFloat <| (toFloat image.width / pixelSize)
                             , "; height: "
-                            , String.fromFloat <| (toFloat image.height / 64) -- 64 should be config.pixelSize
+                            , String.fromFloat <| (toFloat image.height / pixelSize)
                             , ";"
                             ]
                     ]
