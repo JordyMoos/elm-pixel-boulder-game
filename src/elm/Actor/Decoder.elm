@@ -48,6 +48,12 @@ import Actor.Actor as Actor
         , MovementComponentData
         , MovingDownState(..)
         , MovingState(..)
+        , ObjectAssets
+        , ObjectPreset
+        , ObjectPresetData
+        , ObjectPresets
+        , ObjectSettings
+        , Objects
         , PatternImageData
         , PhysicsComponentData
         , PixelObjectData
@@ -97,10 +103,18 @@ levelConfigDecoder =
         |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
         |> JDP.optional "updateBorder" Decode.int defaultUpdateBorder
         |> JDP.optional "images" imagesDecoder Dict.empty
+        |> JDP.optional "objects" objectDecoder defaultObjects
         |> JDP.optional "backgrounds" (Decode.list renderDataDecoder) defaultBackgrounds
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
         |> JDP.optional "config" (Decode.maybe configDecoder) Nothing
         |> JDP.optional "renderer" decodeRenderer SvgRenderer
+
+
+defaultObjects : Objects
+defaultObjects =
+    { assets = Dict.empty
+    , presets = Dict.empty
+    }
 
 
 decodeRenderer : Decoder Renderer
@@ -811,6 +825,40 @@ decodeImagePositionOffset =
                                 ++ theType
                                 ++ " is not supported."
             )
+
+
+objectDecoder : Decoder Objects
+objectDecoder =
+    Decode.succeed Objects
+        |> JDP.optional "assets" objectAssertsDecoder defaultObjects.assets
+        |> JDP.optional "presets" objectPresetsDecoder defaultObjects.presets
+
+
+objectAssertsDecoder : Decoder ObjectAssets
+objectAssertsDecoder =
+    Decode.dict Decode.string
+
+
+objectPresetsDecoder : Decoder ObjectPresets
+objectPresetsDecoder =
+    Decode.dict objectPresetDecoder
+
+
+objectPresetDecoder : Decoder ObjectPreset
+objectPresetDecoder =
+    Decode.dict objectPresetDataDecoder
+
+
+objectPresetDataDecoder : Decoder ObjectPresetData
+objectPresetDataDecoder =
+    Decode.succeed ObjectPresetData
+        |> JDP.required "assetName" Decode.string
+        |> JDP.optional "settings" decodeObjectSettingsDecoder Dict.empty
+
+
+decodeObjectSettingsDecoder : Decoder ObjectSettings
+decodeObjectSettingsDecoder =
+    Decode.dict Decode.string
 
 
 subscriberDecoder : Decoder Subscriber

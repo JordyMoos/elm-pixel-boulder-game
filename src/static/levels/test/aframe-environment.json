@@ -53,7 +53,7 @@
             "pushStrength":50,
             "walkOverStrength":50
           },
-          "steps":1,
+          "steps":20,
           "control":{
             "type":"input",
             "data":{
@@ -68,7 +68,7 @@
       {
         "type":"movement",
         "data":{
-          "movingTicks":5
+          "movingTicks":2
         }
       },
       {

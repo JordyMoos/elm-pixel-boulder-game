@@ -56,6 +56,12 @@ module Actor.Actor exposing
     , MovingDownState(..)
     , MovingState(..)
     , MovingTowardsData
+    , ObjectAssets
+    , ObjectPreset
+    , ObjectPresetData
+    , ObjectPresets
+    , ObjectSettings
+    , Objects
     , PatternImageData
     , PhysicsComponentData
     , PixelObjectData
@@ -163,6 +169,34 @@ type alias Image =
     }
 
 
+type alias Objects =
+    { assets : ObjectAssets
+    , presets : ObjectPresets
+    }
+
+
+type alias ObjectAssets =
+    Dict String String
+
+
+type alias ObjectPresets =
+    Dict String ObjectPreset
+
+
+type alias ObjectPreset =
+    Dict String ObjectPresetData
+
+
+type alias ObjectPresetData =
+    { assetName : String
+    , settings : ObjectSettings
+    }
+
+
+type alias ObjectSettings =
+    Dict String String
+
+
 type ImageType
     = RegularImage
     | PatternImage PatternImageData
@@ -194,6 +228,7 @@ type alias LevelConfig =
     , viewCoordinate : Coordinate
     , updateBorder : Int
     , images : Images
+    , objects : Objects
     , backgrounds : List RenderComponentData
     , subscribers : Subscribers
     , config : Maybe Config

@@ -2,6 +2,7 @@
 
 const {Elm} = require('./elm/Main.elm');
 const aframe = require('aframe');
+const aframeExtras = require('aframe-extras');
 const easyCacheKey = 'easy-level-cache-4';
 const advancedCacheKey = 'level-cache-4';
 
