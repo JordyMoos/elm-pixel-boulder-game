@@ -10,11 +10,19 @@ import Data.Direction as Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Dict exposing (Dict)
 import Html exposing (Html, node)
-import Html.Attributes as Attributes
+import Html.Attributes exposing (attribute)
+import Html.Keyed
 import List.Extra
 import Maybe.Extra
 import String
 import Util.Util as Util
+
+
+type alias Vec3 =
+    { x : Float
+    , y : Float
+    , z : Float
+    }
 
 
 renderLevel : Int -> Level -> LevelConfig -> Html msg
@@ -23,14 +31,17 @@ renderLevel currentTick level levelConfig =
         [ [ drawAssets levelConfig ]
         , drawLevel currentTick level levelConfig
         ]
-        |> node "a-scene" []
+        |> Html.Keyed.node "a-scene" []
 
 
-drawAssets : LevelConfig -> Html msg
+drawAssets : LevelConfig -> ( String, Html msg )
 drawAssets levelConfig =
-    Dict.toList levelConfig.images
-        |> List.map drawLoadImage
+    Util.fastConcat
+        [ Dict.toList levelConfig.images |> List.map drawLoadImage
+        , Dict.toList levelConfig.objects.assets |> List.map drawLoadObjectAsset
+        ]
         |> node "a-assets" []
+        |> (\html -> ( "the-assets", html ))
 
 
 drawLoadImage : ( String, Actor.Image ) -> Html msg
@@ -38,27 +49,36 @@ drawLoadImage ( name, image ) =
     case image.imageType of
         Actor.RegularImage ->
             node "img"
-                [ Attributes.id <| "image-" ++ name
-                , Attributes.src image.path
+                [ attribute "id" <| "image-" ++ name
+                , attribute "src" image.path
                 ]
                 []
 
         Actor.PatternImage patternImageData ->
             node "img"
-                [ Attributes.id <| "image-" ++ name
-                , Attributes.src image.path
+                [ attribute "id" <| "image-" ++ name
+                , attribute "src" image.path
                 ]
                 []
 
         Actor.LinkImage linkData ->
             node "img"
-                [ Attributes.id <| "image-" ++ name
-                , Attributes.src image.path
+                [ attribute "id" <| "image-" ++ name
+                , attribute "src" image.path
                 ]
                 []
 
 
-drawCamera : Level -> LevelConfig -> Position -> Position -> Html msg
+drawLoadObjectAsset : ( String, String ) -> Html msg
+drawLoadObjectAsset ( name, path ) =
+    node "a-asset-item"
+        [ attribute "id" <| "asset-" ++ name
+        , attribute "src" path
+        ]
+        []
+
+
+drawCamera : Level -> LevelConfig -> Position -> Position -> ( String, Html msg )
 drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
     let
         x =
@@ -79,16 +99,18 @@ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
         y2 =
             toFloat viewPositionCoordinate.y + (toFloat level.config.height / 2.0) - yOffset
     in
-    node "a-camera"
-        [ Attributes.attribute "position" <|
+    ( "the-camera"
+    , node "a-camera"
+        [ attribute "position" <|
             String.join " "
                 [ String.fromFloat x2
                 , String.fromFloat (y2 * -1)
                 , "7"
                 ]
-        , Attributes.attribute "wasd-controls" "enabled: false;"
+        , attribute "wasd-controls" "enabled: false;"
         ]
         []
+    )
 
 
 
@@ -104,7 +126,7 @@ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
 --        []
 
 
-drawLevel : Int -> Level -> LevelConfig -> List (Html msg)
+drawLevel : Int -> Level -> LevelConfig -> List ( String, Html msg )
 drawLevel tick level levelConfig =
     let
         view =
@@ -130,16 +152,16 @@ drawLevel tick level levelConfig =
         viewPositionCoordinate =
             { x =
                 if view.coordinate.x < 0 && viewPixelOffset.x /= 0 then
-                    xBasePosition - 1
+                    xBasePosition - 1 + level.config.additionalViewBorder
 
                 else
-                    xBasePosition
+                    xBasePosition + level.config.additionalViewBorder
             , y =
                 if view.coordinate.y < 0 && viewPixelOffset.y /= 0 then
-                    yBasePosition - 1
+                    yBasePosition - 1 + level.config.additionalViewBorder
 
                 else
-                    yBasePosition
+                    yBasePosition + level.config.additionalViewBorder
             }
 
         xEndPosition =
@@ -198,7 +220,8 @@ drawLevel tick level levelConfig =
 
 
 type alias RenderRequirements =
-    { tick : Int
+    { actorId : Int
+    , tick : Int
     , viewPositionCoordinate : Position
     , position : Position
     , pixelOffset : Coordinate
@@ -208,13 +231,13 @@ type alias RenderRequirements =
     }
 
 
-drawActors : Int -> Position -> Position -> Coordinate -> Level -> LevelConfig -> List Actor.Actor -> List (Html msg) -> List (Html msg)
+drawActors : Int -> Position -> Position -> Coordinate -> Level -> LevelConfig -> List Actor.Actor -> List ( String, Html msg ) -> List ( String, Html msg )
 drawActors tick viewPositionCoordinate position pixelOffset level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements tick viewPositionCoordinate position pixelOffset)
+                (RenderRequirements actor.id tick viewPositionCoordinate position pixelOffset)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -230,7 +253,7 @@ drawActors tick viewPositionCoordinate position pixelOffset level levelConfig ac
             acc
 
 
-drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List (Html msg) -> List (Html msg)
+drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List ( String, Html msg ) -> List ( String, Html msg )
 drawRenderRequirements renderRequirements levelConfig level acc =
     let
         pixelSize : Float
@@ -256,14 +279,14 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         zPoint =
             toFloat renderRequirements.render.layer / pixelSize
 
-        imageNotMovingOp : Actor.ImageObjectData -> List (Html msg)
+        imageNotMovingOp : Actor.ImageTypeData -> List ( String, Html msg )
         imageNotMovingOp imageData =
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map (renderImage pixelSize xPoint yPoint zPoint levelConfig.images)
+                |> Maybe.map (renderImage renderRequirements.actorId pixelSize xPoint yPoint zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
-        imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> List (Html msg)
+        imageMovingOp : Actor.ImageTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
         imageMovingOp imageData towardsData =
             let
                 xDestPoint =
@@ -279,35 +302,30 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 xFinal =
                     asMovementLocation xPoint xDestPoint towardsData.completionPercentage
 
-                xFinal2 =
-                    xFinal - (toFloat renderRequirements.pixelOffset.x / pixelSize)
-
                 yFinal =
                     asMovementLocation yPoint yDestPoint towardsData.completionPercentage
-
-                yFinal2 =
-                    yFinal - (toFloat renderRequirements.pixelOffset.y / pixelSize)
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage pixelSize xFinal yFinal zPoint levelConfig.images)
+                |> Maybe.map (renderImage renderRequirements.actorId pixelSize xFinal yFinal zPoint levelConfig.images)
                 |> Maybe.map (List.append acc)
                 |> Maybe.withDefault acc
 
-        pixelNotMovingOp : Actor.PixelObjectData -> List (Html msg)
+        pixelNotMovingOp : Actor.PixelTypeData -> List ( String, Html msg )
         pixelNotMovingOp pixelData =
             let
-                pixelElement : Html msg
+                pixelElement : ( String, Html msg )
                 pixelElement =
                     asPixel
                         level.config
+                        renderRequirements.actorId
                         xPoint
                         yPoint
                         (getColor renderRequirements.tick pixelData)
             in
             pixelElement :: acc
 
-        pixelMovingOp : Actor.PixelObjectData -> Actor.MovingTowardsData -> List (Html msg)
+        pixelMovingOp : Actor.PixelTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
         pixelMovingOp pixelData towardsData =
             let
                 xDestPoint =
@@ -316,58 +334,128 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 yDestPoint =
                     asYPoint towardsData.position.y
 
-                originElement : Html msg
+                originElement : ( String, Html msg )
                 originElement =
                     asPixel
                         level.config
+                        renderRequirements.actorId
                         xPoint
                         yPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
 
-                destinationElement : Html msg
+                destinationElement : ( String, Html msg )
                 destinationElement =
                     asPixel
                         level.config
+                        (renderRequirements.actorId + 10000000)
                         xDestPoint
                         yDestPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
             in
             originElement :: destinationElement :: acc
+
+        objectNotMovingOp : Actor.ObjectTypeData -> List ( String, Html msg )
+        objectNotMovingOp objectData =
+            presetNameToHtml { x = xPoint, y = yPoint, z = zPoint } renderRequirements.actorId levelConfig.objects.presets objectData.default
+                |> Maybe.map (\objectHtml -> objectHtml :: acc)
+                |> Maybe.withDefault acc
+
+        objectMovingOp : Actor.ObjectTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
+        objectMovingOp objectData towardsData =
+            let
+                xDestPoint =
+                    asXPoint towardsData.position.x
+
+                yDestPoint =
+                    asYPoint towardsData.position.y
+
+                asMovementLocation : Float -> Float -> Float -> Float
+                asMovementLocation xCurrent xDest completion =
+                    (xDest - xCurrent) / 100.0 * completion + xCurrent
+
+                xFinal =
+                    asMovementLocation xPoint xDestPoint towardsData.completionPercentage
+
+                yFinal =
+                    asMovementLocation yPoint yDestPoint towardsData.completionPercentage
+            in
+            getPresetNameByDirection towardsData.direction objectData
+                |> presetNameToHtml { x = xFinal, y = yFinal, z = zPoint } renderRequirements.actorId levelConfig.objects.presets
+                |> Maybe.map (\objectHtml -> objectHtml :: acc)
+                |> Maybe.withDefault acc
     in
-    case ( renderRequirements.render.object, renderRequirements.maybeTowards ) of
-        ( Actor.PixelRenderObject pixelData, Nothing ) ->
+    case ( renderRequirements.render.renderType, renderRequirements.maybeTowards ) of
+        ( Actor.PixelRenderType pixelData, Nothing ) ->
             pixelNotMovingOp pixelData
 
-        ( Actor.PixelRenderObject pixelData, Just towardsData ) ->
+        ( Actor.PixelRenderType pixelData, Just towardsData ) ->
             pixelMovingOp pixelData towardsData
 
-        ( Actor.ImageRenderObject imageData, Nothing ) ->
+        ( Actor.ImageRenderType imageData, Nothing ) ->
             imageNotMovingOp imageData
 
-        ( Actor.ImageRenderObject imageData, Just towardsData ) ->
+        ( Actor.ImageRenderType imageData, Just towardsData ) ->
             imageMovingOp imageData towardsData
 
+        ( Actor.ObjectRenderType objectData, Nothing ) ->
+            objectNotMovingOp objectData
 
-renderImage : Float -> Float -> Float -> Float -> Actor.Images -> String -> List (Html msg)
-renderImage pixelSize x y z images imageName =
+        ( Actor.ObjectRenderType objectData, Just towardsData ) ->
+            objectMovingOp objectData towardsData
+
+
+presetNameToHtml : Vec3 -> Int -> Actor.ObjectPresets -> Actor.ObjectPresetName -> Maybe ( String, Html msg )
+presetNameToHtml position actorId presets presetName =
+    Dict.get presetName presets
+        |> Maybe.map (presetToHtml position actorId)
+
+
+presetToHtml : Vec3 -> Int -> Actor.ObjectPresetData -> ( String, Html msg )
+presetToHtml position actorId preset =
+    ( "actor-" ++ String.fromInt actorId
+    , node "a-gltf-model"
+        (List.append
+            [ attribute "src" <| "#asset-" ++ preset.assetName
+            , attribute "position" <|
+                String.join " "
+                    [ String.fromFloat position.x
+                    , String.fromFloat (position.y * -1)
+                    , String.fromFloat position.z
+                    ]
+            ]
+            (preset.settings
+                |> Dict.toList
+                |> List.map
+                    (\( settingKey, settingData ) ->
+                        attribute settingKey settingData
+                    )
+            )
+        )
+        []
+    )
+
+
+renderImage : Int -> Float -> Float -> Float -> Float -> Actor.Images -> String -> List ( String, Html msg )
+renderImage actorId pixelSize x y z images imageName =
     let
-        asImage : Actor.Image -> List (Html.Attribute msg) -> Html msg
+        asImage : Actor.Image -> List (Html.Attribute msg) -> ( String, Html msg )
         asImage image additionalAttributes =
-            node "a-image"
+            ( "actor" ++ String.fromInt actorId
+            , node "a-image"
                 (List.append
-                    [ Attributes.attribute "material" <|
+                    [ attribute "material" <|
                         String.join ""
                             [ "src: #image-"
                             , imageName
                             , "; transparent: true;"
                             ]
-                    , Attributes.attribute "position" <|
+                    , attribute "position" <|
                         String.join " "
                             [ String.fromFloat <| x + (toFloat image.xOffset / pixelSize) + (toFloat image.width / pixelSize / 2.0)
                             , String.fromFloat <| (y + (toFloat image.yOffset / pixelSize) + (toFloat image.height / pixelSize / 2.0)) * -1.0
                             , String.fromFloat z
                             ]
-                    , Attributes.attribute "geometry" <|
+                    , attribute "geometry" <|
                         String.join ""
                             [ "width: "
                             , String.fromFloat <| (toFloat image.width / pixelSize)
@@ -379,6 +467,7 @@ renderImage pixelSize x y z images imageName =
                     additionalAttributes
                 )
                 []
+            )
     in
     Dict.get imageName images
         |> Maybe.map
@@ -392,7 +481,7 @@ renderImage pixelSize x y z images imageName =
 
                     Actor.LinkImage linkData ->
                         asImage image
-                            [ Attributes.attribute "link" <|
+                            [ attribute "link" <|
                                 String.join ""
                                     [ "href: "
                                     , linkData.href
@@ -415,14 +504,21 @@ withCompletionPercentage completionPercentage color =
     Color.fromRgba updatedAlpha
 
 
-getImageNamesDataByDirection : Direction -> Actor.ImageObjectData -> Actor.ImagesData
+getPresetNameByDirection : Direction -> Actor.ObjectTypeData -> Actor.ObjectPresetName
+getPresetNameByDirection direction objectData =
+    Direction.getIDFromDirection direction
+        |> (\a -> Dict.get a objectData.direction)
+        |> Maybe.withDefault objectData.default
+
+
+getImageNamesDataByDirection : Direction -> Actor.ImageTypeData -> Actor.ImagesData
 getImageNamesDataByDirection direction imageRenderData =
     Direction.getIDFromDirection direction
         |> (\a -> Dict.get a imageRenderData.direction)
         |> Maybe.withDefault imageRenderData.default
 
 
-getColor : Int -> Actor.PixelObjectData -> Color
+getColor : Int -> Actor.PixelTypeData -> Color
 getColor tick renderData =
     modBy (max 1 <| List.length renderData.colors) (round (toFloat tick / toFloat (max renderData.ticksPerColor 1)))
         |> (\b a -> List.Extra.getAt a b) renderData.colors
@@ -440,8 +536,8 @@ noColor =
     Color.white
 
 
-asPixel : Config -> Float -> Float -> Color -> Html msg
-asPixel config xPoint yPoint color =
+asPixel : Config -> Int -> Float -> Float -> Color -> ( String, Html msg )
+asPixel config actorId xPoint yPoint color =
     let
         rgba =
             Color.toRgba color
@@ -464,8 +560,9 @@ asPixel config xPoint yPoint color =
                 , "%)"
                 ]
     in
-    node "a-box"
-        [ Attributes.attribute "material" <|
+    ( "actor-" ++ String.fromInt actorId
+    , node "a-box"
+        [ attribute "material" <|
             String.join ""
                 [ "color: "
                 , asCssString
@@ -474,7 +571,7 @@ asPixel config xPoint yPoint color =
                 , String.fromFloat rgba.alpha
                 , ";"
                 ]
-        , Attributes.attribute "position" <|
+        , attribute "position" <|
             String.join " "
                 [ String.fromFloat xPoint
                 , String.fromFloat (yPoint * -1)
@@ -482,3 +579,4 @@ asPixel config xPoint yPoint color =
                 ]
         ]
         []
+    )

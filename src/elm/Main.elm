@@ -347,7 +347,7 @@ privateView model =
                 PlayingLevel.view model.currentTick subModel
 
             ErrorState error ->
-                text <| "ERROR: " ++ error
+                Html.pre [] [ text <| "ERROR: " ++ error ]
         , if model.debug then
             debugView model
 

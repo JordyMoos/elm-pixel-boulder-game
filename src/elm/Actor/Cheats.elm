@@ -6,7 +6,7 @@ import Actor.Actor as Actor
         , Level
         , LifetimeAction(..)
         , RenderComponentData
-        , RenderObject(..)
+        , RenderType(..)
         )
 import Actor.Common as Common
 import Color
@@ -22,8 +22,8 @@ addExplosion x y level =
             [ ( "transform", TransformComponent { position = { x = x, y = y } } )
             , ( "render"
               , RenderComponent <|
-                    { object =
-                        PixelRenderObject
+                    { renderType =
+                        PixelRenderType
                             { colors = [ Color.red, Color.darkOrange, Color.yellow ]
                             , ticksPerColor = 4
                             }

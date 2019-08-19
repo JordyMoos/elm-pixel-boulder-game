@@ -4,7 +4,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"object",
             "data":{
               "default": "robot-idle",
@@ -14,7 +14,7 @@
               }
             }
           },
-          "layer":5
+          "layer": 64
         }
       },
       {
@@ -75,7 +75,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -93,7 +93,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -111,7 +111,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -129,7 +129,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -147,7 +147,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -165,7 +165,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -183,7 +183,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -201,7 +201,7 @@
       {
         "type":"render",
         "data":{
-          "object":{
+          "renderType":{
             "type":"image",
             "data":{
               "default":{
@@ -237,7 +237,7 @@
         "settings": {
           "scale": "0.3 0.3 0.3",
           "animation-mixer": "clip: RobotArmature|Robot_Running;",
-          "rotation": "0 90 0"
+          "rotation": "0 90 -20"
         }
       },
       "robot-walk-left": {
@@ -245,14 +245,15 @@
         "settings": {
           "scale": "0.3 0.3 0.3",
           "animation-mixer": "clip: RobotArmature|Robot_Running;",
-          "rotation": "0 90 0"
+          "rotation": "0 -70 20"
         }
       },
       "robot-idle": {
         "assetName": "robot",
         "settings": {
           "scale": "0.3 0.3 0.3",
-          "animation-mixer": "clip: RobotArmature|Robot_Idle;"
+          "animation-mixer": "clip: RobotArmature|Robot_Idle;",
+          "rotation": "0 90 -20"
         }
       }
     }
@@ -368,7 +369,7 @@
   },
   "backgrounds":[
     {
-      "object":{
+      "renderType":{
         "type":"image",
         "data":{
           "default":{
@@ -381,7 +382,7 @@
       "layer":-2
     },
     {
-      "object":{
+      "renderType":{
         "type":"image",
         "data":{
           "default":{
@@ -394,7 +395,7 @@
       "layer":-1
     },
     {
-      "object":{
+      "renderType":{
         "type":"image",
         "data":{
           "default":{
@@ -418,13 +419,13 @@
     "-                                                                               r",
     "-                                                                            t   t       t            t t              t",
     "-                                                       h",
-    "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    "----------------------------------------------------------------------------------------------------------------------------------"
   ],
   "config":{
     "width":16,
     "height":12,
     "pixelSize":64,
-    "additionalViewBorder":0
+    "additionalViewBorder": 20
   },
   "renderer":{
     "type":"aframe",

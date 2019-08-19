@@ -34,9 +34,9 @@ module Actor.Actor exposing
     , Health
     , HealthComponentData
     , Image
-    , ImageObjectData
     , ImagePositionOffset(..)
     , ImageType(..)
+    , ImageTypeData
     , Images
     , ImagesData
     , InputControlData
@@ -57,18 +57,19 @@ module Actor.Actor exposing
     , MovingState(..)
     , MovingTowardsData
     , ObjectAssets
-    , ObjectPreset
     , ObjectPresetData
+    , ObjectPresetName
     , ObjectPresets
     , ObjectSettings
+    , ObjectTypeData
     , Objects
     , PatternImageData
     , PhysicsComponentData
-    , PixelObjectData
+    , PixelTypeData
     , PositionIndex
     , PositionIndices
     , RenderComponentData
-    , RenderObject(..)
+    , RenderType(..)
     , Renderer(..)
     , Scene
     , Shape(..)
@@ -180,10 +181,6 @@ type alias ObjectAssets =
 
 
 type alias ObjectPresets =
-    Dict String ObjectPreset
-
-
-type alias ObjectPreset =
     Dict String ObjectPresetData
 
 
@@ -599,27 +596,24 @@ type MovingDownState
 
 
 type alias RenderComponentData =
-    { object : RenderObject
+    { renderType : RenderType
     , layer : Int
     }
 
 
-type RenderObject
-    = PixelRenderObject PixelObjectData
-    | ImageRenderObject ImageObjectData
+type RenderType
+    = PixelRenderType PixelTypeData
+    | ImageRenderType ImageTypeData
+    | ObjectRenderType ObjectTypeData
 
 
-
---    | ThreeDRenderObject ThreeDObjectData
-
-
-type alias PixelObjectData =
+type alias PixelTypeData =
     { colors : List Color
     , ticksPerColor : Int
     }
 
 
-type alias ImageObjectData =
+type alias ImageTypeData =
     { default : ImagesData
     , direction : Dict Int ImagesData
     }
@@ -631,8 +625,14 @@ type alias ImagesData =
     }
 
 
-type alias ThreeDObjectData =
-    {}
+type alias ObjectPresetName =
+    String
+
+
+type alias ObjectTypeData =
+    { default : ObjectPresetName
+    , direction : Dict Int ObjectPresetName
+    }
 
 
 

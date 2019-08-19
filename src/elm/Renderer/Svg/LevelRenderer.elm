@@ -112,8 +112,8 @@ drawBackground tick config images backgroundData =
         xy =
             config.additionalViewBorder * config.pixelSize
     in
-    case backgroundData.object of
-        Actor.PixelRenderObject data ->
+    case backgroundData.renderType of
+        Actor.PixelRenderType data ->
             Svg.rect
                 [ Attributes.width <| String.fromInt <| config.width * config.pixelSize
                 , Attributes.height <| String.fromInt <| config.height * config.pixelSize
@@ -124,9 +124,12 @@ drawBackground tick config images backgroundData =
                 []
                 |> Just
 
-        Actor.ImageRenderObject data ->
+        Actor.ImageRenderType data ->
             getImageName tick data.default
                 |> Maybe.andThen (imageNameToSvg xy xy images)
+
+        Actor.ObjectRenderType _ ->
+            Nothing
 
 
 imageNameToSvg : Int -> Int -> Actor.Images -> String -> Maybe (Svg msg)
@@ -296,7 +299,7 @@ drawActors tick viewPosition position pixelOffset level images actors acc =
 drawRenderRequirements : RenderRequirements -> Actor.Images -> Level -> LayeredSvg msg -> LayeredSvg msg
 drawRenderRequirements renderRequirements images level acc =
     let
-        imageNotMovingOp : Actor.ImageObjectData -> LayeredSvg msg
+        imageNotMovingOp : Actor.ImageTypeData -> LayeredSvg msg
         imageNotMovingOp imageData =
             let
                 x =
@@ -310,7 +313,7 @@ drawRenderRequirements renderRequirements images level acc =
                 |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
                 |> Maybe.withDefault acc
 
-        imageMovingOp : Actor.ImageObjectData -> Actor.MovingTowardsData -> LayeredSvg msg
+        imageMovingOp : Actor.ImageTypeData -> Actor.MovingTowardsData -> LayeredSvg msg
         imageMovingOp imageData towardsData =
             let
                 calculateWithCompletion : Int -> Int -> Int
@@ -345,7 +348,7 @@ drawRenderRequirements renderRequirements images level acc =
                 |> Maybe.map (addToLayeredSvgFlipped renderRequirements.render.layer acc)
                 |> Maybe.withDefault acc
 
-        pixelNotMovingOp : Actor.PixelObjectData -> LayeredSvg msg
+        pixelNotMovingOp : Actor.PixelTypeData -> LayeredSvg msg
         pixelNotMovingOp pixelData =
             let
                 pixelElement : Svg msg
@@ -359,7 +362,7 @@ drawRenderRequirements renderRequirements images level acc =
             in
             addToLayeredSvg renderRequirements.render.layer pixelElement acc
 
-        pixelMovingOp : Actor.PixelObjectData -> Actor.MovingTowardsData -> LayeredSvg msg
+        pixelMovingOp : Actor.PixelTypeData -> Actor.MovingTowardsData -> LayeredSvg msg
         pixelMovingOp pixelData towardsData =
             let
                 originElement : Svg msg
@@ -384,18 +387,21 @@ drawRenderRequirements renderRequirements images level acc =
                 |> addToLayeredSvg renderRequirements.render.layer originElement
                 |> addToLayeredSvg renderRequirements.render.layer destinationElement
     in
-    case ( renderRequirements.render.object, renderRequirements.maybeTowards ) of
-        ( Actor.PixelRenderObject pixelData, Nothing ) ->
+    case ( renderRequirements.render.renderType, renderRequirements.maybeTowards ) of
+        ( Actor.PixelRenderType pixelData, Nothing ) ->
             pixelNotMovingOp pixelData
 
-        ( Actor.PixelRenderObject pixelData, Just towardsData ) ->
+        ( Actor.PixelRenderType pixelData, Just towardsData ) ->
             pixelMovingOp pixelData towardsData
 
-        ( Actor.ImageRenderObject imageData, Nothing ) ->
+        ( Actor.ImageRenderType imageData, Nothing ) ->
             imageNotMovingOp imageData
 
-        ( Actor.ImageRenderObject imageData, Just towardsData ) ->
+        ( Actor.ImageRenderType imageData, Just towardsData ) ->
             imageMovingOp imageData towardsData
+
+        ( Actor.ObjectRenderType _, _ ) ->
+            acc
 
 
 withCompletionPercentage : Float -> Color -> Color
@@ -410,14 +416,14 @@ withCompletionPercentage completionPercentage color =
     Color.fromRgba updatedAlpha
 
 
-getImageNamesDataByDirection : Direction -> Actor.ImageObjectData -> Actor.ImagesData
+getImageNamesDataByDirection : Direction -> Actor.ImageTypeData -> Actor.ImagesData
 getImageNamesDataByDirection direction imageRenderData =
     Direction.getIDFromDirection direction
         |> (\a -> Dict.get a imageRenderData.direction)
         |> Maybe.withDefault imageRenderData.default
 
 
-getColor : Int -> Actor.PixelObjectData -> Color
+getColor : Int -> Actor.PixelTypeData -> Color
 getColor tick renderData =
     modBy (max 1 <| List.length renderData.colors) (round (toFloat tick / toFloat (max renderData.ticksPerColor 1)))
         |> (\b a -> List.Extra.getAt a b) renderData.colors

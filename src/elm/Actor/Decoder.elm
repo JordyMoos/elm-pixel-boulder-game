@@ -28,9 +28,9 @@ import Actor.Actor as Actor
         , GameOfLifeAiData
         , HealthComponentData
         , Image
-        , ImageObjectData
         , ImagePositionOffset(..)
         , ImageType(..)
+        , ImageTypeData
         , Images
         , ImagesData
         , InputControlData
@@ -49,16 +49,17 @@ import Actor.Actor as Actor
         , MovingDownState(..)
         , MovingState(..)
         , ObjectAssets
-        , ObjectPreset
         , ObjectPresetData
+        , ObjectPresetName
         , ObjectPresets
         , ObjectSettings
+        , ObjectTypeData
         , Objects
         , PatternImageData
         , PhysicsComponentData
-        , PixelObjectData
+        , PixelTypeData
         , RenderComponentData
-        , RenderObject(..)
+        , RenderType(..)
         , Renderer(..)
         , Scene
         , Shape(..)
@@ -169,8 +170,8 @@ defaultAframeCamera =
 
 defaultBackgrounds : List RenderComponentData
 defaultBackgrounds =
-    [ { object =
-            PixelRenderObject
+    [ { renderType =
+            PixelRenderType
                 { colors = [ Color.white ]
                 , ticksPerColor = 1
                 }
@@ -285,21 +286,24 @@ componentDecoder =
 renderDataDecoder : Decoder RenderComponentData
 renderDataDecoder =
     Decode.succeed RenderComponentData
-        |> JDP.required "object" renderObjectDecoder
+        |> JDP.required "renderType" renderObjectDecoder
         |> JDP.optional "layer" Decode.int 1
 
 
-renderObjectDecoder : Decoder RenderObject
+renderObjectDecoder : Decoder RenderType
 renderObjectDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
                     "pixel" ->
-                        Decode.map PixelRenderObject <| Decode.field "data" renderPixelDataDecoder
+                        Decode.map PixelRenderType <| Decode.field "data" renderPixelDataDecoder
 
                     "image" ->
-                        Decode.map ImageRenderObject <| Decode.field "data" renderImageDataDecoder
+                        Decode.map ImageRenderType <| Decode.field "data" renderImageDataDecoder
+
+                    "object" ->
+                        Decode.map ObjectRenderType <| Decode.field "data" renderObjectDataDecoder
 
                     _ ->
                         Decode.fail <|
@@ -309,16 +313,16 @@ renderObjectDecoder =
             )
 
 
-renderPixelDataDecoder : Decoder PixelObjectData
+renderPixelDataDecoder : Decoder PixelTypeData
 renderPixelDataDecoder =
-    Decode.succeed PixelObjectData
+    Decode.succeed PixelTypeData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
 
 
-renderImageDataDecoder : Decoder ImageObjectData
+renderImageDataDecoder : Decoder ImageTypeData
 renderImageDataDecoder =
-    Decode.succeed ImageObjectData
+    Decode.succeed ImageTypeData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
 
@@ -357,16 +361,44 @@ decodeDirectionImagesData =
                                 Decode.succeed newDict
 
                             else
-                                Decode.fail "There are invalid directions in the image data"
+                                Decode.fail "There are invalid directions in the render image data"
                        )
             )
 
 
-decodeDirectionNames : Decoder DirectionNames
-decodeDirectionNames =
-    Decode.succeed DirectionNames
-        |> JDP.required "direction" directionIdDecoder
-        |> JDP.required "names" (Decode.list Decode.string)
+renderObjectDataDecoder : Decoder ObjectTypeData
+renderObjectDataDecoder =
+    Decode.succeed ObjectTypeData
+        |> JDP.required "default" objectPresetNameDecoder
+        |> JDP.optional "direction" objectTypeDirectionDecoder Dict.empty
+
+
+objectTypeDirectionDecoder : Decoder (Dict Int ObjectPresetName)
+objectTypeDirectionDecoder =
+    Decode.dict objectPresetNameDecoder
+        |> Decode.andThen
+            (\dict ->
+                Dict.toList dict
+                    |> List.map
+                        (\( directionName, imagesData ) ->
+                            Direction.getIDFromKey directionName
+                                |> Maybe.map (\directionId -> ( directionId, imagesData ))
+                        )
+                    |> Maybe.Extra.values
+                    |> Dict.fromList
+                    |> (\newDict ->
+                            if Dict.size dict == Dict.size newDict then
+                                Decode.succeed newDict
+
+                            else
+                                Decode.fail "There are invalid directions in the render object data"
+                       )
+            )
+
+
+objectPresetNameDecoder : Decoder ObjectPresetName
+objectPresetNameDecoder =
+    Decode.string
 
 
 tagDataDecoder : Decoder TagComponentData
@@ -841,11 +873,6 @@ objectAssertsDecoder =
 
 objectPresetsDecoder : Decoder ObjectPresets
 objectPresetsDecoder =
-    Decode.dict objectPresetDecoder
-
-
-objectPresetDecoder : Decoder ObjectPreset
-objectPresetDecoder =
     Decode.dict objectPresetDataDecoder
 
 
