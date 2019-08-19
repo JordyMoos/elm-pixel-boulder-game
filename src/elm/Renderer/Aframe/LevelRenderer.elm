@@ -27,11 +27,39 @@ type alias Vec3 =
 
 renderLevel : Int -> Level -> LevelConfig -> Html msg
 renderLevel currentTick level levelConfig =
-    Util.fastConcat
-        [ [ drawAssets levelConfig ]
-        , drawLevel currentTick level levelConfig
-        ]
-        |> Html.Keyed.node "a-scene" []
+    let
+        elements =
+            Util.fastConcat
+                [ [ drawAssets levelConfig ]
+                , drawLevel currentTick level levelConfig
+                ]
+
+        fillingElements =
+            List.repeat (200 - List.length elements) ( "", Html.div [] [] )
+                |> List.indexedMap
+                    (\index ( _, html ) ->
+                        ( "element-" ++ String.fromInt index, html )
+                    )
+
+        totalList =
+            List.append elements fillingElements
+                |> List.indexedMap
+                    (\index ( _, html ) ->
+                        ( "element-" ++ String.fromInt index, html )
+                    )
+
+        alternativeTotalList =
+            List.append elements fillingElements
+
+        _ =
+            Debug.log "lenght" <| String.fromInt <| List.length elements
+    in
+    --    Util.fastConcat
+    --        [ [ drawAssets levelConfig ]
+    --        , drawLevel currentTick level levelConfig
+    --        ]
+    --        |> Html.Keyed.node "a-scene" []
+    Html.Keyed.node "a-scene" [] totalList
 
 
 drawAssets : LevelConfig -> ( String, Html msg )
