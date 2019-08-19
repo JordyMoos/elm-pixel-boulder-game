@@ -34,13 +34,14 @@
           },
           "control":{
             "type":"input",
-            "data": {
+            "data":{
               "allowedDirections":[
                 "left",
                 "up",
                 "right",
                 "down"
-              ]}
+              ]
+            }
           }
         }
       },
@@ -82,15 +83,15 @@
     "rock":[
       {
         "type":"render",
-        "data": {
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 186,
-                  "green": 189,
-                  "blue": 182
+                  "red":186,
+                  "green":189,
+                  "blue":182
                 }
               ]
             }
@@ -105,7 +106,9 @@
         "data":{
           "control":{
             "type":"gravityAi",
-            "data": {}
+            "data":{
+
+            }
           }
         }
       },
@@ -129,28 +132,28 @@
     "explosion":[
       {
         "type":"render",
-        "data": {
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 204,
-                  "green": 0,
-                  "blue": 0
+                  "red":204,
+                  "green":0,
+                  "blue":0
                 },
                 {
-                  "red": 206,
-                  "green": 92,
-                  "blue": 0
+                  "red":206,
+                  "green":92,
+                  "blue":0
                 },
                 {
-                  "red": 237,
-                  "green": 212,
-                  "blue": 0
+                  "red":237,
+                  "green":212,
+                  "blue":0
                 }
               ],
-              "ticksPerColor": 4
+              "ticksPerColor":4
             }
           }
         }
@@ -171,15 +174,15 @@
     "enemy":[
       {
         "type":"render",
-        "data": {
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 206,
-                  "green": 92,
-                  "blue": 0
+                  "red":206,
+                  "green":92,
+                  "blue":0
                 }
               ]
             }
@@ -232,15 +235,15 @@
     "dirt":[
       {
         "type":"render",
-        "data": {
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 233,
-                  "green": 185,
-                  "blue": 110
+                  "red":233,
+                  "green":185,
+                  "blue":110
                 }
               ]
             }
@@ -265,14 +268,14 @@
       {
         "type":"render",
         "data":{
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 98,
-                  "green": 100,
-                  "blue": 87
+                  "red":98,
+                  "green":100,
+                  "blue":87
                 }
               ]
             }
@@ -295,17 +298,16 @@
         "type":"render",
         "data":{
           "object":{
-          "type":"pixel",
-          "data":{
-            "colors":[
-              {
-                "red":0,
-                "green":0,
-                "blue":0
-              }
-
-            ]
-      }
+            "type":"pixel",
+            "data":{
+              "colors":[
+                {
+                  "red":0,
+                  "green":0,
+                  "blue":0
+                }
+              ]
+            }
           }
         }
       },
@@ -323,23 +325,23 @@
     "diamond":[
       {
         "type":"render",
-        "data": {
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+        "data":{
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 52,
-                  "green": 101,
-                  "blue": 164
+                  "red":52,
+                  "green":101,
+                  "blue":164
                 },
                 {
-                  "red": 114,
-                  "green": 159,
-                  "blue": 207
+                  "red":114,
+                  "green":159,
+                  "blue":207
                 }
               ],
-              "ticksPerColor": 24
+              "ticksPerColor":24
             }
           }
         }
@@ -372,18 +374,67 @@
         }
       }
     ],
+    "dynamite":[
+      {
+        "type":"render",
+        "data": {
+          "object": {
+          "type": "pixel",
+          "data": {
+            "colors": [
+              {
+                "red": 204,
+                "green": 0,
+                "blue": 0
+              }
+            ]
+          }
+        }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"gravityAi"
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"explodable"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":20,
+          "shape":"circle"
+        }
+      },
+      {
+        "type":"smash-down"
+      }
+    ],
     "failed":[
       {
         "type":"render",
         "data":{
-          "object": {
-            "type": "pixel",
-            "data": {
-              "colors": [
+          "object":{
+            "type":"pixel",
+            "data":{
+              "colors":[
                 {
-                  "red": 0,
-                  "green": 0,
-                  "blue": 0
+                  "red":0,
+                  "green":0,
+                  "blue":0
                 }
               ]
             }
@@ -420,20 +471,22 @@
     "#":"strongwall",
     "*":"diamond"
   },
-  "background":[{
-    "type":"pixel",
-    "data":{
-      "object": {
-        "colors": [
-          {
-            "red": 255,
-            "green": 255,
-            "blue": 255
-          }
-        ]
+  "background":[
+    {
+      "type":"pixel",
+      "data":{
+        "object":{
+          "colors":[
+            {
+              "red":255,
+              "green":255,
+              "blue":255
+            }
+          ]
+        }
       }
     }
-  }],
+  ],
   "scene":[
     "#########################################",
     "#.......................................#",
@@ -453,6 +506,49 @@
     "#............*..........................#",
     "#.......................................#",
     "#########################################"
+  ],
+  "subscribers": [
+    {
+      "type": "onTagDied",
+      "eventActionData": {
+        "type": "failed",
+        "data": {
+          "descriptionProvider": {
+            "type": "static",
+            "data": {"text": "You died"}
+          },
+          "entityNames": ["explosion"],
+          "animation": {
+            "type": "currentTick"
+          }
+        }
+      },
+      "tagDiedData": {
+        "tagName": "player",
+        "limit": 1
+      }
+    },
+    {
+      "type": "onInventoryUpdated",
+      "eventActionData": {
+        "type": "completed",
+        "data": {
+          "descriptionProvider": {
+            "type": "static",
+            "data": {"text": "Level Completed"}
+          },
+          "nextLevel": "official/002",
+          "entityNames": ["diamond"],
+          "animation": {
+            "type": "currentTick"
+          }
+        }
+      },
+      "inventoryUpdatedData": {
+        "interestedIn": "diamond",
+        "minimumQuantity": 36
+      }
+    }
   ],
   "renderer":{
     "type":"aframe",

@@ -310,6 +310,12 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         pixelMovingOp : Actor.PixelObjectData -> Actor.MovingTowardsData -> List (Html msg)
         pixelMovingOp pixelData towardsData =
             let
+                xDestPoint =
+                    asXPoint towardsData.position.x
+
+                yDestPoint =
+                    asYPoint towardsData.position.y
+
                 originElement : Html msg
                 originElement =
                     asPixel
@@ -322,8 +328,8 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 destinationElement =
                     asPixel
                         level.config
-                        xPoint
-                        yPoint
+                        xDestPoint
+                        yDestPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
             in
             originElement :: destinationElement :: acc
@@ -436,12 +442,37 @@ noColor =
 
 asPixel : Config -> Float -> Float -> Color -> Html msg
 asPixel config xPoint yPoint color =
+    let
+        rgba =
+            Color.toRgba color
+
+        asCssString : String
+        asCssString =
+            let
+                pct x =
+                    ((x * 10000) |> round |> toFloat)
+                        / 100
+                        |> round
+            in
+            String.concat
+                [ "rgb("
+                , String.fromInt (pct rgba.red)
+                , "%,"
+                , String.fromInt (pct rgba.green)
+                , "%,"
+                , String.fromInt (pct rgba.blue)
+                , "%)"
+                ]
+    in
     node "a-box"
         [ Attributes.attribute "material" <|
             String.join ""
                 [ "color: "
-                , toCssString color
+                , asCssString
                 , "; transparent: true;"
+                , "opacity: "
+                , String.fromFloat rgba.alpha
+                , ";"
                 ]
         , Attributes.attribute "position" <|
             String.join " "
@@ -451,25 +482,3 @@ asPixel config xPoint yPoint color =
                 ]
         ]
         []
-
-
-toCssString : Color -> String
-toCssString color =
-    let
-        rgba =
-            Color.toRgba color
-
-        pct x =
-            ((x * 10000) |> round |> toFloat)
-                / 100
-                |> round
-    in
-    String.concat
-        [ "rgb("
-        , String.fromInt (pct rgba.red)
-        , "%,"
-        , String.fromInt (pct rgba.green)
-        , "%,"
-        , String.fromInt (pct rgba.blue)
-        , "%)"
-        ]
