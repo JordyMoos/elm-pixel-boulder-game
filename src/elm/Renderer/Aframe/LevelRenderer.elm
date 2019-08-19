@@ -418,9 +418,9 @@ presetToHtml position actorId preset =
             [ attribute "src" <| "#asset-" ++ preset.assetName
             , attribute "position" <|
                 String.join " "
-                    [ String.fromFloat position.x
-                    , String.fromFloat (position.y * -1)
-                    , String.fromFloat position.z
+                    [ String.fromFloat (position.x + preset.xOffset)
+                    , String.fromFloat ((position.y + preset.yOffset) * -1)
+                    , String.fromFloat (position.z + preset.zOffset)
                     ]
             ]
             (preset.settings
