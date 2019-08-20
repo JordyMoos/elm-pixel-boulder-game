@@ -95,7 +95,8 @@
                 }
               ]
             }
-          }
+          },
+          "layer":3
         }
       },
       {
@@ -105,10 +106,7 @@
         "type":"control",
         "data":{
           "control":{
-            "type":"gravityAi",
-            "data":{
-
-            }
+            "type":"gravityAi"
           }
         }
       },
@@ -117,6 +115,56 @@
         "data":{
           "movingTicks":8
         }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":20,
+          "shape":"circle"
+        }
+      },
+      {
+        "type":"smash-down"
+      }
+    ],
+    "dynamite":[
+      {
+        "type":"render",
+        "data":{
+          "renderType":{
+            "type":"pixel",
+            "data":{
+              "colors":[
+                {
+                  "red":204,
+                  "green":0,
+                  "blue":0
+                }
+              ]
+            }
+          },
+          "layer":3
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"gravityAi"
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"explodable"
       },
       {
         "type":"physics",
@@ -155,7 +203,8 @@
               ],
               "ticksPerColor":4
             }
-          }
+          },
+          "layer":10
         }
       },
       {
@@ -186,7 +235,8 @@
                 }
               ]
             }
-          }
+          },
+          "layer":3
         }
       },
       {
@@ -230,6 +280,68 @@
         "data":{
           "triggerStrength":20
         }
+      }
+    ],
+    "pet":[
+      {
+        "type":"render",
+        "data":{
+          "renderType":{
+            "type":"pixel",
+            "data":{
+              "colors":[
+                {
+                  "red":117,
+                  "green":80,
+                  "blue":123
+                },
+                {
+                  "red":173,
+                  "green":127,
+                  "blue":168
+                }
+              ],
+              "ticksPerColor":16
+            }
+          },
+          "layer":3
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":10,
+          "shape":"circle"
+        }
+      },
+      {
+        "type":"control",
+        "data":{
+          "control":{
+            "type":"walkAroundAi",
+            "data":{
+              "previousDirection":"left",
+              "nextDirectionOffsets":[
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":8
+        }
+      },
+      {
+        "type":"explodable"
       }
     ],
     "dirt":[
@@ -343,7 +455,8 @@
               ],
               "ticksPerColor":24
             }
-          }
+          },
+          "layer":3
         }
       },
       {
@@ -374,43 +487,36 @@
         }
       }
     ],
-    "dynamite":[
+    "finish_diamond":[
       {
         "type":"render",
-        "data": {
-          "renderType": {
-          "type": "pixel",
-          "data": {
-            "colors": [
-              {
-                "red": 204,
-                "green": 0,
-                "blue": 0
-              }
-            ]
-          }
-        }
-        }
-      },
-      {
-        "type":"rigid"
-      },
-      {
-        "type":"control",
         "data":{
-          "control":{
-            "type":"gravityAi"
-          }
+          "renderType":{
+            "type":"pixel",
+            "data":{
+              "colors":[
+                {
+                  "red":52,
+                  "green":101,
+                  "blue":164
+                },
+                {
+                  "red":114,
+                  "green":159,
+                  "blue":207
+                }
+              ],
+              "ticksPerColor":24
+            }
+          },
+          "layer":3
         }
       },
       {
-        "type":"movement",
+        "type":"collectible",
         "data":{
-          "movingTicks":8
+          "name":"diamond"
         }
-      },
-      {
-        "type":"explodable"
       },
       {
         "type":"physics",
@@ -418,9 +524,6 @@
           "strength":20,
           "shape":"circle"
         }
-      },
-      {
-        "type":"smash-down"
       }
     ],
     "failed":[
@@ -438,7 +541,8 @@
                 }
               ]
             }
-          }
+          },
+          "layer":10
         }
       },
       {
@@ -473,9 +577,9 @@
   },
   "background":[
     {
-      "type":"pixel",
-      "data":{
-        "renderType":{
+      "renderType":{
+        "type":"pixel",
+        "data":{
           "colors":[
             {
               "red":255,
@@ -489,64 +593,70 @@
   ],
   "scene":[
     "#########################################",
-    "#.......................................#",
-    "#.................******e   ............#",
-    "#|||||||||........******    ............#",
-    "#|**| o  o..............................#",
-    "#|**| || |....ooooooooo.p...............#",
-    "#|**| || |....ooooooooo.......*.........#",
-    "#|**| || |....oooooooo..................#",
-    "#|**| ||=|...................*..........#",
-    "#|**| ||||...           ................#",
-    "#|**| ||*|...           .........*......#",
-    "#|**|e||*|...           ................#",
-    "#|||||||||...           ................#",
-    "#.......................................#",
-    "#....*......    e       .......*........#",
-    "#............*..........................#",
+    "#.................o.....o...............#",
+    "#...........*.....o.....o......o..   ...#",
+    "#.....p.....o.....o.....o...............#",
+    "#...................... o   .......o....#",
+    "#||||||||||||||||||||||||   ....*.o.....#",
+    "#........................   .....ooooo..#",
+    "#.....o..................   ..*...o.....#",
+    "#.. ...............*...............o....#",
+    "#..  ......|||||||||||||||||||||||||||||#",
+    "#.. .....*..........               e....#",
+    "#.......ooo.................*...........#",
+    "#........*.................***..........#",
+    "#..o.......... .....  ......*...........#",
     "#.......................................#",
     "#########################################"
   ],
-  "subscribers": [
+  "subscribers":[
     {
-      "type": "onTagDied",
-      "eventActionData": {
-        "type": "failed",
-        "data": {
-          "descriptionProvider": {
-            "type": "static",
-            "data": {"text": "You died"}
+      "type":"onTagDied",
+      "eventActionData":{
+        "type":"failed",
+        "data":{
+          "descriptionProvider":{
+            "type":"static",
+            "data":{
+              "text":"You died"
+            }
           },
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "currentTick"
+          "entityNames":[
+            "explosion"
+          ],
+          "animation":{
+            "type":"currentTick"
           }
         }
       },
-      "tagDiedData": {
-        "tagName": "player",
-        "limit": 1
+      "tagDiedData":{
+        "tagName":"player",
+        "limit":1
       }
     },
     {
-      "type": "onInventoryUpdated",
-      "eventActionData": {
-        "type": "completed",
-        "data": {
-          "descriptionProvider": {
-            "type": "static",
-            "data": {"text": "Level Completed"}
+      "type":"onInventoryUpdated",
+      "eventActionData":{
+        "type":"completed",
+        "data":{
+          "descriptionProvider":{
+            "type":"static",
+            "data":{
+              "text":"Level Completed"
+            }
           },
-          "nextLevel": "official/002",
-          "entityNames": ["diamond"],
-          "animation": {
-            "type": "currentTick"
+          "nextLevel":"official/002",
+          "entityNames":[
+            "finish_diamond"
+          ],
+          "animation":{
+            "type":"currentTick"
           }
         }
       },
-      "inventoryUpdatedData": {
-        "interestedIn": "diamond",
-        "minimumQuantity": 36
+      "inventoryUpdatedData":{
+        "interestedIn":"diamond",
+        "minimumQuantity":11
       }
     }
   ],

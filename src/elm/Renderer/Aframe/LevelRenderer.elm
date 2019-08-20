@@ -51,8 +51,8 @@ renderLevel currentTick level levelConfig =
         alternativeTotalList =
             List.append elements fillingElements
 
-        _ =
-            Debug.log "lenght" <| String.fromInt <| List.length elements
+        --        _ =
+        --            Debug.log "lenght" <| String.fromInt <| List.length elements
     in
     --    Util.fastConcat
     --        [ [ drawAssets levelConfig ]
@@ -241,9 +241,9 @@ drawLevel tick level levelConfig =
                 (List.range yBasePosition yEndPosition)
     in
     Util.fastConcat
-        [ drawEnvironment []
+        [ [ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset ]
+        , drawEnvironment []
         , drawOtherActors []
-        , [ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset ]
         ]
 
 
