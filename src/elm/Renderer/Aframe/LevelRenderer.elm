@@ -11,9 +11,7 @@ import Data.Position exposing (Position)
 import Dict exposing (Dict)
 import Html exposing (Html, node)
 import Html.Attributes exposing (attribute)
-import Html.Keyed
 import List.Extra
-import Maybe.Extra
 import String
 import Util.Util as Util
 
@@ -32,21 +30,11 @@ type alias DrawAcc msg =
 renderLevel : Int -> Level -> LevelConfig -> Html msg
 renderLevel currentTick level levelConfig =
     let
-        --        elements =
-        --            Util.fastConcat
-        --                [ [ drawAssets levelConfig ]
-        --                , drawLevel currentTick level levelConfig
-        --                ]
         elements : () -> List (Html msg)
         elements _ =
             Dict.values (drawLevel currentTick level levelConfig)
                 |> List.map (node "a-entity" [])
     in
-    --    Util.fastConcat
-    --        [ [ drawAssets levelConfig ]
-    --        , drawLevel currentTick level levelConfig
-    --        ]
-    --        |> Html.Keyed.node "a-scene" []
     node "a-scene" [] <|
         drawAssets levelConfig
             :: elements ()
@@ -271,12 +259,10 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         asXPoint givenX =
             toFloat givenX
 
-        -- toFloat renderRequirements.viewPositionCoordinate.x + (toFloat renderRequirements.pixelOffset.x / pixelSize)
         asYPoint : Int -> Float
         asYPoint givenY =
             toFloat givenY
 
-        -- toFloat renderRequirements.viewPositionCoordinate.y + (toFloat renderRequirements.pixelOffset.y / pixelSize)
         xPoint =
             asXPoint renderRequirements.transform.position.x
 
