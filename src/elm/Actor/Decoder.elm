@@ -879,7 +879,6 @@ objectPresetsDecoder =
 objectPresetDataDecoder : Decoder ObjectPresetData
 objectPresetDataDecoder =
     Decode.succeed ObjectPresetData
-        |> JDP.required "assetName" Decode.string
         |> JDP.optional "settings" decodeObjectSettingsDecoder Dict.empty
         |> JDP.optional "xOffset" Decode.float 0.0
         |> JDP.optional "yOffset" Decode.float 0.0

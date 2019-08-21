@@ -25,136 +25,120 @@ type alias Vec3 =
     }
 
 
+type alias DrawAcc msg =
+    Dict Int (List (Html msg))
+
+
 renderLevel : Int -> Level -> LevelConfig -> Html msg
 renderLevel currentTick level levelConfig =
     let
-        elements =
-            Util.fastConcat
-                [ [ drawAssets levelConfig ]
-                , drawLevel currentTick level levelConfig
-                ]
-
-        fillingElements =
-            List.repeat (200 - List.length elements) ( "", Html.div [] [] )
-                |> List.indexedMap
-                    (\index ( _, html ) ->
-                        ( "element-" ++ String.fromInt index, html )
-                    )
-
-        totalList =
-            List.append elements fillingElements
-                |> List.indexedMap
-                    (\index ( _, html ) ->
-                        ( "element-" ++ String.fromInt index, html )
-                    )
-
-        alternativeTotalList =
-            List.append elements fillingElements
-
-        --        _ =
-        --            Debug.log "lenght" <| String.fromInt <| List.length elements
+        --        elements =
+        --            Util.fastConcat
+        --                [ [ drawAssets levelConfig ]
+        --                , drawLevel currentTick level levelConfig
+        --                ]
+        elements : () -> List (Html msg)
+        elements _ =
+            Dict.values (drawLevel currentTick level levelConfig)
+                |> List.map (node "a-entity" [])
     in
     --    Util.fastConcat
     --        [ [ drawAssets levelConfig ]
     --        , drawLevel currentTick level levelConfig
     --        ]
     --        |> Html.Keyed.node "a-scene" []
-    Html.Keyed.node "a-scene" [] totalList
+    node "a-scene" [] <|
+        drawAssets levelConfig
+            :: elements ()
 
 
-drawAssets : LevelConfig -> ( String, Html msg )
+drawAssets : LevelConfig -> Html msg
 drawAssets levelConfig =
+    let
+        drawLoadImage : ( String, Actor.Image ) -> Html msg
+        drawLoadImage ( name, image ) =
+            case image.imageType of
+                Actor.RegularImage ->
+                    node "img"
+                        [ attribute "id" <| "image-" ++ name
+                        , attribute "src" image.path
+                        ]
+                        []
+
+                Actor.PatternImage patternImageData ->
+                    node "img"
+                        [ attribute "id" <| "image-" ++ name
+                        , attribute "src" image.path
+                        ]
+                        []
+
+                Actor.LinkImage linkData ->
+                    node "img"
+                        [ attribute "id" <| "image-" ++ name
+                        , attribute "src" image.path
+                        ]
+                        []
+
+        drawLoadObjectAsset : ( String, String ) -> Html msg
+        drawLoadObjectAsset ( name, path ) =
+            node "a-asset-item"
+                [ attribute "id" <| "asset-" ++ name
+                , attribute "src" path
+                ]
+                []
+    in
     Util.fastConcat
         [ Dict.toList levelConfig.images |> List.map drawLoadImage
         , Dict.toList levelConfig.objects.assets |> List.map drawLoadObjectAsset
         ]
         |> node "a-assets" []
-        |> (\html -> ( "the-assets", html ))
 
 
-drawLoadImage : ( String, Actor.Image ) -> Html msg
-drawLoadImage ( name, image ) =
-    case image.imageType of
-        Actor.RegularImage ->
-            node "img"
-                [ attribute "id" <| "image-" ++ name
-                , attribute "src" image.path
-                ]
-                []
-
-        Actor.PatternImage patternImageData ->
-            node "img"
-                [ attribute "id" <| "image-" ++ name
-                , attribute "src" image.path
-                ]
-                []
-
-        Actor.LinkImage linkData ->
-            node "img"
-                [ attribute "id" <| "image-" ++ name
-                , attribute "src" image.path
-                ]
-                []
-
-
-drawLoadObjectAsset : ( String, String ) -> Html msg
-drawLoadObjectAsset ( name, path ) =
-    node "a-asset-item"
-        [ attribute "id" <| "asset-" ++ name
-        , attribute "src" path
-        ]
-        []
-
-
-drawCamera : Level -> LevelConfig -> Position -> Position -> ( String, Html msg )
-drawCamera level levelConfig viewPositionCoordinate viewPixelOffset =
+drawCamera : Level -> Position -> Position -> DrawAcc msg -> DrawAcc msg
+drawCamera level viewPositionCoordinate viewPixelOffset acc =
     let
-        x =
-            (toFloat level.view.coordinate.x / toFloat level.config.pixelSize) + (toFloat level.config.width / 2.0)
-
-        y =
-            (toFloat level.view.coordinate.y / toFloat level.config.pixelSize) + (toFloat level.config.height / 2.0)
-
         xOffset =
             toFloat viewPixelOffset.x / toFloat level.config.pixelSize
 
         yOffset =
             toFloat viewPixelOffset.y / toFloat level.config.pixelSize
 
-        x2 =
+        x =
             toFloat viewPositionCoordinate.x + (toFloat level.config.width / 2.0) - xOffset
 
-        y2 =
+        y =
             toFloat viewPositionCoordinate.y + (toFloat level.config.height / 2.0) - yOffset
-    in
-    ( "the-camera"
-    , node "a-camera"
-        [ attribute "position" <|
-            String.join " "
-                [ String.fromFloat x2
-                , String.fromFloat (y2 * -1)
-                , "7"
+
+        cameraNode =
+            node "a-camera"
+                [ attribute "position" <|
+                    String.join " "
+                        [ String.fromFloat x
+                        , String.fromFloat (y * -1)
+                        , "7"
+                        ]
+                , attribute "wasd-controls" "enabled: false;"
                 ]
-        , attribute "wasd-controls" "enabled: false;"
-        ]
-        []
-    )
+                []
+    in
+    addToDrawAcc 0 cameraNode acc
 
 
+addToDrawAcc : Int -> Html msg -> DrawAcc msg -> DrawAcc msg
+addToDrawAcc key node =
+    Dict.update
+        key
+        (\maybeCurrentData ->
+            case maybeCurrentData of
+                Just currentData ->
+                    Just <| node :: currentData
 
---    node "a-camera"
---        [ Attributes.attribute "position" <|
---            String.join " "
---                [ String.fromFloat x
---                , String.fromFloat (y * -1)
---                , "20"
---                ]
---        , Attributes.attribute "wasd-controls" "enabled: false;"
---        ]
---        []
+                Nothing ->
+                    Just [ node ]
+        )
 
 
-drawLevel : Int -> Level -> LevelConfig -> List ( String, Html msg )
+drawLevel : Int -> Level -> LevelConfig -> DrawAcc msg
 drawLevel tick level levelConfig =
     let
         view =
@@ -198,6 +182,7 @@ drawLevel tick level levelConfig =
         yEndPosition =
             yBasePosition + level.config.height + (level.config.additionalViewBorder * 2)
 
+        drawEnvironment : DrawAcc msg -> DrawAcc msg
         drawEnvironment givenAcc =
             List.foldr
                 (\y acc ->
@@ -206,9 +191,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    viewPositionCoordinate
                                     { x = x, y = y }
-                                    viewPixelOffset
                                     level
                                     levelConfig
                                     (Common.getEnvironmentActorsByPosition { x = x, y = y } level)
@@ -219,6 +202,7 @@ drawLevel tick level levelConfig =
                 givenAcc
                 (List.range (yBasePosition - level.config.additionalEnvironment) yEndPosition)
 
+        drawOtherActors : DrawAcc msg -> DrawAcc msg
         drawOtherActors givenAcc =
             List.foldr
                 (\y acc ->
@@ -227,9 +211,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    viewPositionCoordinate
                                     { x = x, y = y }
-                                    viewPixelOffset
                                     level
                                     levelConfig
                                     (Common.getActorsByPosition { x = x, y = y } level)
@@ -240,32 +222,29 @@ drawLevel tick level levelConfig =
                 givenAcc
                 (List.range yBasePosition yEndPosition)
     in
-    Util.fastConcat
-        [ [ drawCamera level levelConfig viewPositionCoordinate viewPixelOffset ]
-        , drawEnvironment []
-        , drawOtherActors []
-        ]
+    Dict.fromList []
+        |> drawCamera level viewPositionCoordinate viewPixelOffset
+        |> drawEnvironment
+        |> drawOtherActors
 
 
 type alias RenderRequirements =
     { actorId : Int
     , tick : Int
-    , viewPositionCoordinate : Position
     , position : Position
-    , pixelOffset : Coordinate
     , render : Actor.RenderComponentData
     , transform : Actor.TransformComponentData
     , maybeTowards : Maybe Actor.MovingTowardsData
     }
 
 
-drawActors : Int -> Position -> Position -> Coordinate -> Level -> LevelConfig -> List Actor.Actor -> List ( String, Html msg ) -> List ( String, Html msg )
-drawActors tick viewPositionCoordinate position pixelOffset level levelConfig actors acc =
+drawActors : Int -> Position -> Level -> LevelConfig -> List Actor.Actor -> DrawAcc msg -> DrawAcc msg
+drawActors tick position level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements actor.id tick viewPositionCoordinate position pixelOffset)
+                (RenderRequirements actor.id tick position)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -281,7 +260,7 @@ drawActors tick viewPositionCoordinate position pixelOffset level levelConfig ac
             acc
 
 
-drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> List ( String, Html msg ) -> List ( String, Html msg )
+drawRenderRequirements : RenderRequirements -> LevelConfig -> Level -> DrawAcc msg -> DrawAcc msg
 drawRenderRequirements renderRequirements levelConfig level acc =
     let
         pixelSize : Float
@@ -305,16 +284,18 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             asYPoint renderRequirements.transform.position.y
 
         zPoint =
-            toFloat renderRequirements.render.layer / pixelSize
+            0.0
 
-        imageNotMovingOp : Actor.ImageTypeData -> List ( String, Html msg )
+        imageNotMovingOp : Actor.ImageTypeData -> DrawAcc msg
         imageNotMovingOp imageData =
             getImageName renderRequirements.tick imageData.default
-                |> Maybe.map (renderImage renderRequirements.actorId pixelSize xPoint yPoint zPoint levelConfig.images)
-                |> Maybe.map (List.append acc)
+                |> Maybe.map
+                    (\imageName ->
+                        renderImage renderRequirements pixelSize xPoint yPoint zPoint levelConfig.images imageName acc
+                    )
                 |> Maybe.withDefault acc
 
-        imageMovingOp : Actor.ImageTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
+        imageMovingOp : Actor.ImageTypeData -> Actor.MovingTowardsData -> DrawAcc msg
         imageMovingOp imageData towardsData =
             let
                 xDestPoint =
@@ -335,25 +316,23 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             in
             getImageNamesDataByDirection towardsData.direction imageData
                 |> getImageName renderRequirements.tick
-                |> Maybe.map (renderImage renderRequirements.actorId pixelSize xFinal yFinal zPoint levelConfig.images)
-                |> Maybe.map (List.append acc)
+                |> Maybe.map
+                    (\imageName ->
+                        renderImage renderRequirements pixelSize xFinal yFinal zPoint levelConfig.images imageName acc
+                    )
                 |> Maybe.withDefault acc
 
-        pixelNotMovingOp : Actor.PixelTypeData -> List ( String, Html msg )
+        pixelNotMovingOp : Actor.PixelTypeData -> DrawAcc msg
         pixelNotMovingOp pixelData =
-            let
-                pixelElement : ( String, Html msg )
-                pixelElement =
-                    asPixel
-                        level.config
-                        renderRequirements.actorId
-                        xPoint
-                        yPoint
-                        (getColor renderRequirements.tick pixelData)
-            in
-            pixelElement :: acc
+            asPixel
+                level.config
+                renderRequirements
+                xPoint
+                yPoint
+                (getColor renderRequirements.tick pixelData)
+                acc
 
-        pixelMovingOp : Actor.PixelTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
+        pixelMovingOp : Actor.PixelTypeData -> Actor.MovingTowardsData -> DrawAcc msg
         pixelMovingOp pixelData towardsData =
             let
                 xDestPoint =
@@ -362,33 +341,35 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                 yDestPoint =
                     asYPoint towardsData.position.y
 
-                originElement : ( String, Html msg )
-                originElement =
+                originElement : DrawAcc msg -> DrawAcc msg
+                originElement givenAcc =
                     asPixel
                         level.config
-                        renderRequirements.actorId
+                        renderRequirements
                         xPoint
                         yPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage (100 - towardsData.completionPercentage))
+                        givenAcc
 
-                destinationElement : ( String, Html msg )
-                destinationElement =
+                destinationElement : DrawAcc msg -> DrawAcc msg
+                destinationElement givenAcc =
                     asPixel
                         level.config
-                        (renderRequirements.actorId + 10000000)
+                        renderRequirements
                         xDestPoint
                         yDestPoint
                         (getColor renderRequirements.tick pixelData |> withCompletionPercentage towardsData.completionPercentage)
+                        givenAcc
             in
-            originElement :: destinationElement :: acc
+            acc
+                |> originElement
+                |> destinationElement
 
-        objectNotMovingOp : Actor.ObjectTypeData -> List ( String, Html msg )
+        objectNotMovingOp : Actor.ObjectTypeData -> DrawAcc msg
         objectNotMovingOp objectData =
-            presetNameToHtml { x = xPoint, y = yPoint, z = zPoint } renderRequirements.actorId levelConfig.objects.presets objectData.default
-                |> Maybe.map (\objectHtml -> objectHtml :: acc)
-                |> Maybe.withDefault acc
+            drawObject renderRequirements { x = xPoint, y = yPoint, z = zPoint } levelConfig.objects.presets objectData.default acc
 
-        objectMovingOp : Actor.ObjectTypeData -> Actor.MovingTowardsData -> List ( String, Html msg )
+        objectMovingOp : Actor.ObjectTypeData -> Actor.MovingTowardsData -> DrawAcc msg
         objectMovingOp objectData towardsData =
             let
                 xDestPoint =
@@ -408,9 +389,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                     asMovementLocation yPoint yDestPoint towardsData.completionPercentage
             in
             getPresetNameByDirection towardsData.direction objectData
-                |> presetNameToHtml { x = xFinal, y = yFinal, z = zPoint } renderRequirements.actorId levelConfig.objects.presets
-                |> Maybe.map (\objectHtml -> objectHtml :: acc)
-                |> Maybe.withDefault acc
+                |> (\presetName -> drawObject renderRequirements { x = xFinal, y = yFinal, z = zPoint } levelConfig.objects.presets presetName acc)
     in
     case ( renderRequirements.render.renderType, renderRequirements.maybeTowards ) of
         ( Actor.PixelRenderType pixelData, Nothing ) ->
@@ -432,70 +411,77 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             objectMovingOp objectData towardsData
 
 
-presetNameToHtml : Vec3 -> Int -> Actor.ObjectPresets -> Actor.ObjectPresetName -> Maybe ( String, Html msg )
-presetNameToHtml position actorId presets presetName =
+drawObject : RenderRequirements -> Vec3 -> Actor.ObjectPresets -> Actor.ObjectPresetName -> DrawAcc msg -> DrawAcc msg
+drawObject renderRequirements position presets presetName acc =
     Dict.get presetName presets
-        |> Maybe.map (presetToHtml position actorId)
-
-
-presetToHtml : Vec3 -> Int -> Actor.ObjectPresetData -> ( String, Html msg )
-presetToHtml position actorId preset =
-    ( "actor-" ++ String.fromInt actorId
-    , node "a-gltf-model"
-        (List.append
-            [ attribute "src" <| "#asset-" ++ preset.assetName
-            , attribute "position" <|
-                String.join " "
-                    [ String.fromFloat (position.x + preset.xOffset)
-                    , String.fromFloat ((position.y + preset.yOffset) * -1)
-                    , String.fromFloat (position.z + preset.zOffset)
-                    ]
-            ]
-            (preset.settings
-                |> Dict.toList
-                |> List.map
-                    (\( settingKey, settingData ) ->
-                        attribute settingKey settingData
-                    )
+        |> Maybe.map
+            (\preset ->
+                drawObjectPreset renderRequirements position preset acc
             )
-        )
-        []
-    )
+        |> Maybe.withDefault acc
 
 
-renderImage : Int -> Float -> Float -> Float -> Float -> Actor.Images -> String -> List ( String, Html msg )
-renderImage actorId pixelSize x y z images imageName =
+drawObjectPreset : RenderRequirements -> Vec3 -> Actor.ObjectPresetData -> DrawAcc msg -> DrawAcc msg
+drawObjectPreset renderRequirements position preset =
     let
-        asImage : Actor.Image -> List (Html.Attribute msg) -> ( String, Html msg )
-        asImage image additionalAttributes =
-            ( "actor" ++ String.fromInt actorId
-            , node "a-image"
+        element =
+            node "a-entity"
                 (List.append
-                    [ attribute "material" <|
-                        String.join ""
-                            [ "src: #image-"
-                            , imageName
-                            , "; transparent: true;"
-                            ]
-                    , attribute "position" <|
+                    [ attribute "position" <|
                         String.join " "
-                            [ String.fromFloat <| x + (toFloat image.xOffset / pixelSize) + (toFloat image.width / pixelSize / 2.0)
-                            , String.fromFloat <| (y + (toFloat image.yOffset / pixelSize) + (toFloat image.height / pixelSize / 2.0)) * -1.0
-                            , String.fromFloat z
-                            ]
-                    , attribute "geometry" <|
-                        String.join ""
-                            [ "width: "
-                            , String.fromFloat <| (toFloat image.width / pixelSize)
-                            , "; height: "
-                            , String.fromFloat <| (toFloat image.height / pixelSize)
-                            , ";"
+                            [ String.fromFloat (position.x + preset.xOffset)
+                            , String.fromFloat ((position.y + preset.yOffset) * -1)
+                            , String.fromFloat (position.z + preset.zOffset)
                             ]
                     ]
-                    additionalAttributes
+                    (preset.settings
+                        |> Dict.toList
+                        |> List.map
+                            (\( settingKey, settingData ) ->
+                                attribute settingKey settingData
+                            )
+                    )
                 )
                 []
-            )
+    in
+    addToDrawAcc renderRequirements.render.layer element
+
+
+renderImage : RenderRequirements -> Float -> Float -> Float -> Float -> Actor.Images -> String -> DrawAcc msg -> DrawAcc msg
+renderImage renderRequirements pixelSize x y z images imageName acc =
+    let
+        asImage : Actor.Image -> List (Html.Attribute msg) -> DrawAcc msg
+        asImage image additionalAttributes =
+            let
+                element =
+                    node "a-image"
+                        (List.append
+                            [ attribute "material" <|
+                                String.join ""
+                                    [ "src: #image-"
+                                    , imageName
+                                    , "; transparent: true;"
+                                    ]
+                            , attribute "position" <|
+                                String.join " "
+                                    [ String.fromFloat <| x + (toFloat image.xOffset / pixelSize) + (toFloat image.width / pixelSize / 2.0)
+                                    , String.fromFloat <| (y + (toFloat image.yOffset / pixelSize) + (toFloat image.height / pixelSize / 2.0)) * -1.0
+                                    , String.fromFloat z
+                                    ]
+                            , attribute "geometry" <|
+                                String.join ""
+                                    [ "width: "
+                                    , String.fromFloat <| (toFloat image.width / pixelSize)
+                                    , "; height: "
+                                    , String.fromFloat <| (toFloat image.height / pixelSize)
+                                    , ";"
+                                    ]
+                            ]
+                            additionalAttributes
+                        )
+                        []
+            in
+            addToDrawAcc renderRequirements.render.layer element acc
     in
     Dict.get imageName images
         |> Maybe.map
@@ -517,7 +503,7 @@ renderImage actorId pixelSize x y z images imageName =
                                     ]
                             ]
             )
-        |> Maybe.Extra.toList
+        |> Maybe.withDefault acc
 
 
 withCompletionPercentage : Float -> Color -> Color
@@ -564,8 +550,8 @@ noColor =
     Color.white
 
 
-asPixel : Config -> Int -> Float -> Float -> Color -> ( String, Html msg )
-asPixel config actorId xPoint yPoint color =
+asPixel : Config -> RenderRequirements -> Float -> Float -> Color -> DrawAcc msg -> DrawAcc msg
+asPixel config renderRequirements xPoint yPoint color acc =
     let
         rgba =
             Color.toRgba color
@@ -587,24 +573,25 @@ asPixel config actorId xPoint yPoint color =
                 , String.fromInt (pct rgba.blue)
                 , "%)"
                 ]
+
+        element =
+            node "a-box"
+                [ attribute "material" <|
+                    String.join ""
+                        [ "color: "
+                        , asCssString
+                        , "; transparent: true;"
+                        , "opacity: "
+                        , String.fromFloat rgba.alpha
+                        , ";"
+                        ]
+                , attribute "position" <|
+                    String.join " "
+                        [ String.fromFloat xPoint
+                        , String.fromFloat (yPoint * -1)
+                        , "0"
+                        ]
+                ]
+                []
     in
-    ( "actor-" ++ String.fromInt actorId
-    , node "a-box"
-        [ attribute "material" <|
-            String.join ""
-                [ "color: "
-                , asCssString
-                , "; transparent: true;"
-                , "opacity: "
-                , String.fromFloat rgba.alpha
-                , ";"
-                ]
-        , attribute "position" <|
-            String.join " "
-                [ String.fromFloat xPoint
-                , String.fromFloat (yPoint * -1)
-                , "0"
-                ]
-        ]
-        []
-    )
+    addToDrawAcc renderRequirements.render.layer element acc

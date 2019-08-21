@@ -185,8 +185,7 @@ type alias ObjectPresets =
 
 
 type alias ObjectPresetData =
-    { assetName : String
-    , settings : ObjectSettings
+    { settings : ObjectSettings
     , xOffset : Float
     , yOffset : Float
     , zOffset : Float
