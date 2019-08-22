@@ -147,12 +147,12 @@ aframeRendererDecoder =
 aframeCameraDecoder : Decoder AframeCamera
 aframeCameraDecoder =
     Decode.succeed AframeCamera
-        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) defaultAframeCamera.offsets
+        |> JDP.optional "offsets" positionOffsetsDecoder defaultAframeCamera.offsets
 
 
 defaultAframeCamera : AframeCamera
 defaultAframeCamera =
-    { offsets = []
+    { offsets = emptyPositionOffsets
     }
 
 
@@ -809,7 +809,7 @@ defaultImageType =
 decodePatternImageData : Decoder PatternImageData
 decodePatternImageData =
     Decode.succeed PatternImageData
-        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) []
+        |> JDP.optional "offsets" positionOffsetsDecoder emptyPositionOffsets
 
 
 decodeLinkImageData : Decoder LinkImageData
@@ -825,7 +825,7 @@ offsetTypeDecoder =
             (\theType ->
                 case theType of
                     "fixed" ->
-                        Decode.map FixedOffset <| Decode.field "data" Decode.int
+                        Decode.map FixedOffset <| Decode.field "data" Decode.float
 
                     "view_x_multiplier" ->
                         Decode.map MultipliedByViewX <| Decode.field "data" Decode.float
@@ -868,7 +868,7 @@ objectPresetDataDecoder : Decoder ObjectPresetData
 objectPresetDataDecoder =
     Decode.succeed ObjectPresetData
         |> JDP.optional "settings" decodeObjectSettingsDecoder Dict.empty
-        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) []
+        |> JDP.optional "offsets" positionOffsetsDecoder emptyPositionOffsets
 
 
 positionOffsetsDecoder : Decoder PositionOffsets
@@ -877,6 +877,14 @@ positionOffsetsDecoder =
         |> JDP.optional "x" (Decode.list offsetTypeDecoder) []
         |> JDP.optional "y" (Decode.list offsetTypeDecoder) []
         |> JDP.optional "z" (Decode.list offsetTypeDecoder) []
+
+
+emptyPositionOffsets : PositionOffsets
+emptyPositionOffsets =
+    { x = []
+    , y = []
+    , z = []
+    }
 
 
 decodeObjectSettingsDecoder : Decoder ObjectSettings

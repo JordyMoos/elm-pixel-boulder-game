@@ -239,8 +239,20 @@
           "rotation": "0 90 -20",
           "scale": "0.3 0.3 0.3"
         },
-        "yOffset": 0.45,
-        "zOffset": 1
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+          ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
       },
       "robot-walk-left": {
         "settings": {
@@ -249,8 +261,20 @@
           "rotation": "0 -70 20",
           "scale": "0.3 0.3 0.3"
         },
-        "yOffset": 0.45,
-        "zOffset": 1
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+        ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
       },
       "robot-idle": {
         "settings": {
@@ -259,8 +283,20 @@
           "rotation": "0 90 -20",
           "scale": "0.3 0.3 0.3"
         },
-        "yOffset": 0.45,
-        "zOffset": 1
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+        ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
       },
       "sky": {
         "settings": {
@@ -269,9 +305,19 @@
           "rotation": "0 0 0",
           "color": "green"
         },
-        "xOffset": 0,
-        "yOffset": 0,
-        "zOffset": -2.2
+        "offsets": {
+         "x": [
+            {
+              "type": "view_offset_x"
+            }
+          ],
+         "z": [
+            {
+              "type": "fixed",
+              "data": -2.2
+            }
+          ]
+        }
       },
       "mountain": {
         "settings": {
@@ -280,9 +326,19 @@
           "rotation": "0 0 0",
           "color": "green"
         },
-        "xOffset": 0,
-        "yOffset": 0,
-        "zOffset": -2.1
+        "offsets": {
+          "x": [
+            {
+              "type": "view_offset_x"
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -2.1
+            }
+          ]
+        }
       },
       "forest": {
         "settings": {
@@ -291,9 +347,19 @@
           "rotation": "0 0 0",
           "color": "green"
         },
-        "xOffset": 0,
-        "yOffset": 0,
-        "zOffset": -2
+        "offsets": {
+          "x": [
+            {
+              "type": "view_offset_x"
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -2.0
+            }
+          ]
+        }
       }
     }
   },

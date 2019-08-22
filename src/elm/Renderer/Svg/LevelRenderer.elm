@@ -1,6 +1,6 @@
 module Renderer.Svg.LevelRenderer exposing (renderLevel)
 
-import Actor.Actor as Actor exposing (Level)
+import Actor.Actor as Actor exposing (Level, Vec3)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Color exposing (Color)
@@ -25,7 +25,7 @@ type alias LayeredSvg msg =
 renderLevel : Int -> Level -> Actor.LevelConfig -> Html msg
 renderLevel currentTick level { images } =
     Util.fastConcat
-        [ [ drawLoadImages level.view images ]
+        [ [ drawLoadImages level.config level.view images ]
         , drawBackgrounds currentTick level.config images level.backgrounds
         , drawLevel currentTick level images
         ]
@@ -38,15 +38,15 @@ renderLevel currentTick level { images } =
             ]
 
 
-drawLoadImages : Actor.View -> Actor.Images -> Svg msg
-drawLoadImages view images =
+drawLoadImages : Config -> Actor.View -> Actor.Images -> Svg msg
+drawLoadImages config view images =
     Dict.toList images
-        |> List.map (drawLoadImage view)
+        |> List.map (drawLoadImage config view)
         |> Svg.defs []
 
 
-drawLoadImage : Actor.View -> ( String, Actor.Image ) -> Svg msg
-drawLoadImage view ( name, image ) =
+drawLoadImage : Config -> Actor.View -> ( String, Actor.Image ) -> Svg msg
+drawLoadImage config view ( name, image ) =
     case image.imageType of
         Actor.RegularImage ->
             Svg.image
@@ -58,12 +58,16 @@ drawLoadImage view ( name, image ) =
                 []
 
         Actor.PatternImage patternImageData ->
+            let
+                computedOffsets =
+                    computeOffsets config view patternImageData.offsets
+            in
             Svg.pattern
                 [ Attributes.width <| String.fromInt image.width
                 , Attributes.height <| String.fromInt image.height
                 , Attributes.id <| "pattern-" ++ name
-                , Attributes.x <| getOffset view patternImageData.xOffset
-                , Attributes.y <| getOffset view patternImageData.yOffset
+                , Attributes.x <| String.fromFloat computedOffsets.x
+                , Attributes.y <| String.fromFloat computedOffsets.y
                 , Attributes.patternUnits "userSpaceOnUse"
                 ]
                 [ Svg.image
@@ -83,19 +87,6 @@ drawLoadImage view ( name, image ) =
                 , Attributes.xlinkHref image.path
                 ]
                 []
-
-
-getOffset : Actor.View -> Actor.ImagePositionOffset -> String
-getOffset view imagePositionOffset =
-    case imagePositionOffset of
-        Actor.FixedOffset intOffset ->
-            String.fromInt intOffset
-
-        Actor.MultipliedByViewX multiplier ->
-            String.fromFloat <| Basics.toFloat view.coordinate.x * multiplier
-
-        Actor.MultipliedByViewY multiplier ->
-            String.fromFloat <| Basics.toFloat view.coordinate.y * multiplier
 
 
 drawBackgrounds : Int -> Config -> Actor.Images -> List Actor.RenderComponentData -> List (Svg msg)
@@ -130,6 +121,42 @@ drawBackground tick config images backgroundData =
 
         Actor.ObjectRenderType _ ->
             Nothing
+
+
+computeOffsets : Config -> Actor.View -> Actor.PositionOffsets -> Vec3
+computeOffsets config view offsets =
+    let
+        apply : List Actor.OffsetType -> Float
+        apply =
+            List.foldl
+                (\offset acc ->
+                    getOffset config view offset + acc
+                )
+                0.0
+    in
+    { x = apply offsets.x
+    , y = apply offsets.y
+    , z = apply offsets.z
+    }
+
+
+getOffset : Config -> Actor.View -> Actor.OffsetType -> Float
+getOffset config view offsetType =
+    case offsetType of
+        Actor.FixedOffset fixedOffset ->
+            fixedOffset
+
+        Actor.MultipliedByViewX multiplier ->
+            Basics.toFloat view.coordinate.x * multiplier
+
+        Actor.MultipliedByViewY multiplier ->
+            Basics.toFloat view.coordinate.y * multiplier
+
+        Actor.ViewOffsetX ->
+            toFloat <| modBy config.pixelSize view.coordinate.x * -1
+
+        Actor.ViewOffsetY ->
+            toFloat <| modBy config.pixelSize view.coordinate.y * -1
 
 
 imageNameToSvg : Int -> Int -> Actor.Images -> String -> Maybe (Svg msg)

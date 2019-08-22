@@ -83,9 +83,11 @@ module Actor.Actor exposing
     , TagDiedSubscriberData
     , TransformComponentData
     , TriggerExplodableComponentData
+    , Vec3
     , View
     , WalkAroundAiControlData
     , emptyEventManager
+    , emptyVec3
     )
 
 import Color exposing (Color)
@@ -177,6 +179,21 @@ type alias PositionOffsets =
     }
 
 
+type alias Vec3 =
+    { x : Float
+    , y : Float
+    , z : Float
+    }
+
+
+emptyVec3 : Vec3
+emptyVec3 =
+    { x = 0.0
+    , y = 0.0
+    , z = 0.0
+    }
+
+
 type alias Objects =
     { assets : ObjectAssets
     , presets : ObjectPresets
@@ -193,7 +210,7 @@ type alias ObjectPresets =
 
 type alias ObjectPresetData =
     { settings : ObjectSettings
-    , offsets : List PositionOffsets
+    , offsets : PositionOffsets
     }
 
 
@@ -208,12 +225,12 @@ type ImageType
 
 
 type alias PatternImageData =
-    { offsets : List PositionOffsets
+    { offsets : PositionOffsets
     }
 
 
 type OffsetType
-    = FixedOffset Int
+    = FixedOffset Float
     | MultipliedByViewX Float
     | MultipliedByViewY Float
     | ViewOffsetX
@@ -252,7 +269,7 @@ type alias AframeRendererData =
 
 
 type alias AframeCamera =
-    { offsets : List PositionOffsets }
+    { offsets : PositionOffsets }
 
 
 type alias Level =

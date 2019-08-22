@@ -1,6 +1,6 @@
 module Renderer.Aframe.LevelRenderer exposing (renderLevel)
 
-import Actor.Actor as Actor exposing (Level, LevelConfig)
+import Actor.Actor as Actor exposing (Level, LevelConfig, Vec3)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Color exposing (Color)
@@ -14,21 +14,6 @@ import Html.Attributes exposing (attribute)
 import List.Extra
 import String
 import Util.Util as Util
-
-
-type alias Vec3 =
-    { x : Float
-    , y : Float
-    , z : Float
-    }
-
-emptyVec3 : Vec3
-emptyVec3 =
-    {
-    x = 0.0
-    , y = 0.0
-    , z = 0.0
-  }
 
 
 type alias DrawAcc msg =
@@ -90,14 +75,14 @@ drawAssets levelConfig =
         |> node "a-assets" []
 
 
-drawCamera : Level -> Position -> Position -> DrawAcc msg -> DrawAcc msg
+drawCamera : Level -> Position -> Vec3 -> DrawAcc msg -> DrawAcc msg
 drawCamera level viewPositionCoordinate viewPixelOffset acc =
     let
         xOffset =
-            toFloat viewPixelOffset.x / toFloat level.config.pixelSize
+            viewPixelOffset.x / toFloat level.config.pixelSize
 
         yOffset =
-            toFloat viewPixelOffset.y / toFloat level.config.pixelSize
+            viewPixelOffset.y / toFloat level.config.pixelSize
 
         x =
             toFloat viewPositionCoordinate.x + (toFloat level.config.width / 2.0) - xOffset
@@ -146,9 +131,11 @@ drawLevel tick level levelConfig =
         yPixelOffset =
             modBy level.config.pixelSize view.coordinate.y
 
+        viewPixelOffset : Vec3
         viewPixelOffset =
-            { x = xPixelOffset * -1
-            , y = yPixelOffset * -1
+            { x = toFloat <| xPixelOffset * -1
+            , y = toFloat <| yPixelOffset * -1
+            , z = 0.0
             }
 
         xBasePosition =
@@ -185,21 +172,13 @@ drawLevel tick level levelConfig =
                     { x = (xEndPosition - xBasePosition) // 2 + xBasePosition
                     , y = (yEndPosition - yBasePosition) // 2 + yBasePosition
                     }
-
-                xOffset =
-                    toFloat viewPixelOffset.x / toFloat level.config.pixelSize
-
-                yOffset =
-                    toFloat viewPixelOffset.y / toFloat level.config.pixelSize
             in
             List.foldr
                 (\backgroundRenderComponentData innerAcc ->
                     drawRenderRequirements
                         (RenderRequirements
                             tick
-                            { x = toFloat viewPixelOffset.x
-                            , y = toFloat viewPixelOffset.y
-                            , z = 0.0}
+                            viewPixelOffset
                             backgroundRenderComponentData
                             (Actor.TransformComponentData position)
                             Nothing
@@ -220,6 +199,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
+                                    viewPixelOffset
                                     level
                                     levelConfig
                                     (Common.getEnvironmentActorsByPosition { x = x, y = y } level)
@@ -239,6 +219,7 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
+                                    viewPixelOffset
                                     level
                                     levelConfig
                                     (Common.getActorsByPosition { x = x, y = y } level)
@@ -265,13 +246,13 @@ type alias RenderRequirements =
     }
 
 
-drawActors : Int -> Level -> LevelConfig -> List Actor.Actor -> DrawAcc msg -> DrawAcc msg
-drawActors tick level levelConfig actors acc =
+drawActors : Int -> Vec3 -> Level -> LevelConfig -> List Actor.Actor -> DrawAcc msg -> DrawAcc msg
+drawActors tick viewPixelOffset level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements tick emptyVec3)
+                (RenderRequirements tick viewPixelOffset)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -441,20 +422,22 @@ drawObject renderRequirements position level presets presetName acc =
 drawObjectPreset : RenderRequirements -> Vec3 -> Level -> Actor.ObjectPresetData -> DrawAcc msg -> DrawAcc msg
 drawObjectPreset renderRequirements position level preset =
     let
-        viewXOffset =
-            renderRequirements.viewPixelOffset.x / toFloat level.config.pixelSize
-
-        viewYOffset =
-            renderRequirements.viewPixelOffset.y / toFloat level.config.pixelSize
+        --        viewXOffset =
+        --            renderRequirements.viewPixelOffset.x / toFloat level.config.pixelSize
+        --
+        --        viewYOffset =
+        --            renderRequirements.viewPixelOffset.y / toFloat level.config.pixelSize
+        computedOffsets =
+            computeOffsets level.config level.view preset.offsets
 
         element =
             node "a-entity"
                 (List.append
                     [ attribute "position" <|
                         String.join " "
-                            [ String.fromFloat (position.x + preset.xOffset - viewXOffset)
-                            , String.fromFloat ((position.y + preset.yOffset) * -1)
-                            , String.fromFloat (position.z + preset.zOffset)
+                            [ String.fromFloat (position.x + computedOffsets.x)
+                            , String.fromFloat ((position.y + computedOffsets.y) * -1)
+                            , String.fromFloat (position.z + computedOffsets.z)
                             ]
                     ]
                     (preset.settings
@@ -468,6 +451,42 @@ drawObjectPreset renderRequirements position level preset =
                 []
     in
     addToDrawAcc renderRequirements.render.layer element
+
+
+computeOffsets : Config -> Actor.View -> Actor.PositionOffsets -> Vec3
+computeOffsets config view offsets =
+    let
+        apply : List Actor.OffsetType -> Float
+        apply =
+            List.foldl
+                (\offset acc ->
+                    getOffset config view offset + acc
+                )
+                0.0
+    in
+    { x = apply offsets.x
+    , y = apply offsets.y
+    , z = apply offsets.z
+    }
+
+
+getOffset : Config -> Actor.View -> Actor.OffsetType -> Float
+getOffset config view offsetType =
+    case offsetType of
+        Actor.FixedOffset fixedOffset ->
+            fixedOffset
+
+        Actor.MultipliedByViewX multiplier ->
+            Basics.toFloat view.coordinate.x * multiplier
+
+        Actor.MultipliedByViewY multiplier ->
+            Basics.toFloat view.coordinate.y * multiplier
+
+        Actor.ViewOffsetX ->
+            (toFloat <| modBy config.pixelSize view.coordinate.x) / toFloat config.pixelSize
+
+        Actor.ViewOffsetY ->
+            (toFloat <| modBy config.pixelSize view.coordinate.y) / toFloat config.pixelSize * -1
 
 
 renderImage : RenderRequirements -> Float -> Float -> Float -> Float -> Actor.Images -> String -> DrawAcc msg -> DrawAcc msg
