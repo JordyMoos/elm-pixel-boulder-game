@@ -71,24 +71,6 @@
         }
       }
     ],
-    "floor":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "floor-1"
-                ]
-              }
-            }
-          },
-          "layer":1
-        }
-      }
-    ],
     "board":[
       {
         "type":"render",
@@ -99,24 +81,6 @@
               "default":{
                 "names":[
                   "board"
-                ]
-              }
-            }
-          },
-          "layer":6
-        }
-      }
-    ],
-    "link":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "link"
                 ]
               }
             }
@@ -142,90 +106,13 @@
           "layer":7
         }
       }
-    ],
-    "slide-008":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "slide-008"
-                ]
-              }
-            }
-          },
-          "layer":7
-        }
-      }
-    ],
-    "tree-fg-1":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "tree-fg-1"
-                ]
-              }
-            }
-          },
-          "layer":3
-        }
-      }
-    ],
-    "tree-fg-2":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "tree-fg-2"
-                ]
-              }
-            }
-          },
-          "layer":3
-        }
-      }
-    ],
-    "tree-fg-3":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "tree-fg-3"
-                ]
-              }
-            }
-          },
-          "layer":3
-        }
-      }
     ]
   },
   "signs":{
     "h":"hero",
     "-":"floor",
     "b":"board",
-    "l":"link",
-    "6":"slide-006",
-    "8":"slide-008",
-    "t":"tree-fg-1",
-    "r":"tree-fg-2",
-    "e":"tree-fg-3"
+    "6":"slide-006"
   },
   "objects": {
     "assets": {
@@ -306,16 +193,16 @@
           "color": "green"
         },
         "offsets": {
-          "x": [
+         "x": [
             {
               "type": "view_offset_x"
             }
-          , {
-              "type":"view_x_multiplier",
-              "data":-0.00001
-            }
+         , {
+             "type":"view_x_multiplier",
+             "data":-0.00001
+           }
           ],
-          "z": [
+         "z": [
             {
               "type": "fixed",
               "data": -2.2
@@ -335,7 +222,7 @@
             {
               "type": "view_offset_x"
             }
-          , {
+            , {
               "type":"view_x_multiplier",
               "data":-0.0002
             }
@@ -388,12 +275,13 @@
       "imageType":{
         "type":"pattern",
         "data":{
-          "offsets": {
-            "x": [{
-              "type":"view_x_multiplier",
-              "data":-0.05
-              }
-            ]
+          "xOffset":{
+            "type":"view_x_multiplier",
+            "data":-0.5
+          },
+          "yOffset":{
+            "type":"fixed",
+            "data":0
           }
         }
       }
@@ -485,13 +373,13 @@
   },
   "backgrounds":[
     {
-      "renderType":{
-        "type":"object",
-        "data":{
-          "default": "sky"
-        }
-      },
-      "layer": -20
+        "renderType":{
+          "type":"object",
+          "data":{
+            "default": "sky"
+          }
+        },
+        "layer": -20
     },
     {
       "renderType":{
@@ -513,17 +401,7 @@
     }
   ],
   "scene":[
-    "-                                                                          b6                   l8",
-    "-                                                     ",
-    "-                                                     ",
-    "-                                                     ",
-    "-                                                     e                             e   e    e   e   ee e    e   e   ee   e e",
-    "-                                                     ",
-    "-                                                     ",
-    "-                                                                               r",
-    "-                                                                            t   t       t            t t              t",
-    "-                                                       h",
-    "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    "      h"
   ],
   "config":{
     "width":16,
