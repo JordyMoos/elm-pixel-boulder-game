@@ -22,6 +22,14 @@ type alias Vec3 =
     , z : Float
     }
 
+emptyVec3 : Vec3
+emptyVec3 =
+    {
+    x = 0.0
+    , y = 0.0
+    , z = 0.0
+  }
+
 
 type alias DrawAcc msg =
     Dict Int (List (Html msg))
@@ -189,6 +197,9 @@ drawLevel tick level levelConfig =
                     drawRenderRequirements
                         (RenderRequirements
                             tick
+                            { x = toFloat viewPixelOffset.x
+                            , y = toFloat viewPixelOffset.y
+                            , z = 0.0}
                             backgroundRenderComponentData
                             (Actor.TransformComponentData position)
                             Nothing
@@ -247,6 +258,7 @@ drawLevel tick level levelConfig =
 
 type alias RenderRequirements =
     { tick : Int
+    , viewPixelOffset : Vec3
     , render : Actor.RenderComponentData
     , transform : Actor.TransformComponentData
     , maybeTowards : Maybe Actor.MovingTowardsData
@@ -259,7 +271,7 @@ drawActors tick level levelConfig actors acc =
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements tick)
+                (RenderRequirements tick emptyVec3)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -372,7 +384,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
 
         objectNotMovingOp : Actor.ObjectTypeData -> DrawAcc msg
         objectNotMovingOp objectData =
-            drawObject renderRequirements { x = xPoint, y = yPoint, z = zPoint } levelConfig.objects.presets objectData.default acc
+            drawObject renderRequirements { x = xPoint, y = yPoint, z = zPoint } level levelConfig.objects.presets objectData.default acc
 
         objectMovingOp : Actor.ObjectTypeData -> Actor.MovingTowardsData -> DrawAcc msg
         objectMovingOp objectData towardsData =
@@ -394,7 +406,7 @@ drawRenderRequirements renderRequirements levelConfig level acc =
                     asMovementLocation yPoint yDestPoint towardsData.completionPercentage
             in
             getPresetNameByDirection towardsData.direction objectData
-                |> (\presetName -> drawObject renderRequirements { x = xFinal, y = yFinal, z = zPoint } levelConfig.objects.presets presetName acc)
+                |> (\presetName -> drawObject renderRequirements { x = xFinal, y = yFinal, z = zPoint } level levelConfig.objects.presets presetName acc)
     in
     case ( renderRequirements.render.renderType, renderRequirements.maybeTowards ) of
         ( Actor.PixelRenderType pixelData, Nothing ) ->
@@ -416,25 +428,31 @@ drawRenderRequirements renderRequirements levelConfig level acc =
             objectMovingOp objectData towardsData
 
 
-drawObject : RenderRequirements -> Vec3 -> Actor.ObjectPresets -> Actor.ObjectPresetName -> DrawAcc msg -> DrawAcc msg
-drawObject renderRequirements position presets presetName acc =
+drawObject : RenderRequirements -> Vec3 -> Level -> Actor.ObjectPresets -> Actor.ObjectPresetName -> DrawAcc msg -> DrawAcc msg
+drawObject renderRequirements position level presets presetName acc =
     Dict.get presetName presets
         |> Maybe.map
             (\preset ->
-                drawObjectPreset renderRequirements position preset acc
+                drawObjectPreset renderRequirements position level preset acc
             )
         |> Maybe.withDefault acc
 
 
-drawObjectPreset : RenderRequirements -> Vec3 -> Actor.ObjectPresetData -> DrawAcc msg -> DrawAcc msg
-drawObjectPreset renderRequirements position preset =
+drawObjectPreset : RenderRequirements -> Vec3 -> Level -> Actor.ObjectPresetData -> DrawAcc msg -> DrawAcc msg
+drawObjectPreset renderRequirements position level preset =
     let
+        viewXOffset =
+            renderRequirements.viewPixelOffset.x / toFloat level.config.pixelSize
+
+        viewYOffset =
+            renderRequirements.viewPixelOffset.y / toFloat level.config.pixelSize
+
         element =
             node "a-entity"
                 (List.append
                     [ attribute "position" <|
                         String.join " "
-                            [ String.fromFloat (position.x + preset.xOffset)
+                            [ String.fromFloat (position.x + preset.xOffset - viewXOffset)
                             , String.fromFloat ((position.y + preset.yOffset) * -1)
                             , String.fromFloat (position.z + preset.zOffset)
                             ]

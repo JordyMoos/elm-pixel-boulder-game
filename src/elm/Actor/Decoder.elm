@@ -4,7 +4,6 @@ import Actor.Actor as Actor
     exposing
         ( AdventAiData
         , AframeCamera
-        , AframeCameraOffset
         , AframeRendererData
         , AiComponentData
         , AiType(..)
@@ -28,7 +27,6 @@ import Actor.Actor as Actor
         , GameOfLifeAiData
         , HealthComponentData
         , Image
-        , ImagePositionOffset(..)
         , ImageType(..)
         , ImageTypeData
         , Images
@@ -55,9 +53,11 @@ import Actor.Actor as Actor
         , ObjectSettings
         , ObjectTypeData
         , Objects
+        , OffsetType(..)
         , PatternImageData
         , PhysicsComponentData
         , PixelTypeData
+        , PositionOffsets
         , RenderComponentData
         , RenderType(..)
         , Renderer(..)
@@ -147,24 +147,12 @@ aframeRendererDecoder =
 aframeCameraDecoder : Decoder AframeCamera
 aframeCameraDecoder =
     Decode.succeed AframeCamera
-        |> JDP.optional "offset" aframeCameraOffsetDecoder defaultAframeCamera.offset
-
-
-aframeCameraOffsetDecoder : Decoder AframeCameraOffset
-aframeCameraOffsetDecoder =
-    Decode.succeed AframeCameraOffset
-        |> JDP.optional "x" Decode.float defaultAframeCamera.offset.x
-        |> JDP.optional "y" Decode.float defaultAframeCamera.offset.y
-        |> JDP.optional "x" Decode.float defaultAframeCamera.offset.z
+        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) defaultAframeCamera.offsets
 
 
 defaultAframeCamera : AframeCamera
 defaultAframeCamera =
-    { offset =
-        { x = 0.0
-        , y = 0.0
-        , z = 0.0
-        }
+    { offsets = []
     }
 
 
@@ -821,8 +809,7 @@ defaultImageType =
 decodePatternImageData : Decoder PatternImageData
 decodePatternImageData =
     Decode.succeed PatternImageData
-        |> JDP.optional "xOffset" decodeImagePositionOffset defaultPatternImageOffset
-        |> JDP.optional "yOffset" decodeImagePositionOffset defaultPatternImageOffset
+        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) []
 
 
 decodeLinkImageData : Decoder LinkImageData
@@ -831,13 +818,8 @@ decodeLinkImageData =
         |> JDP.required "href" Decode.string
 
 
-defaultPatternImageOffset : ImagePositionOffset
-defaultPatternImageOffset =
-    FixedOffset 0
-
-
-decodeImagePositionOffset : Decoder ImagePositionOffset
-decodeImagePositionOffset =
+offsetTypeDecoder : Decoder OffsetType
+offsetTypeDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
@@ -850,6 +832,12 @@ decodeImagePositionOffset =
 
                     "view_y_multiplier" ->
                         Decode.map MultipliedByViewY <| Decode.field "data" Decode.float
+
+                    "view_offset_x" ->
+                        Decode.succeed ViewOffsetX
+
+                    "view_offset_y" ->
+                        Decode.succeed ViewOffsetY
 
                     _ ->
                         Decode.fail <|
@@ -880,9 +868,15 @@ objectPresetDataDecoder : Decoder ObjectPresetData
 objectPresetDataDecoder =
     Decode.succeed ObjectPresetData
         |> JDP.optional "settings" decodeObjectSettingsDecoder Dict.empty
-        |> JDP.optional "xOffset" Decode.float 0.0
-        |> JDP.optional "yOffset" Decode.float 0.0
-        |> JDP.optional "zOffset" Decode.float 0.0
+        |> JDP.optional "offsets" (Decode.list positionOffsetsDecoder) []
+
+
+positionOffsetsDecoder : Decoder PositionOffsets
+positionOffsetsDecoder =
+    Decode.succeed PositionOffsets
+        |> JDP.optional "x" (Decode.list offsetTypeDecoder) []
+        |> JDP.optional "y" (Decode.list offsetTypeDecoder) []
+        |> JDP.optional "z" (Decode.list offsetTypeDecoder) []
 
 
 decodeObjectSettingsDecoder : Decoder ObjectSettings

@@ -5,7 +5,6 @@ module Actor.Actor exposing
     , Actors
     , AdventAiData
     , AframeCamera
-    , AframeCameraOffset
     , AframeRendererData
     , AiComponentData
     , AiType(..)
@@ -34,7 +33,6 @@ module Actor.Actor exposing
     , Health
     , HealthComponentData
     , Image
-    , ImagePositionOffset(..)
     , ImageType(..)
     , ImageTypeData
     , Images
@@ -63,11 +61,13 @@ module Actor.Actor exposing
     , ObjectSettings
     , ObjectTypeData
     , Objects
+    , OffsetType(..)
     , PatternImageData
     , PhysicsComponentData
     , PixelTypeData
     , PositionIndex
     , PositionIndices
+    , PositionOffsets
     , RenderComponentData
     , RenderType(..)
     , Renderer(..)
@@ -170,6 +170,13 @@ type alias Image =
     }
 
 
+type alias PositionOffsets =
+    { x : List OffsetType
+    , y : List OffsetType
+    , z : List OffsetType
+    }
+
+
 type alias Objects =
     { assets : ObjectAssets
     , presets : ObjectPresets
@@ -186,9 +193,7 @@ type alias ObjectPresets =
 
 type alias ObjectPresetData =
     { settings : ObjectSettings
-    , xOffset : Float
-    , yOffset : Float
-    , zOffset : Float
+    , offsets : List PositionOffsets
     }
 
 
@@ -203,15 +208,16 @@ type ImageType
 
 
 type alias PatternImageData =
-    { xOffset : ImagePositionOffset
-    , yOffset : ImagePositionOffset
+    { offsets : List PositionOffsets
     }
 
 
-type ImagePositionOffset
+type OffsetType
     = FixedOffset Int
     | MultipliedByViewX Float
     | MultipliedByViewY Float
+    | ViewOffsetX
+    | ViewOffsetY
 
 
 type alias LinkImageData =
@@ -246,14 +252,7 @@ type alias AframeRendererData =
 
 
 type alias AframeCamera =
-    { offset : AframeCameraOffset }
-
-
-type alias AframeCameraOffset =
-    { x : Float
-    , y : Float
-    , z : Float
-    }
+    { offsets : List PositionOffsets }
 
 
 type alias Level =
