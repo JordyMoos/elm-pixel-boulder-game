@@ -170,6 +170,36 @@ drawLevel tick level levelConfig =
         yEndPosition =
             yBasePosition + level.config.height + (level.config.additionalViewBorder * 2)
 
+        drawBackgrounds : DrawAcc msg -> DrawAcc msg
+        drawBackgrounds givenAcc =
+            let
+                position =
+                    { x = (xEndPosition - xBasePosition) // 2 + xBasePosition
+                    , y = (yEndPosition - yBasePosition) // 2 + yBasePosition
+                    }
+
+                xOffset =
+                    toFloat viewPixelOffset.x / toFloat level.config.pixelSize
+
+                yOffset =
+                    toFloat viewPixelOffset.y / toFloat level.config.pixelSize
+            in
+            List.foldr
+                (\backgroundRenderComponentData innerAcc ->
+                    drawRenderRequirements
+                        (RenderRequirements
+                            tick
+                            backgroundRenderComponentData
+                            (Actor.TransformComponentData position)
+                            Nothing
+                        )
+                        levelConfig
+                        level
+                        innerAcc
+                )
+                givenAcc
+                levelConfig.backgrounds
+
         drawEnvironment : DrawAcc msg -> DrawAcc msg
         drawEnvironment givenAcc =
             List.foldr
@@ -179,7 +209,6 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    { x = x, y = y }
                                     level
                                     levelConfig
                                     (Common.getEnvironmentActorsByPosition { x = x, y = y } level)
@@ -199,7 +228,6 @@ drawLevel tick level levelConfig =
                             (\x innerAcc ->
                                 drawActors
                                     tick
-                                    { x = x, y = y }
                                     level
                                     levelConfig
                                     (Common.getActorsByPosition { x = x, y = y } level)
@@ -212,27 +240,26 @@ drawLevel tick level levelConfig =
     in
     Dict.fromList []
         |> drawCamera level viewPositionCoordinate viewPixelOffset
+        |> drawBackgrounds
         |> drawEnvironment
         |> drawOtherActors
 
 
 type alias RenderRequirements =
-    { actorId : Int
-    , tick : Int
-    , position : Position
+    { tick : Int
     , render : Actor.RenderComponentData
     , transform : Actor.TransformComponentData
     , maybeTowards : Maybe Actor.MovingTowardsData
     }
 
 
-drawActors : Int -> Position -> Level -> LevelConfig -> List Actor.Actor -> DrawAcc msg -> DrawAcc msg
-drawActors tick position level levelConfig actors acc =
+drawActors : Int -> Level -> LevelConfig -> List Actor.Actor -> DrawAcc msg -> DrawAcc msg
+drawActors tick level levelConfig actors acc =
     let
         asRenderRequirements : Actor.Actor -> Maybe RenderRequirements
         asRenderRequirements actor =
             Maybe.map3
-                (RenderRequirements actor.id tick position)
+                (RenderRequirements tick)
                 (Render.getRenderComponent actor)
                 (Common.getTransformComponent actor)
                 (Common.getMovementComponent actor
@@ -255,19 +282,11 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         pixelSize =
             toFloat level.config.pixelSize
 
-        asXPoint : Int -> Float
-        asXPoint givenX =
-            toFloat givenX
-
-        asYPoint : Int -> Float
-        asYPoint givenY =
-            toFloat givenY
-
         xPoint =
-            asXPoint renderRequirements.transform.position.x
+            toFloat renderRequirements.transform.position.x
 
         yPoint =
-            asYPoint renderRequirements.transform.position.y
+            toFloat renderRequirements.transform.position.y
 
         zPoint =
             0.0
@@ -285,10 +304,10 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         imageMovingOp imageData towardsData =
             let
                 xDestPoint =
-                    asXPoint towardsData.position.x
+                    toFloat towardsData.position.x
 
                 yDestPoint =
-                    asYPoint towardsData.position.y
+                    toFloat towardsData.position.y
 
                 asMovementLocation : Float -> Float -> Float -> Float
                 asMovementLocation xCurrent xDest completion =
@@ -322,10 +341,10 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         pixelMovingOp pixelData towardsData =
             let
                 xDestPoint =
-                    asXPoint towardsData.position.x
+                    toFloat towardsData.position.x
 
                 yDestPoint =
-                    asYPoint towardsData.position.y
+                    toFloat towardsData.position.y
 
                 originElement : DrawAcc msg -> DrawAcc msg
                 originElement givenAcc =
@@ -359,10 +378,10 @@ drawRenderRequirements renderRequirements levelConfig level acc =
         objectMovingOp objectData towardsData =
             let
                 xDestPoint =
-                    asXPoint towardsData.position.x
+                    toFloat towardsData.position.x
 
                 yDestPoint =
-                    asYPoint towardsData.position.y
+                    toFloat towardsData.position.y
 
                 asMovementLocation : Float -> Float -> Float -> Float
                 asMovementLocation xCurrent xDest completion =

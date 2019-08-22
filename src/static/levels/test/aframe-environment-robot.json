@@ -261,6 +261,39 @@
         },
         "yOffset": 0.45,
         "zOffset": 1
+      },
+      "sky": {
+        "settings": {
+          "geometry": "primitive: plane; width: 32; height: 16;",
+          "material": "src: #image-background-sky-1;",
+          "rotation": "0 0 0",
+          "color": "green"
+        },
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": -2.2
+      },
+      "mountain": {
+        "settings": {
+          "geometry": "primitive: plane; width: 32; height: 16;",
+          "material": "src: #image-background-mountain; transparent: true;",
+          "rotation": "0 0 0",
+          "color": "green"
+        },
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": -2.1
+      },
+      "forest": {
+        "settings": {
+          "geometry": "primitive: plane; width: 32; height: 16;",
+          "material": "src: #image-background-forest; transparent: true;",
+          "rotation": "0 0 0",
+          "color": "green"
+        },
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": -2
       }
     }
   },
@@ -375,43 +408,31 @@
   },
   "backgrounds":[
     {
-      "renderType":{
-        "type":"image",
-        "data":{
-          "default":{
-            "names":[
-              "background-sky-1"
-            ]
+        "renderType":{
+          "type":"object",
+          "data":{
+            "default": "sky"
           }
-        }
-      },
-      "layer":-2
+        },
+        "layer": -20
     },
     {
       "renderType":{
-        "type":"image",
+        "type":"object",
         "data":{
-          "default":{
-            "names":[
-              "background-mountain"
-            ]
-          }
+          "default": "mountain"
         }
       },
-      "layer":-1
+      "layer": -20
     },
     {
       "renderType":{
-        "type":"image",
+        "type":"object",
         "data":{
-          "default":{
-            "names":[
-              "background-forest"
-            ]
-          }
+          "default": "forest"
         }
       },
-      "layer":0
+      "layer": -20
     }
   ],
   "scene":[
