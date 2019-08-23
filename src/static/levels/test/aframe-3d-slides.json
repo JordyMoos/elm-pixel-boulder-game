@@ -70,49 +70,10 @@
           "shape":"square"
         }
       }
-    ],
-    "board":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "board"
-                ]
-              }
-            }
-          },
-          "layer":6
-        }
-      }
-    ],
-    "slide-006":[
-      {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"image",
-            "data":{
-              "default":{
-                "names":[
-                  "slide-006"
-                ]
-              }
-            }
-          },
-          "layer":7
-        }
-      }
     ]
   },
   "signs":{
-    "h":"hero",
-    "-":"floor",
-    "b":"board",
-    "6":"slide-006"
+    "h":"hero"
   },
   "objects": {
     "assets": {
@@ -185,77 +146,20 @@
           ]
         }
       },
-      "sky": {
+      "light": {
         "settings": {
-          "geometry": "primitive: plane; width: 400; height: 16;",
-          "material": "src: #image-background-sky-1; repeat: 20 1;",
-          "rotation": "0 0 0",
-          "color": "green"
+          "light": "type: ambient; color: #CCC;"
         },
         "offsets": {
-         "x": [
+          "x": [
             {
               "type": "view_offset_x"
             }
-         , {
-             "type":"view_x_multiplier",
-             "data":-0.00001
-           }
           ],
-         "z": [
+          "z": [
             {
               "type": "fixed",
               "data": -2.2
-            }
-          ]
-        }
-      },
-      "mountain": {
-        "settings": {
-          "geometry": "primitive: plane; width: 400; height: 16;",
-          "material": "src: #image-background-mountain; transparent: true; repeat: 20 1;",
-          "rotation": "0 0 0",
-          "color": "green"
-        },
-        "offsets": {
-          "x": [
-            {
-              "type": "view_offset_x"
-            }
-            , {
-              "type":"view_x_multiplier",
-              "data":-0.0002
-            }
-          ],
-          "z": [
-            {
-              "type": "fixed",
-              "data": -2.1
-            }
-          ]
-        }
-      },
-      "forest": {
-        "settings": {
-          "geometry": "primitive: plane; width: 400; height: 16;",
-          "material": "src: #image-background-forest; transparent: true; repeat: 20 1;",
-          "rotation": "0 0 0",
-          "color": "green"
-        },
-        "offsets": {
-          "x": [
-            {
-              "type": "view_offset_x"
-            }
-          , {
-              "type":"view_x_multiplier",
-              "data":-0.01
-            }
-          ],
-          "z": [
-            {
-              "type": "fixed",
-              "data": -2.0
             }
           ]
         }
@@ -263,141 +167,16 @@
     }
   },
   "images":{
-    "floor-1":{
-      "path":"./images/prehistoric/environment/floor-1.png",
-      "width":64,
-      "height":64
-    },
-    "background-forest":{
-      "path":"./images/prehistoric/background/scaled-1024/forest.png",
-      "width":1024,
-      "height":768,
-      "imageType":{
-        "type":"pattern",
-        "data":{
-          "xOffset":{
-            "type":"view_x_multiplier",
-            "data":-0.5
-          },
-          "yOffset":{
-            "type":"fixed",
-            "data":0
-          }
-        }
-      }
-    },
-    "background-mountain":{
-      "path":"./images/prehistoric/background/scaled-1024/mountain.png",
-      "width":1024,
-      "height":768,
-      "imageType":{
-        "type":"pattern",
-        "data":{
-          "xOffset":{
-            "type":"view_x_multiplier",
-            "data":-0.05
-          },
-          "yOffset":{
-            "type":"fixed",
-            "data":0
-          }
-        }
-      }
-    },
-    "background-sky-1":{
-      "path":"./images/prehistoric/background/scaled-1024/sky-1.png",
-      "width":1024,
-      "height":768,
-      "imageType":{
-        "type":"pattern",
-        "data":{
-          "xOffset":{
-            "type":"view_x_multiplier",
-            "data":-0.005
-          },
-          "yOffset":{
-            "type":"fixed",
-            "data":0
-          }
-        }
-      }
-    },
-    "board":{
-      "path":"./images/slides/board.png",
-      "width":768,
-      "height":480,
-      "xOffset":48,
-      "yOffset":-16
-    },
-    "link":{
-      "path":"./images/slides/board.png",
-      "width":768,
-      "height":480,
-      "xOffset":48,
-      "yOffset":-16,
-      "imageType":{
-        "type":"link",
-        "data":{
-          "href":"https://www.google.com"
-        }
-      }
-    },
-    "slide-006":{
-      "path":"./images/slides/006.png",
-      "width":715,
-      "height":448,
-      "xOffset":10
-    },
-    "slide-008":{
-      "path":"./images/slides/008.png",
-      "width":800,
-      "height":583
-    },
-    "tree-fg-1":{
-      "path":"./images/prehistoric/environment/tree-fg-1.png",
-      "width":112,
-      "height":112,
-      "yOffset":17
-    },
-    "tree-fg-2":{
-      "path":"./images/prehistoric/environment/tree-fg-2.png",
-      "width":112,
-      "height":192
-    },
-    "tree-fg-3":{
-      "path":"./images/prehistoric/environment/tree-fg-3.png",
-      "width":112,
-      "height":368,
-      "yOffset":17
-    }
   },
   "backgrounds":[
     {
         "renderType":{
           "type":"object",
           "data":{
-            "default": "sky"
+            "default": "light"
           }
         },
         "layer": -20
-    },
-    {
-      "renderType":{
-        "type":"object",
-        "data":{
-          "default": "mountain"
-        }
-      },
-      "layer": -20
-    },
-    {
-      "renderType":{
-        "type":"object",
-        "data":{
-          "default": "forest"
-        }
-      },
-      "layer": -20
     }
   ],
   "scene":[
