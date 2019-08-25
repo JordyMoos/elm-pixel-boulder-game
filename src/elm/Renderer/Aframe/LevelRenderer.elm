@@ -28,7 +28,7 @@ renderLevel aframeRenderData currentTick level levelConfig =
             Dict.values (drawLevel aframeRenderData currentTick level levelConfig)
                 |> List.map (node "a-entity" [])
     in
-    node "a-scene" [] <|
+    node "a-scene" [ attribute "vr-mode-ui" "enabled: false" ] <|
         drawAssets levelConfig
             :: elements ()
 
