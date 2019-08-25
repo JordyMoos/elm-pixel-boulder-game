@@ -1,6 +1,6 @@
 module Renderer.Aframe.LevelRenderer exposing (renderLevel)
 
-import Actor.Actor as Actor exposing (Level, LevelConfig, Vec3)
+import Actor.Actor as Actor exposing (AframeRendererData, Level, LevelConfig, Vec3)
 import Actor.Common as Common
 import Actor.Component.RenderComponent as Render
 import Color exposing (Color)
@@ -20,12 +20,12 @@ type alias DrawAcc msg =
     Dict Int (List (Html msg))
 
 
-renderLevel : Int -> Level -> LevelConfig -> Html msg
-renderLevel currentTick level levelConfig =
+renderLevel : AframeRendererData -> Int -> Level -> LevelConfig -> Html msg
+renderLevel aframeRenderData currentTick level levelConfig =
     let
         elements : () -> List (Html msg)
         elements _ =
-            Dict.values (drawLevel currentTick level levelConfig)
+            Dict.values (drawLevel aframeRenderData currentTick level levelConfig)
                 |> List.map (node "a-entity" [])
     in
     node "a-scene" [] <|
@@ -75,14 +75,17 @@ drawAssets levelConfig =
         |> node "a-assets" []
 
 
-drawCamera : Level -> Position -> Vec3 -> DrawAcc msg -> DrawAcc msg
-drawCamera level viewPositionCoordinate viewPixelOffset acc =
+drawCamera : AframeRendererData -> Level -> Position -> Vec3 -> DrawAcc msg -> DrawAcc msg
+drawCamera aframeRenderData level viewPositionCoordinate viewPixelOffset acc =
     let
         xOffset =
             viewPixelOffset.x / toFloat level.config.pixelSize
 
         yOffset =
             viewPixelOffset.y / toFloat level.config.pixelSize
+
+        computedOffsets =
+            computeOffsets level.config level.view aframeRenderData.camera.offsets
 
         x =
             toFloat viewPositionCoordinate.x + (toFloat level.config.width / 2.0) - xOffset
@@ -96,7 +99,7 @@ drawCamera level viewPositionCoordinate viewPixelOffset acc =
                     String.join " "
                         [ String.fromFloat x
                         , String.fromFloat (y * -1)
-                        , "7"
+                        , String.fromFloat computedOffsets.z
                         ]
                 , attribute "wasd-controls" "enabled: false;"
                 ]
@@ -119,8 +122,8 @@ addToDrawAcc key node =
         )
 
 
-drawLevel : Int -> Level -> LevelConfig -> DrawAcc msg
-drawLevel tick level levelConfig =
+drawLevel : AframeRendererData -> Int -> Level -> LevelConfig -> DrawAcc msg
+drawLevel aframeRenderData tick level levelConfig =
     let
         view =
             level.view
@@ -231,7 +234,7 @@ drawLevel tick level levelConfig =
                 (List.range yBasePosition yEndPosition)
     in
     Dict.fromList []
-        |> drawCamera level viewPositionCoordinate viewPixelOffset
+        |> drawCamera aframeRenderData level viewPositionCoordinate viewPixelOffset
         |> drawBackgrounds
         |> drawEnvironment
         |> drawOtherActors

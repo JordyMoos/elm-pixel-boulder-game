@@ -1,0 +1,218 @@
+{
+  "entities": {
+    "hero": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "object",
+            "data": {
+              "default": "robot-wave",
+              "direction": {
+                "right": "robot-walk-right",
+                "left": "robot-walk-left"
+              }
+            }
+          },
+          "layer": -100
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 50,
+            "walkOverStrength": 50
+          },
+          "steps": 5,
+          "control": {
+            "type": "input",
+            "data": {
+              "allowedDirections": [
+                "left",
+                "right"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 20
+        }
+      },
+      {
+        "type": "collector",
+        "data": {
+          "interestedIn": [
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 100,
+          "shape": "square"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "type": "camera",
+        "data": {
+          "borderLeft": 7,
+          "borderUp": 5,
+          "borderRight": 7,
+          "borderDown": 5
+        }
+      }
+    ]
+  },
+  "signs": {
+    "h": "hero",
+    "c": "camera"
+  },
+  "objects": {
+    "assets": {
+      "robot": "./objects/demo/robot/robot.glb"
+    },
+    "presets": {
+      "robot-walk-right": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Running; crossFadeDuration: 0.5;",
+          "rotation": "0 90 0",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.95
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "robot-walk-left": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Running;",
+          "rotation": "0 -90 0",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.95
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "robot-wave": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Wave; timeScale: 0.9;",
+          "rotation": "0 0 0",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.95
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "sky": {
+        "settings": {
+          "geometry": "primitive: plane; width: 400; height: 16;",
+          "material": "color: #92d4fc;",
+          "rotation": "0 0 0",
+          "color": "green"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 0.0
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.0
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 0.0
+            }
+          ]
+        }
+      }
+    }
+  },
+  "images": {
+  },
+  "backgrounds": [
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "sky"
+        }
+      }
+    }
+  ],
+  "scene": [
+    "      h    c"
+  ],
+  "config": {
+    "width": 16,
+    "height": 12,
+    "pixelSize": 64,
+    "additionalViewBorder": 4
+  },
+  "renderer": {
+    "type": "aframe",
+    "data": {
+      "camera": {
+        "offsets": {
+          "z": [
+            {
+              "type": "fixed",
+              "data": 1.8
+            }
+          ]
+        }
+      }
+    }
+  }
+}

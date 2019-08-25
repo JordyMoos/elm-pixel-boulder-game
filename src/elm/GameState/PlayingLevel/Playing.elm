@@ -148,4 +148,4 @@ view currentTick model =
             SvgLevelRenderer.renderLevel currentTick model.level model.levelConfig
 
         Actor.AframeRenderer aframeData ->
-            AframeLevelRenderer.renderLevel currentTick model.level model.levelConfig
+            AframeLevelRenderer.renderLevel aframeData currentTick model.level model.levelConfig
