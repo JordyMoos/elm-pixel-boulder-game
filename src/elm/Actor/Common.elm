@@ -348,6 +348,9 @@ getActorType actor =
                         Actor.MovementComponent _ ->
                             True
 
+                        Actor.TriggerActivatorComponent _ ->
+                            True
+
                         Actor.TriggerExplodableComponent _ ->
                             True
 
@@ -360,13 +363,10 @@ getActorType actor =
             List.any
                 (\component ->
                     case component of
+                        AttackComponent _ ->
+                            True
+
                         CollectibleComponent _ ->
-                            True
-
-                        PhysicsComponent _ ->
-                            True
-
-                        RigidComponent ->
                             True
 
                         ExplodableComponent ->
@@ -375,7 +375,13 @@ getActorType actor =
                         HealthComponent _ ->
                             True
 
-                        AttackComponent _ ->
+                        PhysicsComponent _ ->
+                            True
+
+                        RigidComponent ->
+                            True
+
+                        TriggerComponent _ ->
                             True
 
                         _ ->

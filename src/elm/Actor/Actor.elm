@@ -82,7 +82,11 @@ module Actor.Actor exposing
     , TagComponentData
     , TagDiedSubscriberData
     , TransformComponentData
+    , TriggerAction(..)
+    , TriggerActivatorComponentData
+    , TriggerComponentData
     , TriggerExplodableComponentData
+    , TriggerSendTextData
     , Vec3
     , View
     , WalkAroundAiControlData
@@ -96,6 +100,7 @@ import Data.Coordinate exposing (Coordinate)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Dict exposing (Dict)
+import GameState.PlayingLevel.Msg as PlayingMsg
 
 
 type alias ActorId =
@@ -306,6 +311,8 @@ type Component
     | AttackComponent AttackComponentData
     | CounterComponent CounterComponentData
     | AreaComponent AreaComponentData
+    | TriggerComponent TriggerComponentData
+    | TriggerActivatorComponent TriggerActivatorComponentData
 
 
 
@@ -549,6 +556,39 @@ type alias AreaComponentData =
 
 {-
 
+   TriggerComponent
+
+-}
+
+
+type alias TriggerComponentData =
+    { action : TriggerAction
+    }
+
+
+type TriggerAction
+    = TriggerSendText TriggerSendTextData
+
+
+type alias TriggerSendTextData =
+    { message : String }
+
+
+
+{-
+
+   TriggerActivatorComponent
+
+-}
+
+
+type alias TriggerActivatorComponentData =
+    {}
+
+
+
+{-
+
    DamageComponent
 
 -}
@@ -734,10 +774,11 @@ type Event
     = ActorAdded Actor
     | ActorRemoved Actor
     | InventoryUpdated Inventory
+    | TriggerActivated TriggerComponentData
 
 
 type EventAction
-    = LevelContinue
+    = LevelContinue (List (Cmd PlayingMsg.Msg))
     | LevelFailed LevelFailedData
     | LevelCompleted LevelCompletedData
     | LoadLevel LoadLevelData
@@ -775,6 +816,7 @@ type alias Events =
 type Subscriber
     = TagDiedSubscriber EventAction TagDiedSubscriberData
     | InventoryUpdatedSubscriber EventAction InventoryUpdatedSubscriberData
+    | TriggerActivatedSubscriber
 
 
 type alias TagDiedSubscriberData =

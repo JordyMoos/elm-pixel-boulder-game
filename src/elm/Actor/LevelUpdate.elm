@@ -13,6 +13,7 @@ import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
 import Actor.Component.MovementComponent as Movement
 import Actor.Component.SpawnComponent as Spawn
+import Actor.Component.TriggerActivatorComponent as TriggerActivator
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Data.Coordinate as Coordinate
 import Dict
@@ -123,6 +124,9 @@ updateComponent currentTick levelConfig levelBeforeUpdate controllerInput compon
 
         Actor.MovementComponent movementData ->
             Movement.updateMovementComponent currentTick movementData actor level
+
+        Actor.TriggerActivatorComponent triggerData ->
+            TriggerActivator.updateTriggerActivatorComponent triggerData actor level
 
         Actor.TriggerExplodableComponent triggerData ->
             TriggerExplodable.updateTriggerExplodableComponent triggerData actor level

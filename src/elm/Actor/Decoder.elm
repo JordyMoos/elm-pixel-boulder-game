@@ -70,7 +70,10 @@ import Actor.Actor as Actor
         , Subscriber
         , TagComponentData
         , TagDiedSubscriberData
+        , TriggerAction(..)
+        , TriggerComponentData
         , TriggerExplodableComponentData
+        , TriggerSendTextData
         , WalkAroundAiControlData
         )
 import Color exposing (Color)
@@ -258,6 +261,12 @@ componentDecoder =
                     "movement" ->
                         Decode.map MovementComponent <| Decode.field "data" movementDataDecoder
 
+                    "trigger" ->
+                        Decode.map TriggerComponent <| Decode.field "data" triggerDataDecoder
+
+                    "trigger-activator" ->
+                        Decode.succeed <| TriggerActivatorComponent {}
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -269,6 +278,35 @@ componentDecoder =
                             Decode.succeed ( theType, component )
                         )
             )
+
+
+triggerDataDecoder : Decoder TriggerComponentData
+triggerDataDecoder =
+    Decode.succeed TriggerComponentData
+        |> JDP.required "action" triggerActionDecoder
+
+
+triggerActionDecoder : Decoder TriggerAction
+triggerActionDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "send-text" ->
+                        Decode.map TriggerSendText <| Decode.field "data" triggerSendTextDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode trigger action, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+triggerSendTextDataDecoder : Decoder TriggerSendTextData
+triggerSendTextDataDecoder =
+    Decode.succeed TriggerSendTextData
+        |> JDP.required "message" Decode.string
 
 
 renderDataDecoder : Decoder RenderComponentData
@@ -907,6 +945,9 @@ subscriberDecoder =
                         Decode.succeed Actor.InventoryUpdatedSubscriber
                             |> JDP.required "eventActionData" eventActionDecoder
                             |> JDP.required "inventoryUpdatedData" onInventoryUpdatedSubscriberDecoder
+
+                    "onTriggerActivated" ->
+                        Decode.succeed Actor.TriggerActivatedSubscriber
 
                     _ ->
                         Decode.fail <|

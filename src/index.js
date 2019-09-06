@@ -243,6 +243,18 @@ function runElm() {
       }
     });
 
+    const socket = new WebSocket('ws://localhost:8765');
+    socket.addEventListener('error', function (event) {
+      console.log('Websocket error');
+      console.log(event);
+    });
+    socket.addEventListener('open', function (event) {
+      socket.send('Hello Server!');
+    });
+    app.ports.sendText.subscribe(function (data) {
+      socket.send(data);
+    });
+
     let trackedKeys = ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'];
     window.addEventListener('keydown', function(event) {
       if (trackedKeys.includes(event.key)) {

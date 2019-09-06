@@ -2,6 +2,7 @@ module Actor.EventManager exposing
     ( clearEvents
     , onInventoryUpdatedSubscriber
     , onTagDiedSubscriber
+    , onTriggerActivatedSubscriber
     )
 
 import Actor.Actor as Actor
@@ -15,6 +16,7 @@ import Actor.Actor as Actor
 import Actor.Common as Common
 import Dict exposing (Dict)
 import Maybe.Extra
+import Ports
 
 
 onTagDiedSubscriber : EventAction -> TagDiedSubscriberData -> Event -> Level -> ( Actor.Subscriber, EventAction )
@@ -29,7 +31,7 @@ onTagDiedSubscriber onResolveEventAction data event level =
                 ( Actor.TagDiedSubscriber onResolveEventAction data, onResolveEventAction )
 
             else
-                ( Actor.TagDiedSubscriber onResolveEventAction newData, LevelContinue )
+                ( Actor.TagDiedSubscriber onResolveEventAction newData, LevelContinue [] )
     in
     case event of
         ActorRemoved actor ->
@@ -38,10 +40,10 @@ onTagDiedSubscriber onResolveEventAction data event level =
                 |> Maybe.Extra.filter ((==) data.tag)
                 |> Maybe.map (always incrementCounter)
                 |> Maybe.map decideAction
-                |> Maybe.withDefault ( Actor.TagDiedSubscriber onResolveEventAction data, LevelContinue )
+                |> Maybe.withDefault ( Actor.TagDiedSubscriber onResolveEventAction data, LevelContinue [] )
 
         _ ->
-            ( Actor.TagDiedSubscriber onResolveEventAction data, LevelContinue )
+            ( Actor.TagDiedSubscriber onResolveEventAction data, LevelContinue [] )
 
 
 onInventoryUpdatedSubscriber : EventAction -> InventoryUpdatedSubscriberData -> Event -> Level -> ( Actor.Subscriber, EventAction )
@@ -51,10 +53,22 @@ onInventoryUpdatedSubscriber onResolveEventAction data event level =
             Dict.get data.interestedIn inventory
                 |> Maybe.Extra.filter ((<=) data.minimumQuantity)
                 |> Maybe.map (always ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, onResolveEventAction ))
-                |> Maybe.withDefault ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, LevelContinue )
+                |> Maybe.withDefault ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, LevelContinue [] )
 
         _ ->
-            ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, LevelContinue )
+            ( Actor.InventoryUpdatedSubscriber onResolveEventAction data, LevelContinue [] )
+
+
+onTriggerActivatedSubscriber : Event -> Level -> ( Actor.Subscriber, EventAction )
+onTriggerActivatedSubscriber event level =
+    case event of
+        TriggerActivated triggerComponent ->
+            case triggerComponent.action of
+                Actor.TriggerSendText data ->
+                    ( Actor.TriggerActivatedSubscriber, LevelContinue [ Ports.sendText data.message ] )
+
+        _ ->
+            ( Actor.TriggerActivatedSubscriber, LevelContinue [] )
 
 
 clearEvents : Level -> Level

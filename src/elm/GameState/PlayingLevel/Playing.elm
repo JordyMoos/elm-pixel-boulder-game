@@ -11,6 +11,7 @@ import Actor.Actor as Actor
 import Actor.EventManager as EventManager
 import Actor.LevelUpdate as LevelUpdate
 import Data.Config exposing (Config)
+import GameState.PlayingLevel.Msg as PlayingMsg
 import Html exposing (Html)
 import InputController
 import LevelInitializer
@@ -26,7 +27,7 @@ type alias Model =
 
 
 type Action
-    = Stay Model
+    = Stay Model (Cmd PlayingMsg.Msg)
     | GotoPauseMenu Actor.Level
     | Failed Actor.Level Actor.LevelFailedData
     | Completed Actor.Level Actor.LevelCompletedData
@@ -56,11 +57,7 @@ updateTick currentTick inputModel model =
             GotoPauseMenu model.level
 
         _ ->
-            LevelUpdate.update
-                currentTick
-                inputModel
-                model.level
-                model.levelConfig
+            LevelUpdate.update currentTick inputModel model.level model.levelConfig
                 |> setLevel model
                 |> processEvents
 
@@ -69,7 +66,7 @@ processEvents : Model -> Action
 processEvents model =
     List.foldr
         (handleEvent model.level)
-        ( model.level.eventManager, Actor.LevelContinue )
+        ( model.level.eventManager, Actor.LevelContinue [] )
         model.level.events
         |> mapEventActionToAction model
 
@@ -80,7 +77,7 @@ handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
         |> List.foldr
             (\subscriber ( updatedSubscribers, accAction ) ->
                 case accAction of
-                    Actor.LevelContinue ->
+                    Actor.LevelContinue cmds ->
                         let
                             ( updatedSubscriber, eventAction ) =
                                 case subscriber of
@@ -89,8 +86,11 @@ handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
 
                                     Actor.InventoryUpdatedSubscriber onResolveAction data ->
                                         EventManager.onInventoryUpdatedSubscriber onResolveAction data event level
+
+                                    Actor.TriggerActivatedSubscriber ->
+                                        EventManager.onTriggerActivatedSubscriber event level
                         in
-                        ( updatedSubscriber :: updatedSubscribers, eventAction )
+                        ( updatedSubscriber :: updatedSubscribers, mergeCommands eventAction cmds )
 
                     -- Void events if action is already decided
                     _ ->
@@ -102,15 +102,25 @@ handleEvent level event ( accumulatedEventManager, accumulatedAction ) =
            )
 
 
+mergeCommands : Actor.EventAction -> List (Cmd PlayingMsg.Msg) -> Actor.EventAction
+mergeCommands eventAction cmds =
+    case eventAction of
+        Actor.LevelContinue addedCmds ->
+            Actor.LevelContinue <| List.append addedCmds cmds
+
+        _ ->
+            eventAction
+
+
 mapEventActionToAction : Model -> ( Actor.EventManager, Actor.EventAction ) -> Action
 mapEventActionToAction model ( eventManager, eventAction ) =
     case eventAction of
-        Actor.LevelContinue ->
+        Actor.LevelContinue cmds ->
             model.level
                 |> clearEvents
                 |> setEventManager eventManager
                 |> setLevel model
-                |> Stay
+                |> (\newModel -> Stay newModel (Cmd.batch cmds))
 
         Actor.LevelFailed data ->
             Failed

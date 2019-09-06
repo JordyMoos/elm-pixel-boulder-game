@@ -8,6 +8,7 @@ import Browser.Navigation
 import Data.Config exposing (Config)
 import GameState.LoadingLevel as LoadingLevel
 import GameState.MainMenu as MainMenu
+import GameState.PlayingLevel.Msg as PlayingMsg
 import GameState.PlayingLevel.PlayingLevel as PlayingLevel
 import Html exposing (Html, br, button, div, text)
 import Html.Events exposing (onClick)
@@ -63,6 +64,7 @@ type Msg
     | InputControllerMsg InputController.Msg
     | LoadingLevelMsg LoadingLevel.Msg
     | AnimationFrameUpdate Float
+    | PlayingLevelMsg PlayingMsg.Msg
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -225,7 +227,7 @@ updateGameState timeDelta givenModel =
 
                         PlayingLevelState stateModel ->
                             case PlayingLevel.updateTick model.currentTick model.inputModel stateModel of
-                                PlayingLevel.Stay newModel ->
+                                PlayingLevel.Stay newModel subCmd ->
                                     newModel
                                         |> PlayingLevelState
                                         |> setGameState model
@@ -238,7 +240,7 @@ updateGameState timeDelta givenModel =
                                                     )
                                                 )
                                                     a
-                                                    [ cmd ]
+                                                    [ cmd, Cmd.map PlayingLevelMsg subCmd ]
                                            )
 
                                 PlayingLevel.LoadLevel name ->
