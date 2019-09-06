@@ -249,7 +249,7 @@ function runElm() {
       console.log(event);
     });
     socket.addEventListener('open', function (event) {
-      socket.send('Hello Server!');
+      socket.send('Good luck and have fun!');
     });
     app.ports.sendText.subscribe(function (data) {
       socket.send(data);
