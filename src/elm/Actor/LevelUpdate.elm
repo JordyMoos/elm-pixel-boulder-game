@@ -13,6 +13,7 @@ import Actor.Component.DownSmashComponent as DownSmash
 import Actor.Component.LifetimeComponent as Lifetime
 import Actor.Component.MovementComponent as Movement
 import Actor.Component.SpawnComponent as Spawn
+import Actor.Component.TriggerActivatorComponent as TriggerActivator
 import Actor.Component.TriggerExplodableComponent as TriggerExplodable
 import Data.Coordinate as Coordinate
 import Dict
@@ -26,10 +27,10 @@ update currentTick controllerInput levelBeforeUpdate levelConfig =
             levelBeforeUpdate.view
 
         currentYPosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.y
+            Coordinate.pixelToTile levelBeforeUpdate.config.pixelSize view.coordinate.y
 
         currentXPosition =
-            Coordinate.pixelToTile view.pixelSize view.coordinate.x
+            Coordinate.pixelToTile levelBeforeUpdate.config.pixelSize view.coordinate.x
 
         preparedUpdateActorsAtPosition =
             updateActorsAtPosition currentTick levelConfig levelBeforeUpdate controllerInput
@@ -37,12 +38,12 @@ update currentTick controllerInput levelBeforeUpdate levelConfig =
         yPositions =
             List.range
                 (currentYPosition - levelConfig.updateBorder)
-                (currentYPosition + view.height + levelConfig.updateBorder)
+                (currentYPosition + levelBeforeUpdate.config.height + levelConfig.updateBorder)
 
         xPositions =
             List.range
                 (currentXPosition - levelConfig.updateBorder)
-                (currentXPosition + view.width + levelConfig.updateBorder)
+                (currentXPosition + levelBeforeUpdate.config.width + levelConfig.updateBorder)
     in
     List.foldl
         (\y levelA ->
@@ -123,6 +124,9 @@ updateComponent currentTick levelConfig levelBeforeUpdate controllerInput compon
 
         Actor.MovementComponent movementData ->
             Movement.updateMovementComponent currentTick movementData actor level
+
+        Actor.TriggerActivatorComponent triggerData ->
+            TriggerActivator.updateTriggerActivatorComponent triggerData actor level
 
         Actor.TriggerExplodableComponent triggerData ->
             TriggerExplodable.updateTriggerExplodableComponent triggerData actor level

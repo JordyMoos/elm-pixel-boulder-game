@@ -1,8 +1,10 @@
-module Actor.Decoder exposing (defaultBackground, levelConfigDecoder)
+module Actor.Decoder exposing (defaultBackgrounds, levelConfigDecoder)
 
 import Actor.Actor as Actor
     exposing
         ( AdventAiData
+        , AframeCamera
+        , AframeRendererData
         , AiComponentData
         , AiType(..)
         , AnimationSetup
@@ -24,9 +26,12 @@ import Actor.Actor as Actor
         , GameOfLifeAiAction
         , GameOfLifeAiData
         , HealthComponentData
-        , ImageRenderComponentData
+        , Image
+        , ImageType(..)
+        , ImageTypeData
         , Images
         , ImagesData
+        , InputControlData
         , Inventory
         , InventoryUpdatedSubscriberData
         , KeyedComponent
@@ -36,12 +41,26 @@ import Actor.Actor as Actor
         , LevelFinishedDescriptionProvider(..)
         , LifetimeAction(..)
         , LifetimeComponentData
+        , LinkImageData
+        , LoadLevelData
         , MovementComponentData
         , MovingDownState(..)
         , MovingState(..)
+        , ObjectAssets
+        , ObjectPresetData
+        , ObjectPresetName
+        , ObjectPresets
+        , ObjectSettings
+        , ObjectTypeData
+        , Objects
+        , OffsetType(..)
+        , PatternImageData
         , PhysicsComponentData
-        , PixelRenderComponentData
-        , RenderComponentData(..)
+        , PixelTypeData
+        , PositionOffsets
+        , RenderComponentData
+        , RenderType(..)
+        , Renderer(..)
         , Scene
         , Shape(..)
         , Signs
@@ -51,13 +70,17 @@ import Actor.Actor as Actor
         , Subscriber
         , TagComponentData
         , TagDiedSubscriberData
+        , TriggerAction(..)
+        , TriggerComponentData
         , TriggerExplodableComponentData
+        , TriggerSendTextData
         , WalkAroundAiControlData
         )
 import Color exposing (Color)
+import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
-import Data.Position as Position exposing (Position)
+import Data.Position exposing (Position)
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
@@ -84,17 +107,78 @@ levelConfigDecoder =
         |> JDP.optional "viewCoordinate" coordinateDecoder defaultViewCoordinate
         |> JDP.optional "updateBorder" Decode.int defaultUpdateBorder
         |> JDP.optional "images" imagesDecoder Dict.empty
-        |> JDP.optional "background" renderDataDecoder defaultBackground
+        |> JDP.optional "objects" objectDecoder defaultObjects
+        |> JDP.optional "backgrounds" (Decode.list renderDataDecoder) defaultBackgrounds
         |> JDP.optional "subscribers" (Decode.list subscriberDecoder) []
+        |> JDP.optional "config" (Decode.maybe configDecoder) Nothing
+        |> JDP.optional "renderer" decodeRenderer SvgRenderer
 
 
-defaultBackground : RenderComponentData
-defaultBackground =
-    PixelRenderComponent
-        { colors = [ Color.white ]
-        , ticksPerColor = 1
-        , layer = 0
-        }
+defaultObjects : Objects
+defaultObjects =
+    { assets = Dict.empty
+    , presets = Dict.empty
+    }
+
+
+decodeRenderer : Decoder Renderer
+decodeRenderer =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "svg" ->
+                        Decode.succeed SvgRenderer
+
+                    "aframe" ->
+                        Decode.map AframeRenderer <| Decode.field "data" aframeRendererDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode renderer, but renderer "
+                                ++ theType
+                                ++ " is not supported"
+            )
+
+
+aframeRendererDecoder : Decoder AframeRendererData
+aframeRendererDecoder =
+    Decode.succeed AframeRendererData
+        |> JDP.optional "camera" aframeCameraDecoder defaultAframeCamera
+
+
+aframeCameraDecoder : Decoder AframeCamera
+aframeCameraDecoder =
+    Decode.succeed AframeCamera
+        |> JDP.optional "offsets" positionOffsetsDecoder defaultAframeCamera.offsets
+
+
+defaultAframeCamera : AframeCamera
+defaultAframeCamera =
+    { offsets = emptyPositionOffsets
+    }
+
+
+defaultBackgrounds : List RenderComponentData
+defaultBackgrounds =
+    [ { renderType =
+            PixelRenderType
+                { colors = [ Color.white ]
+                , ticksPerColor = 1
+                }
+      , layer = 0
+      }
+    ]
+
+
+configDecoder : Decoder Config
+configDecoder =
+    Decode.succeed Config
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
+        |> JDP.required "pixelSize" Decode.int
+        |> JDP.required "additionalViewBorder" Decode.int
+        |> JDP.hardcoded 20
 
 
 entitiesDecoder : Decoder Entities
@@ -177,6 +261,12 @@ componentDecoder =
                     "movement" ->
                         Decode.map MovementComponent <| Decode.field "data" movementDataDecoder
 
+                    "trigger" ->
+                        Decode.map TriggerComponent <| Decode.field "data" triggerDataDecoder
+
+                    "trigger-activator" ->
+                        Decode.succeed <| TriggerActivatorComponent {}
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode component, but type "
@@ -190,40 +280,77 @@ componentDecoder =
             )
 
 
-renderDataDecoder : Decoder RenderComponentData
-renderDataDecoder =
+triggerDataDecoder : Decoder TriggerComponentData
+triggerDataDecoder =
+    Decode.succeed TriggerComponentData
+        |> JDP.required "action" triggerActionDecoder
+
+
+triggerActionDecoder : Decoder TriggerAction
+triggerActionDecoder =
     Decode.field "type" Decode.string
         |> Decode.andThen
             (\theType ->
                 case theType of
-                    "pixel" ->
-                        Decode.map PixelRenderComponent <| Decode.field "data" renderPixelDataDecoder
-
-                    "image" ->
-                        Decode.map ImageRenderComponent <| Decode.field "data" renderImageDataDecoder
+                    "send-text" ->
+                        Decode.map TriggerSendText <| Decode.field "data" triggerSendTextDataDecoder
 
                     _ ->
                         Decode.fail <|
-                            "Trying to decode render, but the type "
+                            "Trying to decode trigger action, but the type "
                                 ++ theType
                                 ++ " is not supported."
             )
 
 
-renderPixelDataDecoder : Decoder PixelRenderComponentData
+triggerSendTextDataDecoder : Decoder TriggerSendTextData
+triggerSendTextDataDecoder =
+    Decode.succeed TriggerSendTextData
+        |> JDP.required "message" Decode.string
+
+
+renderDataDecoder : Decoder RenderComponentData
+renderDataDecoder =
+    Decode.succeed RenderComponentData
+        |> JDP.required "renderType" renderObjectDecoder
+        |> JDP.optional "layer" Decode.int 1
+
+
+renderObjectDecoder : Decoder RenderType
+renderObjectDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "pixel" ->
+                        Decode.map PixelRenderType <| Decode.field "data" renderPixelDataDecoder
+
+                    "image" ->
+                        Decode.map ImageRenderType <| Decode.field "data" renderImageDataDecoder
+
+                    "object" ->
+                        Decode.map ObjectRenderType <| Decode.field "data" renderObjectDataDecoder
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode render, but the objectType "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+renderPixelDataDecoder : Decoder PixelTypeData
 renderPixelDataDecoder =
-    Decode.succeed PixelRenderComponentData
+    Decode.succeed PixelTypeData
         |> JDP.required "colors" (Decode.list colorDecoder)
         |> JDP.optional "ticksPerColor" Decode.int 1
-        |> JDP.optional "layer" Decode.int 1
 
 
-renderImageDataDecoder : Decoder ImageRenderComponentData
+renderImageDataDecoder : Decoder ImageTypeData
 renderImageDataDecoder =
-    Decode.succeed ImageRenderComponentData
+    Decode.succeed ImageTypeData
         |> JDP.required "default" imagesDataDecoder
         |> JDP.optional "direction" decodeDirectionImagesData Dict.empty
-        |> JDP.optional "layer" Decode.int 1
 
 
 type alias DirectionNames =
@@ -260,16 +387,44 @@ decodeDirectionImagesData =
                                 Decode.succeed newDict
 
                             else
-                                Decode.fail "There are invalid directions in the image data"
+                                Decode.fail "There are invalid directions in the render image data"
                        )
             )
 
 
-decodeDirectionNames : Decoder DirectionNames
-decodeDirectionNames =
-    Decode.succeed DirectionNames
-        |> JDP.required "direction" directionIdDecoder
-        |> JDP.required "names" (Decode.list Decode.string)
+renderObjectDataDecoder : Decoder ObjectTypeData
+renderObjectDataDecoder =
+    Decode.succeed ObjectTypeData
+        |> JDP.required "default" objectPresetNameDecoder
+        |> JDP.optional "direction" objectTypeDirectionDecoder Dict.empty
+
+
+objectTypeDirectionDecoder : Decoder (Dict Int ObjectPresetName)
+objectTypeDirectionDecoder =
+    Decode.dict objectPresetNameDecoder
+        |> Decode.andThen
+            (\dict ->
+                Dict.toList dict
+                    |> List.map
+                        (\( directionName, imagesData ) ->
+                            Direction.getIDFromKey directionName
+                                |> Maybe.map (\directionId -> ( directionId, imagesData ))
+                        )
+                    |> Maybe.Extra.values
+                    |> Dict.fromList
+                    |> (\newDict ->
+                            if Dict.size dict == Dict.size newDict then
+                                Decode.succeed newDict
+
+                            else
+                                Decode.fail "There are invalid directions in the render object data"
+                       )
+            )
+
+
+objectPresetNameDecoder : Decoder ObjectPresetName
+objectPresetNameDecoder =
+    Decode.string
 
 
 tagDataDecoder : Decoder TagComponentData
@@ -370,7 +525,10 @@ positionDecoder =
 cameraDataDecoder : Decoder CameraComponentData
 cameraDataDecoder =
     Decode.succeed CameraComponentData
-        |> JDP.optional "borderSize" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderLeft" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderUp" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderRight" Decode.int defaultCameraBorderSize
+        |> JDP.optional "borderDown" Decode.int defaultCameraBorderSize
 
 
 physicsDataDecoder : Decoder PhysicsComponentData
@@ -556,7 +714,7 @@ controlTypeDecoder =
             (\theType ->
                 case theType of
                     "input" ->
-                        Decode.succeed InputControl
+                        Decode.map InputControl <| Decode.field "data" inputControlDataDecoder
 
                     "walkAroundAi" ->
                         Decode.map WalkAroundAiControl <| Decode.field "data" walkAroundAiDataDecoder
@@ -570,6 +728,12 @@ controlTypeDecoder =
                                 ++ theType
                                 ++ " is not supported."
             )
+
+
+inputControlDataDecoder : Decoder InputControlData
+inputControlDataDecoder =
+    Decode.succeed InputControlData
+        |> JDP.optional "allowedDirections" (Decode.list directionDecoder) []
 
 
 walkAroundAiDataDecoder : Decoder WalkAroundAiControlData
@@ -638,6 +802,131 @@ sceneDecoder =
 
 imagesDecoder : Decoder Images
 imagesDecoder =
+    Decode.dict imageDecoder
+
+
+imageDecoder : Decoder Image
+imageDecoder =
+    Decode.succeed Image
+        |> JDP.required "path" Decode.string
+        |> JDP.required "width" Decode.int
+        |> JDP.required "height" Decode.int
+        |> JDP.optional "imageType" imageTypeDecoder defaultImageType
+        |> JDP.optional "xOffset" Decode.int 0
+        |> JDP.optional "yOffset" Decode.int 0
+
+
+imageTypeDecoder : Decoder ImageType
+imageTypeDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "regular" ->
+                        Decode.succeed RegularImage
+
+                    "pattern" ->
+                        Decode.map PatternImage <| Decode.field "data" decodePatternImageData
+
+                    "link" ->
+                        Decode.map LinkImage <| Decode.field "data" decodeLinkImageData
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode imageType, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+defaultImageType : ImageType
+defaultImageType =
+    RegularImage
+
+
+decodePatternImageData : Decoder PatternImageData
+decodePatternImageData =
+    Decode.succeed PatternImageData
+        |> JDP.optional "offsets" positionOffsetsDecoder emptyPositionOffsets
+
+
+decodeLinkImageData : Decoder LinkImageData
+decodeLinkImageData =
+    Decode.succeed LinkImageData
+        |> JDP.required "href" Decode.string
+
+
+offsetTypeDecoder : Decoder OffsetType
+offsetTypeDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\theType ->
+                case theType of
+                    "fixed" ->
+                        Decode.map FixedOffset <| Decode.field "data" Decode.float
+
+                    "view_x_multiplier" ->
+                        Decode.map MultipliedByViewX <| Decode.field "data" Decode.float
+
+                    "view_y_multiplier" ->
+                        Decode.map MultipliedByViewY <| Decode.field "data" Decode.float
+
+                    "view_offset_x" ->
+                        Decode.succeed ViewOffsetX
+
+                    "view_offset_y" ->
+                        Decode.succeed ViewOffsetY
+
+                    _ ->
+                        Decode.fail <|
+                            "Trying to decode imageType, but the type "
+                                ++ theType
+                                ++ " is not supported."
+            )
+
+
+objectDecoder : Decoder Objects
+objectDecoder =
+    Decode.succeed Objects
+        |> JDP.optional "assets" objectAssertsDecoder defaultObjects.assets
+        |> JDP.optional "presets" objectPresetsDecoder defaultObjects.presets
+
+
+objectAssertsDecoder : Decoder ObjectAssets
+objectAssertsDecoder =
+    Decode.dict Decode.string
+
+
+objectPresetsDecoder : Decoder ObjectPresets
+objectPresetsDecoder =
+    Decode.dict objectPresetDataDecoder
+
+
+objectPresetDataDecoder : Decoder ObjectPresetData
+objectPresetDataDecoder =
+    Decode.succeed ObjectPresetData
+        |> JDP.optional "settings" decodeObjectSettingsDecoder Dict.empty
+        |> JDP.optional "offsets" positionOffsetsDecoder emptyPositionOffsets
+
+
+positionOffsetsDecoder : Decoder PositionOffsets
+positionOffsetsDecoder =
+    Decode.succeed PositionOffsets
+        |> JDP.optional "x" (Decode.list offsetTypeDecoder) []
+        |> JDP.optional "y" (Decode.list offsetTypeDecoder) []
+        |> JDP.optional "z" (Decode.list offsetTypeDecoder) []
+
+
+emptyPositionOffsets : PositionOffsets
+emptyPositionOffsets =
+    { x = []
+    , y = []
+    , z = []
+    }
+
+
+decodeObjectSettingsDecoder : Decoder ObjectSettings
+decodeObjectSettingsDecoder =
     Decode.dict Decode.string
 
 
@@ -656,6 +945,9 @@ subscriberDecoder =
                         Decode.succeed Actor.InventoryUpdatedSubscriber
                             |> JDP.required "eventActionData" eventActionDecoder
                             |> JDP.required "inventoryUpdatedData" onInventoryUpdatedSubscriberDecoder
+
+                    "onTriggerActivated" ->
+                        Decode.succeed Actor.TriggerActivatedSubscriber
 
                     _ ->
                         Decode.fail <|
@@ -692,6 +984,9 @@ eventActionDecoder =
                     "completed" ->
                         Decode.map LevelCompleted <| Decode.field "data" eventActionCompletedDataDecoder
 
+                    "loadLevel" ->
+                        Decode.map LoadLevel <| Decode.field "data" eventActionLoadLevelDataDecoder
+
                     _ ->
                         Decode.fail <|
                             "Trying to decode subscriber action, but the type "
@@ -715,6 +1010,12 @@ eventActionCompletedDataDecoder =
         |> JDP.required "nextLevel" Decode.string
         |> JDP.required "entityNames" (Decode.list Decode.string)
         |> JDP.required "animation" animationSetupDecoder
+
+
+eventActionLoadLevelDataDecoder : Decoder LoadLevelData
+eventActionLoadLevelDataDecoder =
+    Decode.succeed LoadLevelData
+        |> JDP.required "nextLevel" Decode.string
 
 
 descriptionProviderDecoder : Decoder LevelFinishedDescriptionProvider

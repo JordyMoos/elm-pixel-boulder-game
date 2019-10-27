@@ -1,256 +1,731 @@
 {
   "entities": {
     "player": [
-      {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": [
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-66", "hero-67"
-          ],
-          "ticksPerImage": 6
-        },
-        "direction": {
-          "left": {
-            "names": [
-              "hero-06",
-              "hero-07"
-            ],
-            "ticksPerImage": 6
-          },
-          "up": {
-            "names": [
-              "hero-32"
-            ],
-            "ticksPerImage": 6
-          },
-          "right": {
-            "names": [
-              "hero-18",
-              "hero-19"
-            ],
-            "ticksPerImage": 6
-          },
-          "down": {
-            "names": [
-              "hero-00",
-              "hero-01"
-            ],
-            "ticksPerImage": 6
-          }
-        },
-        "layer": 5
-      }}},
-      {"type": "control", "data": {
-        "settings": {"pushStrength": 50, "walkOverStrength": 50},
-        "control": {
-          "type": "input"
+      {
+        "type": "tag",
+        "data": {
+          "name": "player"
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
-      {"type": "rigid"},
-      {"type": "explodable"},
-      {"type": "camera", "data": {"borderSize": 5}},
-      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+      },
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-03",
+                  "hero-66",
+                  "hero-67"
+                ],
+                "ticksPerImage": 6
+              },
+              "direction": {
+                "left": {
+                  "names": [
+                    "hero-06",
+                    "hero-07"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "up": {
+                  "names": [
+                    "hero-32"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "right": {
+                  "names": [
+                    "hero-18",
+                    "hero-19"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "down": {
+                  "names": [
+                    "hero-00",
+                    "hero-01"
+                  ],
+                  "ticksPerImage": 6
+                }
+              }
+            }
+          },
+          "layer": 5
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 50,
+            "walkOverStrength": 50
+          },
+          "control": {
+            "type": "input",
+            "data": {
+              "allowedDirections": [
+                "left",
+                "up",
+                "right",
+                "down"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "collector",
+        "data": {
+          "interestedIn": [
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "explodable"
+      },
+      {
+        "type": "camera",
+        "data": {
+          "borderSize": 5
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 10,
+          "shape": "square"
+        }
+      }
     ],
     "rock": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["rock-0"]
-        },
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "control", "data": {
-        "control": {
-          "type": "gravityAi"
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "rock-0"
+                ]
+              }
+            }
+          },
+          "layer": 3
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "smash-down"}
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "gravityAi"
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "smash-down"
+      }
     ],
     "dynamite": [
-      {"type": "render", "data": {"type": "pixel", "data": {
-        "colors": [{"red": 204, "green": 0, "blue": 0}],
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "control", "data": {
-        "control": {
-          "type": "gravityAi"
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 204,
+                  "green": 0,
+                  "blue": 0
+                }
+              ]
+            }
+          },
+          "layer": 3
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "smash-down"}
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "gravityAi"
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "smash-down"
+      }
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
-          "ticksPerImage": 4
-        },
-        "layer": 10
-      }}},
-      {"type": "lifetime", "data": {"remainingTicks": 16}},
-      {"type": "damage", "data": {"damageStrength": 80}}
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "explosion-0",
+                  "explosion-1",
+                  "explosion-2",
+                  "explosion-3"
+                ],
+                "ticksPerImage": 4
+              }
+            }
+          },
+          "layer": 10
+        }
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 16
+        }
+      },
+      {
+        "type": "damage",
+        "data": {
+          "damageStrength": 80
+        }
+      }
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-a-0", "enemy-a-1", "enemy-a-2", "enemy-a-3"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "walkAroundAi",
-          "data": {
-            "previousDirection": "left",
-            "nextDirectionOffsets": [-1, 0, 1, 2]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-a-0",
+                  "enemy-a-1",
+                  "enemy-a-2",
+                  "enemy-a-3"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "walkAroundAi",
+            "data": {
+              "previousDirection": "left",
+              "nextDirectionOffsets": [
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
           }
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"},
-      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      },
+      {
+        "type": "trigger-explodable",
+        "data": {
+          "triggerStrength": 20
+        }
+      }
     ],
     "tough-enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-c-0", "enemy-c-1", "enemy-c-2", "enemy-c-3"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "circle"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "walkAroundAi",
-          "data": {
-            "previousDirection": "left",
-            "nextDirectionOffsets": [-1, 0, 1, 2]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-c-0",
+                  "enemy-c-1",
+                  "enemy-c-2",
+                  "enemy-c-3"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 100,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "walkAroundAi",
+            "data": {
+              "previousDirection": "left",
+              "nextDirectionOffsets": [
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
           }
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"},
-      {"type": "trigger-explodable", "data": {"triggerStrength": 80}}
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      },
+      {
+        "type": "trigger-explodable",
+        "data": {
+          "triggerStrength": 80
+        }
+      }
     ],
     "funny-enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-d-0", "enemy-d-1", "enemy-d-2", "enemy-d-3"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "walkAroundAi",
-          "data": {
-            "previousDirection": "left",
-            "nextDirectionOffsets": [1, 0, -1, 2]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-d-0",
+                  "enemy-d-1",
+                  "enemy-d-2",
+                  "enemy-d-3"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "walkAroundAi",
+            "data": {
+              "previousDirection": "left",
+              "nextDirectionOffsets": [
+                1,
+                0,
+                -1,
+                2
+              ]
+            }
           }
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"},
-      {"type": "trigger-explodable", "data": {"triggerStrength": 20}}
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      },
+      {
+        "type": "trigger-explodable",
+        "data": {
+          "triggerStrength": 20
+        }
+      }
     ],
     "pet": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "walkAroundAi",
-          "data": {
-            "previousDirection": "left",
-            "nextDirectionOffsets": [-1, 0, 1, 2]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "pet-a-0",
+                  "pet-a-1",
+                  "pet-a-2",
+                  "pet-a-3"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 10,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "walkAroundAi",
+            "data": {
+              "previousDirection": "left",
+              "nextDirectionOffsets": [
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
           }
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"}
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      }
     ],
     "dirt": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["dirt"]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "dirt"
+                ]
+              }
+            }
+          }
         }
-      }}},
-      {"type": "collectible", "data": {"name": "dirt"}},
-      {"type": "physics", "data": {"strength": 30, "shape": "square"}}
+      },
+      {
+        "type": "collectible",
+        "data": {
+          "name": "dirt"
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 30,
+          "shape": "square"
+        }
+      }
     ],
     "wall": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["wall"]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "wall"
+                ]
+              }
+            }
+          }
         }
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 50, "shape": "square"}}
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 50,
+          "shape": "square"
+        }
+      }
     ],
     "strongwall": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["strong-wall"]
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "strong-wall"
+                ]
+              }
+            }
+          }
         }
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 100,
+          "shape": "square"
+        }
+      }
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 8
-        },
-        "layer": 3
-      }}},
-      {"type": "collectible", "data": {"name": "diamond"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "gravityAi"
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "diamond-0",
+                  "diamond-1",
+                  "diamond-2",
+                  "diamond-3"
+                ],
+                "ticksPerImage": 8
+              }
+            }
+          },
+          "layer": 3
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+      },
+      {
+        "type": "collectible",
+        "data": {
+          "name": "diamond"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "gravityAi"
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      }
     ],
     "finish_diamond": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 8
-        },
-        "layer": 3
-      }}},
-      {"type": "collectible", "data": {"name": "diamond"}},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "diamond-0",
+                  "diamond-1",
+                  "diamond-2",
+                  "diamond-3"
+                ],
+                "ticksPerImage": 8
+              }
+            }
+          },
+          "layer": 3
+        }
+      },
+      {
+        "type": "collectible",
+        "data": {
+          "name": "diamond"
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      }
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
-      {"type": "damage", "data": {"damageStrength": 1000}}
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "pixel",
+            "data": {
+              "colors": [
+                {
+                  "red": 0,
+                  "green": 0,
+                  "blue": 0
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 1000,
+          "shape": "square"
+        }
+      },
+      {
+        "type": "damage",
+        "data": {
+          "damageStrength": 1000
+        }
+      }
     ]
   },
   "signs": {
@@ -268,60 +743,246 @@
     "*": "diamond"
   },
   "images": {
-    "hero-00": "./images/spriters-resource.com/hero/hero-00.png",
-    "hero-01": "./images/spriters-resource.com/hero/hero-01.png",
-    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
-    "hero-06": "./images/spriters-resource.com/hero/hero-06.png",
-    "hero-07": "./images/spriters-resource.com/hero/hero-07.png",
-    "hero-18": "./images/spriters-resource.com/hero/hero-18.png",
-    "hero-19": "./images/spriters-resource.com/hero/hero-19.png",
-    "hero-32": "./images/spriters-resource.com/hero/hero-32.png",
-    "hero-43": "./images/spriters-resource.com/hero/hero-43.png",
-    "hero-44": "./images/spriters-resource.com/hero/hero-44.png",
-    "hero-66": "./images/spriters-resource.com/hero/hero-66.png",
-    "hero-67": "./images/spriters-resource.com/hero/hero-67.png",
-    "diamond-0": "./images/spriters-resource.com/diamond-0.png",
-    "diamond-1": "./images/spriters-resource.com/diamond-1.png",
-    "diamond-2": "./images/spriters-resource.com/diamond-2.png",
-    "diamond-3": "./images/spriters-resource.com/diamond-3.png",
-    "explosion-0": "./images/spriters-resource.com/explosion-0.png",
-    "explosion-1": "./images/spriters-resource.com/explosion-1.png",
-    "explosion-2": "./images/spriters-resource.com/explosion-2.png",
-    "explosion-3": "./images/spriters-resource.com/explosion-3.png",
-    "dirt": "./images/spriters-resource.com/dirt.png",
-    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
-    "enemy-a-1": "./images/spriters-resource.com/enemy-a-1.png",
-    "enemy-a-2": "./images/spriters-resource.com/enemy-a-2.png",
-    "enemy-a-3": "./images/spriters-resource.com/enemy-a-3.png",
-    "enemy-b-0": "./images/spriters-resource.com/enemy-b-0.png",
-    "enemy-b-1": "./images/spriters-resource.com/enemy-b-1.png",
-    "enemy-b-2": "./images/spriters-resource.com/enemy-b-2.png",
-    "enemy-b-3": "./images/spriters-resource.com/enemy-b-3.png",
-    "enemy-c-0": "./images/spriters-resource.com/enemy-c-0.png",
-    "enemy-c-1": "./images/spriters-resource.com/enemy-c-1.png",
-    "enemy-c-2": "./images/spriters-resource.com/enemy-c-2.png",
-    "enemy-c-3": "./images/spriters-resource.com/enemy-c-3.png",
-    "enemy-d-0": "./images/spriters-resource.com/enemy-d-0.png",
-    "enemy-d-1": "./images/spriters-resource.com/enemy-d-1.png",
-    "enemy-d-2": "./images/spriters-resource.com/enemy-d-2.png",
-    "enemy-d-3": "./images/spriters-resource.com/enemy-d-3.png",
-    "pet-a-0": "./images/spriters-resource.com/pet-a-0.png",
-    "pet-a-1": "./images/spriters-resource.com/pet-a-1.png",
-    "pet-a-2": "./images/spriters-resource.com/pet-a-2.png",
-    "pet-a-3": "./images/spriters-resource.com/pet-a-3.png",
-    "rock-0": "./images/spriters-resource.com/rock-0.png",
-    "wall": "./images/spriters-resource.com/wall.png",
-    "strong-wall": "./images/spriters-resource.com/strong-wall.png",
-    "background-big": "./images/spriters-resource.com/background-big.png"
-  },
-  "background": {
-    "type": "image",
-    "data": {
-      "default": {
-        "names": ["background-big"]
-      }
+    "hero-00": {
+      "path": "./images/spriters-resource.com/hero/hero-00.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-01": {
+      "path": "./images/spriters-resource.com/hero/hero-01.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-03": {
+      "path": "./images/spriters-resource.com/hero/hero-03.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-06": {
+      "path": "./images/spriters-resource.com/hero/hero-06.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-07": {
+      "path": "./images/spriters-resource.com/hero/hero-07.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-18": {
+      "path": "./images/spriters-resource.com/hero/hero-18.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-19": {
+      "path": "./images/spriters-resource.com/hero/hero-19.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-32": {
+      "path": "./images/spriters-resource.com/hero/hero-32.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-43": {
+      "path": "./images/spriters-resource.com/hero/hero-43.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-44": {
+      "path": "./images/spriters-resource.com/hero/hero-44.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-66": {
+      "path": "./images/spriters-resource.com/hero/hero-66.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-67": {
+      "path": "./images/spriters-resource.com/hero/hero-67.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-0": {
+      "path": "./images/spriters-resource.com/diamond-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-1": {
+      "path": "./images/spriters-resource.com/diamond-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-2": {
+      "path": "./images/spriters-resource.com/diamond-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-3": {
+      "path": "./images/spriters-resource.com/diamond-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-0": {
+      "path": "./images/spriters-resource.com/explosion-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-1": {
+      "path": "./images/spriters-resource.com/explosion-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-2": {
+      "path": "./images/spriters-resource.com/explosion-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-3": {
+      "path": "./images/spriters-resource.com/explosion-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "dirt": {
+      "path": "./images/spriters-resource.com/dirt.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-0": {
+      "path": "./images/spriters-resource.com/enemy-a-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-1": {
+      "path": "./images/spriters-resource.com/enemy-a-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-2": {
+      "path": "./images/spriters-resource.com/enemy-a-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-3": {
+      "path": "./images/spriters-resource.com/enemy-a-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-0": {
+      "path": "./images/spriters-resource.com/enemy-b-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-1": {
+      "path": "./images/spriters-resource.com/enemy-b-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-2": {
+      "path": "./images/spriters-resource.com/enemy-b-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-3": {
+      "path": "./images/spriters-resource.com/enemy-b-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-0": {
+      "path": "./images/spriters-resource.com/enemy-c-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-1": {
+      "path": "./images/spriters-resource.com/enemy-c-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-2": {
+      "path": "./images/spriters-resource.com/enemy-c-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-3": {
+      "path": "./images/spriters-resource.com/enemy-c-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-0": {
+      "path": "./images/spriters-resource.com/enemy-d-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-1": {
+      "path": "./images/spriters-resource.com/enemy-d-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-2": {
+      "path": "./images/spriters-resource.com/enemy-d-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-3": {
+      "path": "./images/spriters-resource.com/enemy-d-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "rock-0": {
+      "path": "./images/spriters-resource.com/rock-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "wall": {
+      "path": "./images/spriters-resource.com/wall.png",
+      "width": 32,
+      "height": 32
+    },
+    "strong-wall": {
+      "path": "./images/spriters-resource.com/strong-wall.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-0": {
+      "path": "./images/spriters-resource.com/pet-a-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-1": {
+      "path": "./images/spriters-resource.com/pet-a-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-2": {
+      "path": "./images/spriters-resource.com/pet-a-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-3": {
+      "path": "./images/spriters-resource.com/pet-a-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "background-big": {
+      "path": "./images/spriters-resource.com/background-big.png",
+      "width": 384,
+      "height": 384
     }
   },
+  "backgrounds": [
+    {
+      "renderType": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-big"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "updateBorder": 3,
   "scene": [
     "######################",
@@ -338,6 +999,7 @@
     "#............       .#",
     "#......e  ..ooo**....#",
     "#......   ...oo......#",
+    "#......   ...........#",
     "######################"
   ],
   "subscribers": [
@@ -348,9 +1010,13 @@
         "data": {
           "descriptionProvider": {
             "type": "static",
-            "data": {"text": "You died"}
+            "data": {
+              "text": "You died"
+            }
           },
-          "entityNames": ["explosion"],
+          "entityNames": [
+            "explosion"
+          ],
           "animation": {
             "type": "currentTick"
           }
@@ -368,10 +1034,14 @@
         "data": {
           "descriptionProvider": {
             "type": "static",
-            "data": {"text": "The end - for now"}
+            "data": {
+              "text": "The end - for now"
+            }
           },
           "nextLevel": "official/001",
-          "entityNames": ["diamond"],
+          "entityNames": [
+            "diamond"
+          ],
           "animation": {
             "type": "currentTick"
           }

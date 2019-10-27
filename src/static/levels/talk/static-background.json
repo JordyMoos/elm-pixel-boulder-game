@@ -1,28 +1,56 @@
 {
   "entities": {
     "player": [
-      {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": [
-            "hero-03"
-          ],
-          "ticksPerImage": 6
-        },
-        "layer": 5
-      }}}
+      {
+        "type": "tag",
+        "data": {
+          "name": "player"
+        }
+      },
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "hero-03"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 5
+        }
+      }
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-a-0"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}}
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-a-0"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      }
     ],
     "camera": [
-      {"type": "camera", "data": {"borderSize": 1}}
+      {
+        "type": "camera",
+        "data": {
+          "borderSize": 1
+        }
+      }
     ]
   },
   "signs": {
@@ -31,18 +59,246 @@
     "c": "camera"
   },
   "images": {
-    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
-    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png",
-    "background-big": "./images/spriters-resource.com/background-big.png"
-  },
-  "background": {
-    "type": "image",
-    "data": {
-      "default": {
-        "names": ["background-big"]
-      }
+    "hero-00": {
+      "path": "./images/spriters-resource.com/hero/hero-00.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-01": {
+      "path": "./images/spriters-resource.com/hero/hero-01.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-03": {
+      "path": "./images/spriters-resource.com/hero/hero-03.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-06": {
+      "path": "./images/spriters-resource.com/hero/hero-06.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-07": {
+      "path": "./images/spriters-resource.com/hero/hero-07.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-18": {
+      "path": "./images/spriters-resource.com/hero/hero-18.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-19": {
+      "path": "./images/spriters-resource.com/hero/hero-19.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-32": {
+      "path": "./images/spriters-resource.com/hero/hero-32.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-43": {
+      "path": "./images/spriters-resource.com/hero/hero-43.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-44": {
+      "path": "./images/spriters-resource.com/hero/hero-44.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-66": {
+      "path": "./images/spriters-resource.com/hero/hero-66.png",
+      "width": 32,
+      "height": 32
+    },
+    "hero-67": {
+      "path": "./images/spriters-resource.com/hero/hero-67.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-0": {
+      "path": "./images/spriters-resource.com/diamond-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-1": {
+      "path": "./images/spriters-resource.com/diamond-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-2": {
+      "path": "./images/spriters-resource.com/diamond-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "diamond-3": {
+      "path": "./images/spriters-resource.com/diamond-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-0": {
+      "path": "./images/spriters-resource.com/explosion-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-1": {
+      "path": "./images/spriters-resource.com/explosion-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-2": {
+      "path": "./images/spriters-resource.com/explosion-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "explosion-3": {
+      "path": "./images/spriters-resource.com/explosion-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "dirt": {
+      "path": "./images/spriters-resource.com/dirt.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-0": {
+      "path": "./images/spriters-resource.com/enemy-a-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-1": {
+      "path": "./images/spriters-resource.com/enemy-a-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-2": {
+      "path": "./images/spriters-resource.com/enemy-a-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-3": {
+      "path": "./images/spriters-resource.com/enemy-a-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-0": {
+      "path": "./images/spriters-resource.com/enemy-b-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-1": {
+      "path": "./images/spriters-resource.com/enemy-b-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-2": {
+      "path": "./images/spriters-resource.com/enemy-b-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-b-3": {
+      "path": "./images/spriters-resource.com/enemy-b-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-0": {
+      "path": "./images/spriters-resource.com/enemy-c-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-1": {
+      "path": "./images/spriters-resource.com/enemy-c-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-2": {
+      "path": "./images/spriters-resource.com/enemy-c-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-c-3": {
+      "path": "./images/spriters-resource.com/enemy-c-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-0": {
+      "path": "./images/spriters-resource.com/enemy-d-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-1": {
+      "path": "./images/spriters-resource.com/enemy-d-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-2": {
+      "path": "./images/spriters-resource.com/enemy-d-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-d-3": {
+      "path": "./images/spriters-resource.com/enemy-d-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "rock-0": {
+      "path": "./images/spriters-resource.com/rock-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "wall": {
+      "path": "./images/spriters-resource.com/wall.png",
+      "width": 32,
+      "height": 32
+    },
+    "strong-wall": {
+      "path": "./images/spriters-resource.com/strong-wall.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-0": {
+      "path": "./images/spriters-resource.com/pet-a-0.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-1": {
+      "path": "./images/spriters-resource.com/pet-a-1.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-2": {
+      "path": "./images/spriters-resource.com/pet-a-2.png",
+      "width": 32,
+      "height": 32
+    },
+    "pet-a-3": {
+      "path": "./images/spriters-resource.com/pet-a-3.png",
+      "width": 32,
+      "height": 32
+    },
+    "background-big": {
+      "path": "./images/spriters-resource.com/background-big.png",
+      "width": 384,
+      "height": 384
     }
   },
+  "backgrounds": [
+    {
+      "renderType": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-big"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "scene": [
     "p    e",
     "   c  "

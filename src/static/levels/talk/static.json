@@ -1,28 +1,56 @@
 {
   "entities": {
     "player": [
-      {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": [
-            "hero-03"
-          ],
-          "ticksPerImage": 6
-        },
-        "layer": 5
-      }}}
+      {
+        "type": "tag",
+        "data": {
+          "name": "player"
+        }
+      },
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "hero-03"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 5
+        }
+      }
     ],
     "enemy": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["enemy-a-0"],
-          "ticksPerImage": 6
-        },
-        "layer": 3
-      }}}
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "enemy-a-0"
+                ],
+                "ticksPerImage": 6
+              }
+            }
+          },
+          "layer": 3
+        }
+      }
     ],
     "camera": [
-      {"type": "camera", "data": {"borderSize": 1}}
+      {
+        "type": "camera",
+        "data": {
+          "borderSize": 1
+        }
+      }
     ]
   },
   "signs": {
@@ -31,15 +59,33 @@
     "c": "camera"
   },
   "images": {
-    "hero-03": "./images/spriters-resource.com/hero/hero-03.png",
-    "enemy-a-0": "./images/spriters-resource.com/enemy-a-0.png"
-  },
-  "background": {
-    "type": "pixel",
-    "data": {
-      "colors": [{"red": 255, "green": 255, "blue": 255}]
+    "hero-03": {
+      "path": "./images/spriters-resource.com/hero/hero-03.png",
+      "width": 32,
+      "height": 32
+    },
+    "enemy-a-0": {
+      "path": "./images/spriters-resource.com/enemy-a-0.png",
+      "width": 32,
+      "height": 32
     }
   },
+  "backgrounds": [
+    {
+      "renderType": {
+        "type": "pixel",
+        "data": {
+          "colors": [
+            {
+              "red": 255,
+              "green": 255,
+              "blue": 255
+            }
+          ]
+        }
+      }
+    }
+  ],
   "scene": [
     "p    e",
     "   c  "

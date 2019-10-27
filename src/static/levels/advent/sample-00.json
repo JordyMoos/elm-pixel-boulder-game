@@ -1,59 +1,172 @@
 {
-  "entities": {
-    "elf": [
-      {"type": "tag", "data": {"name": "elf"}},
-      {"type": "health", "data": {"health": 200}},
-      {"type": "attack", "data": {"power": 3}},
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 255}]}}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "ai", "data": {
-        "ai": {
-          "type": "advent",
-          "data": {
-            "target": "goblin"
+  "entities":{
+    "elf":[
+      {
+        "type":"tag",
+        "data":{
+          "name":"elf"
+        }
+      },
+      {
+        "type":"health",
+        "data":{
+          "health":200
+        }
+      },
+      {
+        "type":"attack",
+        "data":{
+          "power":3
+        }
+      },
+      {
+        "type":"render",
+        "data":{
+          "type":"pixel",
+          "data":{
+            "colors":[
+              {
+                "red":0,
+                "green":0,
+                "blue":255
+              }
+            ]
           }
         }
-      }}
-    ],
-    "goblin": [
-      {"type": "tag", "data": {"name": "goblin"}},
-      {"type": "health", "data": {"health": 200}},
-      {"type": "attack", "data": {"power": 3}},
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 255, "blue": 0}]}}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}},
-      {"type": "ai", "data": {
-        "ai": {
-          "type": "advent",
-          "data": {
-            "target": "elf"
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":100,
+          "shape":"square"
+        }
+      },
+      {
+        "type":"ai",
+        "data":{
+          "ai":{
+            "type":"advent",
+            "data":{
+              "target":"goblin"
+            }
           }
         }
-      }}
+      }
     ],
-    "wall": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 98, "green": 100, "blue": 87}]}}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 100, "shape": "square"}}
+    "goblin":[
+      {
+        "type":"tag",
+        "data":{
+          "name":"goblin"
+        }
+      },
+      {
+        "type":"health",
+        "data":{
+          "health":200
+        }
+      },
+      {
+        "type":"attack",
+        "data":{
+          "power":3
+        }
+      },
+      {
+        "type":"render",
+        "data":{
+          "type":"pixel",
+          "data":{
+            "colors":[
+              {
+                "red":0,
+                "green":255,
+                "blue":0
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":100,
+          "shape":"square"
+        }
+      },
+      {
+        "type":"ai",
+        "data":{
+          "ai":{
+            "type":"advent",
+            "data":{
+              "target":"elf"
+            }
+          }
+        }
+      }
     ],
-    "counter": [
-      {"type": "counter", "data":  {}}
+    "wall":[
+      {
+        "type":"render",
+        "data":{
+          "type":"pixel",
+          "data":{
+            "colors":[
+              {
+                "red":98,
+                "green":100,
+                "blue":87
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":100,
+          "shape":"square"
+        }
+      }
+    ],
+    "counter":[
+      {
+        "type":"counter",
+        "data":{
+
+        }
+      }
     ]
   },
-  "signs": {
-    "E": "elf",
-    "G": "goblin",
-    "#": "wall",
-    "c": "counter"
+  "signs":{
+    "E":"elf",
+    "G":"goblin",
+    "#":"wall",
+    "c":"counter"
   },
-  "background": {
-    "type": "pixel",
-    "data": {
-      "colors": [{"red": 255, "green": 255, "blue": 255}]
+  "background":{
+    "type":"pixel",
+    "data":{
+      "colors":[
+        {
+          "red":255,
+          "green":255,
+          "blue":255
+        }
+      ]
     }
   },
-  "scene": [
+  "scene":[
     "#######",
     "#.....#",
     "#G...E#",
@@ -63,50 +176,54 @@
     "#######",
     "c"
   ],
-  "updateBorder": 30,
-  "subscribers": [
+  "updateBorder":30,
+  "subscribers":[
     {
-      "type": "onTagDied",
-      "eventActionData": {
-        "type": "completed",
-        "data": {
-          "descriptionProvider": {
-            "type": "advent"
+      "type":"onTagDied",
+      "eventActionData":{
+        "type":"completed",
+        "data":{
+          "descriptionProvider":{
+            "type":"advent"
           },
-          "nextLevel": "advent/sample-01",
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "skip"
+          "nextLevel":"advent/sample-01",
+          "entityNames":[
+            "explosion"
+          ],
+          "animation":{
+            "type":"skip"
           }
         }
       },
-      "tagDiedData": {
-        "tagName": "elf",
-        "limit": 1
+      "tagDiedData":{
+        "tagName":"elf",
+        "limit":1
       }
     },
     {
-      "type": "onTagDied",
-      "eventActionData": {
-        "type": "completed",
-        "data": {
-          "descriptionProvider": {
-            "type": "advent"
+      "type":"onTagDied",
+      "eventActionData":{
+        "type":"completed",
+        "data":{
+          "descriptionProvider":{
+            "type":"advent"
           },
-          "nextLevel": "advent/sample-01",
-          "entityNames": ["explosion"],
-          "animation": {
-            "type": "skip"
+          "nextLevel":"advent/sample-01",
+          "entityNames":[
+            "explosion"
+          ],
+          "animation":{
+            "type":"skip"
           }
         }
       },
-      "tagDiedData": {
-        "tagName": "goblin",
-        "limit": 1
+      "tagDiedData":{
+        "tagName":"goblin",
+        "limit":1
       }
     }
   ],
-  "editorsNote": [
+  "editorsNote":[
     "This is not really a level from advent of code but a small demo to test the setup.",
     "Therefor there is no officially known correct score"
   ]

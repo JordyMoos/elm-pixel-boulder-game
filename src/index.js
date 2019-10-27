@@ -1,6 +1,8 @@
 'use strict';
 
 const {Elm} = require('./elm/Main.elm');
+const aframe = require('aframe');
+const aframeExtras = require('aframe-extras');
 const easyCacheKey = 'easy-level-cache-4';
 const advancedCacheKey = 'level-cache-4';
 
@@ -27,6 +29,7 @@ const startLevel = urlParams.get('startLevel') || null;
 const hideDebug = !! urlParams.get('hideDebug');
 const hideControls = !! urlParams.get('hideControls');
 const hideEdit = !! urlParams.get('hideEdit');
+const hideOverflow = !! urlParams.get('hideOverflow');
 const lazy = !! urlParams.get('lazy');
 let editorMode = urlParams.get('editorMode') === 'advanced' ? 'advanced' : 'easy';
 let notEditorMode = getOtherMode(editorMode);
@@ -240,6 +243,18 @@ function runElm() {
       }
     });
 
+    const socket = new WebSocket('ws://localhost:8765');
+    socket.addEventListener('error', function (event) {
+      console.log('Websocket error');
+      console.log(event);
+    });
+    socket.addEventListener('open', function (event) {
+      socket.send('Good luck and have fun!');
+    });
+    app.ports.sendText.subscribe(function (data) {
+      socket.send(data);
+    });
+
     let trackedKeys = ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'a', 's', 'z', 'x'];
     window.addEventListener('keydown', function(event) {
       if (trackedKeys.includes(event.key)) {
@@ -313,6 +328,9 @@ if (hideControls) {
 }
 if (hideEdit) {
   document.getElementById('edit-level-container').style.display = 'none';
+}
+if (hideOverflow) {
+  document.getElementsByTagName('body')[0].style.overflow = 'hidden';
 }
 
 if (startLevel !== null) {

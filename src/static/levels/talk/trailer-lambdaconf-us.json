@@ -1,326 +1,1456 @@
 {
   "entities": {
     "player": [
-      {"type": "tag", "data": {"name": "player"}},
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": [
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03", "hero-03",
-            "hero-66", "hero-67"
-          ],
-          "ticksPerImage": 6
-        },
-        "direction": {
-          "left": {
-            "names": [
-              "hero-06",
-              "hero-07"
-            ],
-            "ticksPerImage": 6
-          },
-          "up": {
-            "names": [
-              "hero-32"
-            ],
-            "ticksPerImage": 6
-          },
-          "right": {
-            "names": [
-              "hero-18",
-              "hero-19"
-            ],
-            "ticksPerImage": 6
-          },
-          "down": {
-            "names": [
-              "hero-00",
-              "hero-01"
-            ],
-            "ticksPerImage": 6
-          }
-        },
-        "layer": 5
-      }}},
-      {"type": "control", "data": {
-        "settings": {"pushStrength": 50, "walkOverStrength": 50},
-        "control": {
-          "type": "input"
+      {
+        "type": "tag",
+        "data": {
+          "name": "player"
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "collector", "data": {"interestedIn": ["diamond", "dirt"]}},
-      {"type": "rigid"},
-      {"type": "camera", "data": {"borderSize": 3}},
-      {"type": "physics", "data": {"strength": 10, "shape": "square"}}
+      },
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-03",
+                "hero-66",
+                "hero-67"
+              ],
+              "ticksPerImage": 6
+            },
+            "direction": {
+              "left": {
+                "names": [
+                  "hero-06",
+                  "hero-07"
+                ],
+                "ticksPerImage": 6
+              },
+              "up": {
+                "names": [
+                  "hero-32"
+                ],
+                "ticksPerImage": 6
+              },
+              "right": {
+                "names": [
+                  "hero-18",
+                  "hero-19"
+                ],
+                "ticksPerImage": 6
+              },
+              "down": {
+                "names": [
+                  "hero-00",
+                  "hero-01"
+                ],
+                "ticksPerImage": 6
+              }
+            },
+            "layer": 5
+          }
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 50,
+            "walkOverStrength": 50
+          },
+          "control": {
+            "type": "input"
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "collector",
+        "data": {
+          "interestedIn": [
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "camera",
+        "data": {
+          "borderSize": 3
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 10,
+          "shape": "square"
+        }
+      }
     ],
     "end": [
-      {"type": "tag", "data": {"name": "end"}},
-      {"type": "lifetime", "data": {"remainingTicks": 1050}}
+      {
+        "type": "tag",
+        "data": {
+          "name": "end"
+        }
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 1050
+        }
+      }
     ],
     "explosion": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["explosion-0", "explosion-1", "explosion-2", "explosion-3"],
-          "ticksPerImage": 4
-        }
-      }}},
-      {"type": "lifetime", "data": {"remainingTicks": 16}},
-      {"type": "damage", "data": {"damageStrength": 80}}
-    ],
-    "pet": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["pet-a-0", "pet-a-1", "pet-a-2", "pet-a-3"],
-          "ticksPerImage": 6
-        }
-      }}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 10, "shape": "circle"}},
-      {"type": "control", "data": {
-        "control": {
-          "type": "walkAroundAi",
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
           "data": {
-            "previousDirection": "left",
-            "nextDirectionOffsets": [-1, 0, 1, 2]
+            "default": {
+              "names": [
+                "explosion-0",
+                "explosion-1",
+                "explosion-2",
+                "explosion-3"
+              ],
+              "ticksPerImage": 4
+            }
           }
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "explodable"}
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 16
+        }
+      },
+      {
+        "type": "damage",
+        "data": {
+          "damageStrength": 80
+        }
+      }
+    ],
+    "pet": [
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "pet-a-0",
+                "pet-a-1",
+                "pet-a-2",
+                "pet-a-3"
+              ],
+              "ticksPerImage": 6
+            }
+          }
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 10,
+          "shape": "circle"
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "control": {
+            "type": "walkAroundAi",
+            "data": {
+              "previousDirection": "left",
+              "nextDirectionOffsets": [
+                -1,
+                0,
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "explodable"
+      }
     ],
     "diamond": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "layer": 0,
-        "default": {
-          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 8
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 0,
+            "default": {
+              "names": [
+                "diamond-0",
+                "diamond-1",
+                "diamond-2",
+                "diamond-3"
+              ],
+              "ticksPerImage": 8
+            }
+          }
         }
-      }}},
-      {"type": "collectible", "data": {"name": "diamond"}},
-      {"type": "control", "data": {
-        "settings": {"pushStrength": 0, "walkOverStrength": 50},
-        "control": {
-          "type": "gravityAi"
+      },
+      {
+        "type": "collectible",
+        "data": {
+          "name": "diamond"
         }
-      }},
-      {"type": "movement", "data": {"movingTicks": 8}},
-      {"type": "physics", "data": {"strength": 50, "shape": "circle"}}
+      },
+      {
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 0,
+            "walkOverStrength": 50
+          },
+          "control": {
+            "type": "gravityAi"
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 8
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 50,
+          "shape": "circle"
+        }
+      }
     ],
     "static_diamond": [
-      {"type": "render", "data": {"type": "image", "data": {
-        "default": {
-          "names": ["diamond-0", "diamond-1", "diamond-2", "diamond-3"],
-          "ticksPerImage": 8
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "diamond-0",
+                "diamond-1",
+                "diamond-2",
+                "diamond-3"
+              ],
+              "ticksPerImage": 8
+            }
+          }
         }
-      }}},
-      {"type": "collectible", "data": {"name": "diamond"}},
-      {"type": "physics", "data": {"strength": 20, "shape": "circle"}}
+      },
+      {
+        "type": "collectible",
+        "data": {
+          "name": "diamond"
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 20,
+          "shape": "circle"
+        }
+      }
     ],
     "failed": [
-      {"type": "render", "data": {"type": "pixel", "data": {"colors": [{"red": 0, "green": 0, "blue": 0}]}}},
-      {"type": "rigid"},
-      {"type": "physics", "data": {"strength": 1000, "shape": "square"}},
-      {"type": "damage", "data": {"damageStrength": 1000}}
+      {
+        "type": "render",
+        "data": {
+          "type": "pixel",
+          "data": {
+            "colors": [
+              {
+                "red": 0,
+                "green": 0,
+                "blue": 0
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 1000,
+          "shape": "square"
+        }
+      },
+      {
+        "type": "damage",
+        "data": {
+          "damageStrength": 1000
+        }
+      }
     ],
     "plane_zz": [
-      {"type": "zarea", "data": {"width": 9, "height": 5, "direction": "right", "tags": ["plane", "player"]}},
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_00"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "zarea",
+        "data": {
+          "width": 9,
+          "height": 5,
+          "direction": "right",
+          "tags": [
+            "plane",
+            "player"
+          ]
+        }
+      },
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_00"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_00": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_00"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "lifetime", "data": {"remainingTicks": 500, "action": {"type": "become", "data": {"entityName": "plane_zz"}}}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_00"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 500,
+          "action": {
+            "type": "become",
+            "data": {
+              "entityName": "plane_zz"
+            }
+          }
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_01": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_01"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_01"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_09": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_09"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_09"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_10": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_10"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_10"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_11": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_11"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_11"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_12": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_12"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_12"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_13": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_13"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_13"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_14": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_14"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_14"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_15": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_15"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_15"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_16": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_16"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_16"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_18": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_18"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_18"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_19": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_19"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_19"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_20": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_20"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_20"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_21": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_21"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_21"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_22": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_22"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_22"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_23": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_23"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_23"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_24": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_24"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_24"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_25": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_25"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_25"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_26": [
-      {"type": "render", "data": {"type": "image", "data": {"layer": 10, "default": {"names": ["plane_26"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "layer": 10,
+            "default": {
+              "names": [
+                "plane_26"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_27": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_27"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_27"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_28": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_28"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_28"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_29": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_29"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_29"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_30": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_30"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_30"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_31": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_31"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_31"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_32": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_32"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_32"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_33": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_33"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_33"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_34": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_34"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_34"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_35": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_35"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_35"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_39": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_39"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_39"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_40": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_40", "plane_40_b", "plane_40_b", "plane_40_b"], "ticksPerImage":  1400}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_40",
+                "plane_40_b",
+                "plane_40_b",
+                "plane_40_b"
+              ],
+              "ticksPerImage": 1400
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_41": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_41"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_41"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_42": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_42"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_42"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 700,
+          "action": {
+            "type": "remove"
+          }
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "plane_43": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["plane_43"]}}}},
-      {"type": "movement", "data": {"movingTicks": 24}},
-      {"type": "lifetime", "data": {"remainingTicks": 700, "action": {"type": "remove"}}},
-      {"type": "tag", "data": {"name": "plane"}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "plane_43"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 24
+        }
+      },
+      {
+        "type": "lifetime",
+        "data": {
+          "remainingTicks": 700,
+          "action": {
+            "type": "remove"
+          }
+        }
+      },
+      {
+        "type": "tag",
+        "data": {
+          "name": "plane"
+        }
+      }
     ],
     "lambda_0": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_0"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_0"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_1": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_1"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_1"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_2": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_2"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_2"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_3": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_3"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_3"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_4": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_4"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_4"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_5": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_5"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_5"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_6": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_6"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_6"
+              ]
+            }
+          }
+        }
+      }
     ],
     "lambda_7": [
-      {"type": "render", "data": {"type": "image", "data": {"default": {"names": ["lambda_7"]}}}}
+      {
+        "type": "render",
+        "data": {
+          "type": "image",
+          "data": {
+            "default": {
+              "names": [
+                "lambda_7"
+              ]
+            }
+          }
+        }
+      }
     ]
   },
   "signLength": 3,
@@ -543,10 +1673,14 @@
         "data": {
           "descriptionProvider": {
             "type": "static",
-            "data": {"text": "Level Completed"}
+            "data": {
+              "text": "Level Completed"
+            }
           },
           "nextLevel": "official/001",
-          "entityNames": ["diamond"],
+          "entityNames": [
+            "diamond"
+          ],
           "animation": {
             "type": "currentTick"
           }

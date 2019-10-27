@@ -8,6 +8,7 @@ import Browser.Navigation
 import Data.Config exposing (Config)
 import GameState.LoadingLevel as LoadingLevel
 import GameState.MainMenu as MainMenu
+import GameState.PlayingLevel.Msg as PlayingMsg
 import GameState.PlayingLevel.PlayingLevel as PlayingLevel
 import Html exposing (Html, br, button, div, text)
 import Html.Events exposing (onClick)
@@ -63,6 +64,7 @@ type Msg
     | InputControllerMsg InputController.Msg
     | LoadingLevelMsg LoadingLevel.Msg
     | AnimationFrameUpdate Float
+    | PlayingLevelMsg PlayingMsg.Msg
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -73,6 +75,7 @@ init flags =
             , height = flags.height
             , pixelSize = flags.pixelSize
             , additionalViewBorder = flags.additionalViewBorder
+            , additionalEnvironment = 0
             }
 
         model =
@@ -133,7 +136,6 @@ update msg model =
         ( AnimationFrameUpdate timeDelta, _ ) ->
             updateGameState timeDelta model
                 |> updateFps timeDelta
-                |> createView
 
         ( _, _ ) ->
             ( model
@@ -225,7 +227,7 @@ updateGameState timeDelta givenModel =
 
                         PlayingLevelState stateModel ->
                             case PlayingLevel.updateTick model.currentTick model.inputModel stateModel of
-                                PlayingLevel.Stay newModel ->
+                                PlayingLevel.Stay newModel subCmd ->
                                     newModel
                                         |> PlayingLevelState
                                         |> setGameState model
@@ -238,7 +240,7 @@ updateGameState timeDelta givenModel =
                                                     )
                                                 )
                                                     a
-                                                    [ cmd ]
+                                                    [ cmd, Cmd.map PlayingLevelMsg subCmd ]
                                            )
 
                                 PlayingLevel.LoadLevel name ->
@@ -269,6 +271,14 @@ updateGameState timeDelta givenModel =
                 (List.take givenModel.maxUpdatesPerView <| List.repeat ((givenModel.timeBuffer + round timeDelta) // gameSpeed) ())
                 |> (\( newModel, newCmd ) ->
                         ( updateTimeBuffer (round timeDelta) gameSpeed newModel, newCmd )
+                   )
+                |> (\( newModel, newCmd ) ->
+                        if ((givenModel.timeBuffer + round timeDelta) // gameSpeed) > 0 then
+                            ( newModel, newCmd )
+                                |> createView
+
+                        else
+                            ( newModel, newCmd )
                    )
 
         Nothing ->
@@ -339,7 +349,7 @@ privateView model =
                 PlayingLevel.view model.currentTick subModel
 
             ErrorState error ->
-                text <| "ERROR: " ++ error
+                Html.pre [] [ text <| "ERROR: " ++ error ]
         , if model.debug then
             debugView model
 

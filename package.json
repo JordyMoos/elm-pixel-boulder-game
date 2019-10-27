@@ -44,6 +44,8 @@
     "webpack-merge": "^4.1.4"
   },
   "dependencies": {
+    "aframe": "^0.9.2",
+    "aframe-extras": "^6.0.0",
     "purecss": "^1.0.0"
   }
 }

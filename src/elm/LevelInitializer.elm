@@ -11,8 +11,8 @@ import String.Extra
 
 initLevel : Config -> Actor.LevelConfig -> Actor.Level
 initLevel config levelConfig =
-    emptyLevel config levelConfig.viewCoordinate
-        |> setBackground levelConfig.background
+    emptyLevel (Maybe.withDefault config levelConfig.config) levelConfig.viewCoordinate
+        |> setBackgrounds levelConfig.backgrounds
         |> setActors levelConfig
         |> setEventManager levelConfig
 
@@ -22,24 +22,23 @@ emptyLevel config coordinate =
     { nextActorId = 0
     , actors = Dict.fromList []
     , positionIndices =
-        { static = Dict.fromList []
+        { environment = Dict.fromList []
+        , static = Dict.fromList []
         , dynamic = Dict.fromList []
         }
     , view =
         { coordinate = coordinate
-        , pixelSize = config.pixelSize
-        , width = config.width
-        , height = config.height
         }
-    , background = Actor.Decoder.defaultBackground
+    , backgrounds = Actor.Decoder.defaultBackgrounds
     , eventManager = Actor.emptyEventManager
     , events = []
+    , config = config
     }
 
 
-setBackground : Actor.RenderComponentData -> Actor.Level -> Actor.Level
-setBackground background level =
-    { level | background = background }
+setBackgrounds : List Actor.RenderComponentData -> Actor.Level -> Actor.Level
+setBackgrounds backgrounds level =
+    { level | backgrounds = backgrounds }
 
 
 setEventManager : Actor.LevelConfig -> Actor.Level -> Actor.Level

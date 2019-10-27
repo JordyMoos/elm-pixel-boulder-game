@@ -10,6 +10,8 @@ module Actor.Common exposing
     , getActorsThatAffectNeighborPosition
     , getCameraComponent
     , getDynamicActorIdsByXY
+    , getEnvironmentActorIdsByPosition
+    , getEnvironmentActorsByPosition
     , getMovementComponent
     , getMovingTowardsData
     , getPosition
@@ -86,6 +88,11 @@ updateActor actors actor =
 updateActors : Level -> Actors -> Level
 updateActors level actors =
     { level | actors = actors }
+
+
+updateEnvironmentPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
+updateEnvironmentPositionIndex environment indices =
+    { indices | environment = environment }
 
 
 updateStaticPositionIndex : PositionIndex -> PositionIndices -> PositionIndices
@@ -218,8 +225,8 @@ addActor components givenLevel =
                     |> Maybe.map
                         (\transform ->
                             updateViewCoordinate
-                                { x = (transform.position.x - round (toFloat level.view.width / 2)) * level.view.pixelSize
-                                , y = (transform.position.y - round (toFloat level.view.height / 2)) * level.view.pixelSize
+                                { x = (transform.position.x - round (toFloat level.config.width / 2)) * level.config.pixelSize
+                                , y = (transform.position.y - round (toFloat level.config.height / 2)) * level.config.pixelSize
                                 }
                                 level.view
                                 |> (\b a -> setView a b) level
@@ -253,6 +260,11 @@ incrementNextActorId level =
 addActorToIndices : Position -> Actor -> Level -> Level
 addActorToIndices position actor level =
     case getActorType actor of
+        EnvironmentActor ->
+            addActorToEnvironmentIndex level position actor.id
+                |> Pilf.flip updateEnvironmentPositionIndex level.positionIndices
+                |> updatePositionIndices level
+
         StaticActor ->
             addActorToStaticIndex level position actor.id
                 |> Pilf.flip updateStaticPositionIndex level.positionIndices
@@ -281,6 +293,11 @@ addActorToIndex index position actorId =
         index
 
 
+addActorToEnvironmentIndex : Level -> Position -> ActorId -> PositionIndex
+addActorToEnvironmentIndex level =
+    addActorToIndex level.positionIndices.environment
+
+
 addActorToStaticIndex : Level -> Position -> ActorId -> PositionIndex
 addActorToStaticIndex level =
     addActorToIndex level.positionIndices.static
@@ -294,11 +311,14 @@ addActorToDynamicIndex level =
 getActorType : Actor -> ActorType
 getActorType actor =
     let
-        hasUpdateableComponents =
+        hasUpdateableComponents innerActor =
             List.any
                 (\component ->
                     case component of
                         Actor.AiComponent _ ->
+                            True
+
+                        Actor.AreaComponent _ ->
                             True
 
                         Actor.CameraComponent _ ->
@@ -328,20 +348,55 @@ getActorType actor =
                         Actor.MovementComponent _ ->
                             True
 
+                        Actor.TriggerActivatorComponent _ ->
+                            True
+
                         Actor.TriggerExplodableComponent _ ->
                             True
 
                         _ ->
                             False
                 )
-                (Dict.values actor.components)
-    in
-    case hasUpdateableComponents of
-        True ->
-            DynamicActor
+                (Dict.values innerActor.components)
 
-        False ->
-            StaticActor
+        hasStaticComponents innerActor =
+            List.any
+                (\component ->
+                    case component of
+                        AttackComponent _ ->
+                            True
+
+                        CollectibleComponent _ ->
+                            True
+
+                        ExplodableComponent ->
+                            True
+
+                        HealthComponent _ ->
+                            True
+
+                        PhysicsComponent _ ->
+                            True
+
+                        RigidComponent ->
+                            True
+
+                        TriggerComponent _ ->
+                            True
+
+                        _ ->
+                            False
+                )
+                (Dict.values innerActor.components)
+    in
+    if hasUpdateableComponents actor then
+        DynamicActor
+
+    else if hasStaticComponents actor then
+        StaticActor
+
+    else
+        EnvironmentActor
 
 
 
@@ -429,6 +484,21 @@ getActorsThatAffect position level =
                             |> Maybe.Extra.isJust
                     ]
             )
+
+
+getEnvironmentActorsByPosition : Position -> Level -> List Actor
+getEnvironmentActorsByPosition position level =
+    getEnvironmentActorIdsByPosition position level
+        |> List.map
+            (\actorId ->
+                getActorById actorId level
+            )
+        |> Maybe.Extra.values
+
+
+getEnvironmentActorIdsByPosition : Position -> Level -> List ActorId
+getEnvironmentActorIdsByPosition position level =
+    Util.dictGetWithDefault level.positionIndices.environment ( position.x, position.y ) []
 
 
 isEmpty : Position -> Level -> Bool

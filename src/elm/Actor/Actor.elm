@@ -4,6 +4,8 @@ module Actor.Actor exposing
     , ActorType(..)
     , Actors
     , AdventAiData
+    , AframeCamera
+    , AframeRendererData
     , AiComponentData
     , AiType(..)
     , AnimationSetup
@@ -30,9 +32,12 @@ module Actor.Actor exposing
     , GameOfLifeAiData
     , Health
     , HealthComponentData
-    , ImageRenderComponentData
+    , Image
+    , ImageType(..)
+    , ImageTypeData
     , Images
     , ImagesData
+    , InputControlData
     , Inventory
     , InventoryUpdatedSubscriberData
     , KeyedComponent
@@ -43,15 +48,29 @@ module Actor.Actor exposing
     , LevelFinishedDescriptionProvider(..)
     , LifetimeAction(..)
     , LifetimeComponentData
+    , LinkImageData
+    , LoadLevelData
     , MovementComponentData
     , MovingDownState(..)
     , MovingState(..)
     , MovingTowardsData
+    , ObjectAssets
+    , ObjectPresetData
+    , ObjectPresetName
+    , ObjectPresets
+    , ObjectSettings
+    , ObjectTypeData
+    , Objects
+    , OffsetType(..)
+    , PatternImageData
     , PhysicsComponentData
-    , PixelRenderComponentData
+    , PixelTypeData
     , PositionIndex
     , PositionIndices
-    , RenderComponentData(..)
+    , PositionOffsets
+    , RenderComponentData
+    , RenderType(..)
+    , Renderer(..)
     , Scene
     , Shape(..)
     , Signs
@@ -63,10 +82,16 @@ module Actor.Actor exposing
     , TagComponentData
     , TagDiedSubscriberData
     , TransformComponentData
+    , TriggerAction(..)
+    , TriggerActivatorComponentData
+    , TriggerComponentData
     , TriggerExplodableComponentData
+    , TriggerSendTextData
+    , Vec3
     , View
     , WalkAroundAiControlData
     , emptyEventManager
+    , emptyVec3
     )
 
 import Color exposing (Color)
@@ -75,6 +100,7 @@ import Data.Coordinate exposing (Coordinate)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
 import Dict exposing (Dict)
+import GameState.PlayingLevel.Msg as PlayingMsg
 
 
 type alias ActorId =
@@ -96,15 +122,13 @@ type alias Actors =
 
 
 type ActorType
-    = StaticActor
+    = EnvironmentActor
+    | StaticActor
     | DynamicActor
 
 
 type alias View =
     { coordinate : Coordinate
-    , pixelSize : Int
-    , width : Int
-    , height : Int
     }
 
 
@@ -113,7 +137,8 @@ type alias PositionIndex =
 
 
 type alias PositionIndices =
-    { static : PositionIndex
+    { environment : PositionIndex
+    , static : PositionIndex
     , dynamic : PositionIndex
     }
 
@@ -139,7 +164,87 @@ type alias Scene =
 
 
 type alias Images =
+    Dict String Image
+
+
+type alias Image =
+    { path : String
+    , width : Int
+    , height : Int
+    , imageType : ImageType
+    , xOffset : Int
+    , yOffset : Int
+    }
+
+
+type alias PositionOffsets =
+    { x : List OffsetType
+    , y : List OffsetType
+    , z : List OffsetType
+    }
+
+
+type alias Vec3 =
+    { x : Float
+    , y : Float
+    , z : Float
+    }
+
+
+emptyVec3 : Vec3
+emptyVec3 =
+    { x = 0.0
+    , y = 0.0
+    , z = 0.0
+    }
+
+
+type alias Objects =
+    { assets : ObjectAssets
+    , presets : ObjectPresets
+    }
+
+
+type alias ObjectAssets =
     Dict String String
+
+
+type alias ObjectPresets =
+    Dict String ObjectPresetData
+
+
+type alias ObjectPresetData =
+    { settings : ObjectSettings
+    , offsets : PositionOffsets
+    }
+
+
+type alias ObjectSettings =
+    Dict String String
+
+
+type ImageType
+    = RegularImage
+    | PatternImage PatternImageData
+    | LinkImage LinkImageData
+
+
+type alias PatternImageData =
+    { offsets : PositionOffsets
+    }
+
+
+type OffsetType
+    = FixedOffset Float
+    | MultipliedByViewX Float
+    | MultipliedByViewY Float
+    | ViewOffsetX
+    | ViewOffsetY
+
+
+type alias LinkImageData =
+    { href : String
+    }
 
 
 type alias LevelConfig =
@@ -150,9 +255,26 @@ type alias LevelConfig =
     , viewCoordinate : Coordinate
     , updateBorder : Int
     , images : Images
-    , background : RenderComponentData
+    , objects : Objects
+    , backgrounds : List RenderComponentData
     , subscribers : Subscribers
+    , config : Maybe Config
+    , renderer : Renderer
     }
+
+
+type Renderer
+    = SvgRenderer
+    | AframeRenderer AframeRendererData
+
+
+type alias AframeRendererData =
+    { camera : AframeCamera
+    }
+
+
+type alias AframeCamera =
+    { offsets : PositionOffsets }
 
 
 type alias Level =
@@ -160,9 +282,10 @@ type alias Level =
     , actors : Actors
     , positionIndices : PositionIndices
     , view : View
-    , background : RenderComponentData
+    , backgrounds : List RenderComponentData
     , eventManager : EventManager
     , events : Events
+    , config : Config
     }
 
 
@@ -188,6 +311,8 @@ type Component
     | AttackComponent AttackComponentData
     | CounterComponent CounterComponentData
     | AreaComponent AreaComponentData
+    | TriggerComponent TriggerComponentData
+    | TriggerActivatorComponent TriggerActivatorComponentData
 
 
 
@@ -343,9 +468,14 @@ type alias ControlSettings =
 
 
 type ControlType
-    = InputControl
+    = InputControl InputControlData
     | WalkAroundAiControl WalkAroundAiControlData
     | GravityAiControl
+
+
+type alias InputControlData =
+    { allowedDirections : List Direction
+    }
 
 
 type alias WalkAroundAiControlData =
@@ -363,7 +493,10 @@ type alias WalkAroundAiControlData =
 
 
 type alias CameraComponentData =
-    { borderSize : Int
+    { borderLeft : Int
+    , borderUp : Int
+    , borderRight : Int
+    , borderDown : Int
     }
 
 
@@ -418,6 +551,39 @@ type alias AreaComponentData =
     , direction : Direction
     , tags : List String
     }
+
+
+
+{-
+
+   TriggerComponent
+
+-}
+
+
+type alias TriggerComponentData =
+    { action : TriggerAction
+    }
+
+
+type TriggerAction
+    = TriggerSendText TriggerSendTextData
+
+
+type alias TriggerSendTextData =
+    { message : String }
+
+
+
+{-
+
+   TriggerActivatorComponent
+
+-}
+
+
+type alias TriggerActivatorComponentData =
+    {}
 
 
 
@@ -487,15 +653,27 @@ type MovingDownState
 -}
 
 
-type RenderComponentData
-    = PixelRenderComponent PixelRenderComponentData
-    | ImageRenderComponent ImageRenderComponentData
+type alias RenderComponentData =
+    { renderType : RenderType
+    , layer : Int
+    }
 
 
-type alias PixelRenderComponentData =
+type RenderType
+    = PixelRenderType PixelTypeData
+    | ImageRenderType ImageTypeData
+    | ObjectRenderType ObjectTypeData
+
+
+type alias PixelTypeData =
     { colors : List Color
     , ticksPerColor : Int
-    , layer : Int
+    }
+
+
+type alias ImageTypeData =
+    { default : ImagesData
+    , direction : Dict Int ImagesData
     }
 
 
@@ -505,10 +683,13 @@ type alias ImagesData =
     }
 
 
-type alias ImageRenderComponentData =
-    { default : ImagesData
-    , direction : Dict Int ImagesData
-    , layer : Int
+type alias ObjectPresetName =
+    String
+
+
+type alias ObjectTypeData =
+    { default : ObjectPresetName
+    , direction : Dict Int ObjectPresetName
     }
 
 
@@ -593,12 +774,14 @@ type Event
     = ActorAdded Actor
     | ActorRemoved Actor
     | InventoryUpdated Inventory
+    | TriggerActivated TriggerComponentData
 
 
 type EventAction
-    = LevelContinue
+    = LevelContinue (List (Cmd PlayingMsg.Msg))
     | LevelFailed LevelFailedData
     | LevelCompleted LevelCompletedData
+    | LoadLevel LoadLevelData
 
 
 type alias LevelFailedData =
@@ -616,6 +799,11 @@ type alias LevelCompletedData =
     }
 
 
+type alias LoadLevelData =
+    { nextLevel : String
+    }
+
+
 type LevelFinishedDescriptionProvider
     = StaticDescriptionProvider String
     | AdventOfCodeDescriptionProvider
@@ -628,6 +816,7 @@ type alias Events =
 type Subscriber
     = TagDiedSubscriber EventAction TagDiedSubscriberData
     | InventoryUpdatedSubscriber EventAction InventoryUpdatedSubscriberData
+    | TriggerActivatedSubscriber
 
 
 type alias TagDiedSubscriberData =

@@ -16,6 +16,7 @@ import GameState.PlayingLevel.DescriptionProvider as DescriptionProvider
 import GameState.PlayingLevel.Failed.FailedAnimation as FailedAnimation
 import GameState.PlayingLevel.Failed.FailedDescription as FailedDescription
 import GameState.PlayingLevel.Failed.FailedMenu as FailedMenu
+import GameState.PlayingLevel.Msg as PlayingMsg
 import GameState.PlayingLevel.PauseMenu as PauseMenu
 import GameState.PlayingLevel.Playing as Playing
 import Html exposing (Html)
@@ -41,7 +42,7 @@ type State
 
 
 type Action
-    = Stay Model
+    = Stay Model (Cmd PlayingMsg.Msg)
     | LoadLevel String
     | GotoMainMenu
 
@@ -59,14 +60,18 @@ updateTick currentTick inputModel model =
     case model.state of
         PlayingState subModel ->
             case Playing.updateTick currentTick inputModel subModel of
-                Playing.Stay playingModel ->
-                    Stay { model | state = PlayingState playingModel }
+                Playing.Stay playingModel cmd ->
+                    Stay { model | state = PlayingState playingModel } cmd
 
                 Playing.GotoPauseMenu level ->
                     Stay
                         { model
                             | state = PauseMenuState <| PauseMenu.init model.config level
                         }
+                        Cmd.none
+
+                Playing.GotoLevel levelName ->
+                    LoadLevel levelName
 
                 Playing.Failed level data ->
                     Stay
@@ -87,6 +92,7 @@ updateTick currentTick inputModel model =
                                         (DescriptionProvider.createDescription data.descriptionProvider level)
                                         level
                         }
+                        Cmd.none
 
                 Playing.Completed level data ->
                     Stay
@@ -108,11 +114,12 @@ updateTick currentTick inputModel model =
                                         data.nextLevel
                                         level
                         }
+                        Cmd.none
 
         PauseMenuState subModel ->
             case PauseMenu.updateTick inputModel subModel of
                 PauseMenu.Stay menuModel ->
-                    Stay { model | state = PauseMenuState menuModel }
+                    Stay { model | state = PauseMenuState menuModel } Cmd.none
 
                 PauseMenu.Resume level ->
                     Stay
@@ -124,6 +131,7 @@ updateTick currentTick inputModel model =
                                         model.levelConfig
                                         level
                         }
+                        Cmd.none
 
                 PauseMenu.Restart ->
                     Stay
@@ -134,6 +142,7 @@ updateTick currentTick inputModel model =
                                         model.config
                                         model.levelConfig
                         }
+                        Cmd.none
 
                 PauseMenu.GotoMainMenu ->
                     GotoMainMenu
@@ -141,26 +150,26 @@ updateTick currentTick inputModel model =
         FailedAnimationState subModel ->
             case FailedAnimation.updateTick currentTick inputModel subModel of
                 FailedAnimation.Stay animationModel ->
-                    Stay { model | state = FailedAnimationState animationModel }
+                    Stay { model | state = FailedAnimationState animationModel } Cmd.none
 
                 FailedAnimation.Finished description ->
-                    Stay { model | state = FailedDescriptionState <| FailedDescription.init model.config description }
+                    Stay { model | state = FailedDescriptionState <| FailedDescription.init model.config description } Cmd.none
 
         FailedDescriptionState subModel ->
             case FailedDescription.updateTick inputModel subModel of
                 FailedDescription.Stay descriptionModel ->
-                    Stay { model | state = FailedDescriptionState descriptionModel }
+                    Stay { model | state = FailedDescriptionState descriptionModel } Cmd.none
 
                 FailedDescription.Finished ->
-                    Stay { model | state = FailedMenuState <| FailedMenu.init model.config }
+                    Stay { model | state = FailedMenuState <| FailedMenu.init model.config } Cmd.none
 
         FailedMenuState subModel ->
             case FailedMenu.updateTick inputModel subModel of
                 FailedMenu.Stay menuModel ->
-                    Stay { model | state = FailedMenuState menuModel }
+                    Stay { model | state = FailedMenuState menuModel } Cmd.none
 
                 FailedMenu.Restart ->
-                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig }
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig } Cmd.none
 
                 FailedMenu.GotoMainMenu ->
                     GotoMainMenu
@@ -168,29 +177,29 @@ updateTick currentTick inputModel model =
         CompletedAnimationState subModel ->
             case CompletedAnimation.updateTick currentTick inputModel subModel of
                 CompletedAnimation.Stay animationModel ->
-                    Stay { model | state = CompletedAnimationState animationModel }
+                    Stay { model | state = CompletedAnimationState animationModel } Cmd.none
 
                 CompletedAnimation.Finished description nextLevel ->
-                    Stay { model | state = CompletedDescriptionState <| CompletedDescription.init model.config description nextLevel }
+                    Stay { model | state = CompletedDescriptionState <| CompletedDescription.init model.config description nextLevel } Cmd.none
 
         CompletedDescriptionState subModel ->
             case CompletedDescription.updateTick inputModel subModel of
                 CompletedDescription.Stay descriptionModel ->
-                    Stay { model | state = CompletedDescriptionState descriptionModel }
+                    Stay { model | state = CompletedDescriptionState descriptionModel } Cmd.none
 
                 CompletedDescription.Finished nextLevel ->
-                    Stay { model | state = CompletedMenuState <| CompletedMenu.init model.config nextLevel }
+                    Stay { model | state = CompletedMenuState <| CompletedMenu.init model.config nextLevel } Cmd.none
 
         CompletedMenuState subModel ->
             case CompletedMenu.updateTick inputModel subModel of
                 CompletedMenu.Stay menuModel ->
-                    Stay { model | state = CompletedMenuState menuModel }
+                    Stay { model | state = CompletedMenuState menuModel } Cmd.none
 
                 CompletedMenu.GotoNextLevel name ->
                     LoadLevel name
 
                 CompletedMenu.Restart ->
-                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig }
+                    Stay { model | state = PlayingState <| Playing.init model.config model.levelConfig } Cmd.none
 
                 CompletedMenu.GotoMainMenu ->
                     GotoMainMenu

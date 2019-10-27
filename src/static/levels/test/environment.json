@@ -1,0 +1,522 @@
+{
+  "entities": {
+    "girl": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "girl-00",
+                  "girl-01",
+                  "girl-02",
+                  "girl-03",
+                  "girl-04"
+                ],
+                "ticksPerImage": 10
+              },
+              "direction": {
+                "right": {
+                  "names": [
+                    "girl-05",
+                    "girl-06",
+                    "girl-07",
+                    "girl-08",
+                    "girl-09",
+                    "girl-10"
+                  ],
+                  "ticksPerImage": 6
+                },
+                "left": {
+                  "names": [
+                    "girl-11",
+                    "girl-12",
+                    "girl-13",
+                    "girl-14",
+                    "girl-15",
+                    "girl-16"
+                  ],
+                  "ticksPerImage": 6
+                }
+              }
+            }
+          },
+          "layer": 100
+        }
+      },
+      {
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 50,
+            "walkOverStrength": 50
+          },
+          "steps": 20,
+          "control": {
+            "type": "input",
+            "data": {
+              "allowedDirections": [
+                "left",
+                "right"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "movement",
+        "data": {
+          "movingTicks": 2
+        }
+      },
+      {
+        "type": "collector",
+        "data": {
+          "interestedIn": [
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type": "rigid"
+      },
+      {
+        "type": "camera",
+        "data": {
+          "borderLeft": 2,
+          "borderUp": 10,
+          "borderRight": 13,
+          "borderDown": 1
+        }
+      },
+      {
+        "type": "physics",
+        "data": {
+          "strength": 100,
+          "shape": "square"
+        }
+      }
+    ],
+    "floor": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "floor-1"
+                ]
+              }
+            }
+          },
+          "layer": 1
+        }
+      }
+    ],
+    "board": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "board"
+                ]
+              }
+            }
+          },
+          "layer": 19
+        }
+      }
+    ],
+    "link": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "link"
+                ]
+              }
+            }
+          },
+          "layer": 19
+        }
+      }
+    ],
+    "slide-006": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "slide-006"
+                ]
+              }
+            }
+          },
+          "layer": 20
+        }
+      }
+    ],
+    "slide-008": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "slide-008"
+                ]
+              }
+            }
+          },
+          "layer": 20
+        }
+      }
+    ],
+    "tree-fg-1": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-1"
+                ]
+              }
+            }
+          },
+          "layer": 5
+        }
+      }
+    ],
+    "tree-fg-2": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-2"
+                ]
+              }
+            }
+          },
+          "layer": 5
+        }
+      }
+    ],
+    "tree-fg-3": [
+      {
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "image",
+            "data": {
+              "default": {
+                "names": [
+                  "tree-fg-3"
+                ]
+              }
+            }
+          },
+          "layer": 5
+        }
+      }
+    ]
+  },
+  "signs": {
+    "g": "girl",
+    "-": "floor",
+    "b": "board",
+    "l": "link",
+    "6": "slide-006",
+    "8": "slide-008",
+    "t": "tree-fg-1",
+    "r": "tree-fg-2",
+    "e": "tree-fg-3"
+  },
+  "images": {
+    "girl-00": {
+      "path": "./images/prehistoric/girl/girl-00.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-01": {
+      "path": "./images/prehistoric/girl/girl-01.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-02": {
+      "path": "./images/prehistoric/girl/girl-02.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-03": {
+      "path": "./images/prehistoric/girl/girl-03.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-04": {
+      "path": "./images/prehistoric/girl/girl-04.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-05": {
+      "path": "./images/prehistoric/girl/girl-05.png",
+      "width": 59,
+      "height": 64,
+      "yOffset": 2
+    },
+    "girl-06": {
+      "path": "./images/prehistoric/girl/girl-06.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-07": {
+      "path": "./images/prehistoric/girl/girl-07.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-08": {
+      "path": "./images/prehistoric/girl/girl-08.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-09": {
+      "path": "./images/prehistoric/girl/girl-09.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-10": {
+      "path": "./images/prehistoric/girl/girl-10.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-11": {
+      "path": "./images/prehistoric/girl/girl-11.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-12": {
+      "path": "./images/prehistoric/girl/girl-12.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-13": {
+      "path": "./images/prehistoric/girl/girl-13.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-14": {
+      "path": "./images/prehistoric/girl/girl-14.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-15": {
+      "path": "./images/prehistoric/girl/girl-15.png",
+      "width": 59,
+      "height": 64
+    },
+    "girl-16": {
+      "path": "./images/prehistoric/girl/girl-16.png",
+      "width": 59,
+      "height": 64
+    },
+    "floor-1": {
+      "path": "./images/prehistoric/environment/floor-1.png",
+      "width": 64,
+      "height": 64
+    },
+    "background-forest": {
+      "path": "./images/prehistoric/background/scaled-1024/forest.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "offsets": {
+            "x": [
+              {
+                "type": "view_x_multiplier",
+                "data": -0.5
+              }
+            ]
+          }
+        }
+      }
+    },
+    "background-mountain": {
+      "path": "./images/prehistoric/background/scaled-1024/mountain.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "offsets": {
+            "x": [
+              {
+                "type": "view_x_multiplier",
+                "data": -0.05
+              }
+            ]
+          }
+        }
+      }
+    },
+    "background-sky-1": {
+      "path": "./images/prehistoric/background/scaled-1024/sky-1.png",
+      "width": 1024,
+      "height": 768,
+      "imageType": {
+        "type": "pattern",
+        "data": {
+          "offsets": {
+            "x": [
+              {
+                "type": "view_x_multiplier",
+                "data": -0.005
+              }
+            ]
+          }
+        }
+      }
+    },
+    "board": {
+      "path": "./images/slides/board.png",
+      "width": 768,
+      "height": 480,
+      "xOffset": 48,
+      "yOffset": -16
+    },
+    "link": {
+      "path": "./images/slides/board.png",
+      "width": 768,
+      "height": 480,
+      "xOffset": 48,
+      "yOffset": -16,
+      "imageType": {
+        "type": "link",
+        "data": {
+          "href": "https://www.google.com"
+        }
+      }
+    },
+    "slide-006": {
+      "path": "./images/slides/006.png",
+      "width": 715,
+      "height": 448,
+      "xOffset": 10
+    },
+    "slide-008": {
+      "path": "./images/slides/008.png",
+      "width": 800,
+      "height": 583
+    },
+    "tree-fg-1": {
+      "path": "./images/prehistoric/environment/tree-fg-1.png",
+      "width": 112,
+      "height": 112,
+      "yOffset": 17
+    },
+    "tree-fg-2": {
+      "path": "./images/prehistoric/environment/tree-fg-2.png",
+      "width": 112,
+      "height": 192
+    },
+    "tree-fg-3": {
+      "path": "./images/prehistoric/environment/tree-fg-3.png",
+      "width": 112,
+      "height": 368,
+      "yOffset": 17
+    }
+  },
+  "backgrounds": [
+    {
+      "renderType": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-sky-1"
+            ]
+          }
+        }
+      },
+      "layer": -2
+    },
+    {
+      "renderType": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-mountain"
+            ]
+          }
+        }
+      },
+      "layer": -1
+    },
+    {
+      "renderType": {
+        "type": "image",
+        "data": {
+          "default": {
+            "names": [
+              "background-forest"
+            ]
+          }
+        }
+      },
+      "layer": 0
+    }
+  ],
+  "scene": [
+    "                     b6                   l8",
+    "",
+    "",
+    "",
+    "e                             e   e    e   e   ee e    e   e   ee   e e",
+    "",
+    "",
+    "                          r",
+    "                       t   t       t            t t              t",
+    "  g",
+    "----------------------------------------------------------------------------------"
+  ],
+  "config": {
+    "width": 16,
+    "height": 12,
+    "pixelSize": 64,
+    "additionalViewBorder": 0
+  },
+  "renderer": {
+    "type": "svg"
+  }
+}

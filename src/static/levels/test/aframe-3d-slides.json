@@ -1,0 +1,203 @@
+{
+  "entities":{
+    "hero":[
+      {
+        "type":"render",
+        "data":{
+          "renderType":{
+            "type":"object",
+            "data":{
+              "default": "robot-idle",
+              "direction":{
+                "right": "robot-walk-right",
+                "left": "robot-walk-left"
+              }
+            }
+          },
+          "layer": -100
+        }
+      },
+      {
+        "type":"control",
+        "data":{
+          "settings":{
+            "pushStrength":50,
+            "walkOverStrength":50
+          },
+          "steps":20,
+          "control":{
+            "type":"input",
+            "data":{
+              "allowedDirections":[
+                "left",
+                "right"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type":"movement",
+        "data":{
+          "movingTicks":2
+        }
+      },
+      {
+        "type":"collector",
+        "data":{
+          "interestedIn":[
+            "diamond",
+            "dirt"
+          ]
+        }
+      },
+      {
+        "type":"rigid"
+      },
+      {
+        "type":"camera",
+        "data":{
+          "borderLeft":2,
+          "borderUp":10,
+          "borderRight":13,
+          "borderDown":1
+        }
+      },
+      {
+        "type":"physics",
+        "data":{
+          "strength":100,
+          "shape":"square"
+        }
+      }
+    ]
+  },
+  "signs":{
+    "h":"hero"
+  },
+  "objects": {
+    "assets": {
+      "robot": "./objects/demo/robot/robot.glb"
+    },
+    "presets": {
+      "robot-walk-right": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Running;",
+          "rotation": "0 90 -20",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+          ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "robot-walk-left": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Running;",
+          "rotation": "0 -70 20",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+        ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "robot-idle": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/robot/robot.glb)",
+          "animation-mixer": "clip: RobotArmature|Robot_Idle;",
+          "rotation": "0 90 -20",
+          "scale": "0.3 0.3 0.3"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.45
+            }
+          ]
+        ,"z": [
+            {
+              "type": "fixed",
+              "data": 1.0
+            }
+          ]
+        }
+      },
+      "light": {
+        "settings": {
+          "light": "type: ambient; color: #CCC;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "view_offset_x"
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -2.2
+            }
+          ]
+        }
+      }
+    }
+  },
+  "images":{
+  },
+  "backgrounds":[
+    {
+        "renderType":{
+          "type":"object",
+          "data":{
+            "default": "light"
+          }
+        },
+        "layer": -20
+    }
+  ],
+  "scene":[
+    "      h"
+  ],
+  "config":{
+    "width":16,
+    "height":12,
+    "pixelSize":64,
+    "additionalViewBorder": 4
+  },
+  "renderer":{
+    "type":"aframe",
+    "data":{
+      "camera":{
+        "offset":{
+          "x":0,
+          "y":0.5,
+          "z":3
+        }
+      }
+    }
+  }
+}
