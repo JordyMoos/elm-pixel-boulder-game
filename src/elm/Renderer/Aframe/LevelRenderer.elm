@@ -99,7 +99,7 @@ drawCamera aframeRenderData level viewPositionCoordinate viewPixelOffset acc =
                     String.join " "
                         [ String.fromFloat x
                         , String.fromFloat (y * -1)
-                        , String.fromFloat computedOffsets.z
+                        , "7" -- String.fromFloat computedOffsets.z
                         ]
                 , attribute "wasd-controls" "enabled: false;"
                 ]
