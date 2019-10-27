@@ -161,13 +161,7 @@ defaultAframeCamera =
 
 defaultBackgrounds : List RenderComponentData
 defaultBackgrounds =
-    [ { renderType =
-            PixelRenderType
-                { colors = [ Color.white ]
-                , ticksPerColor = 1
-                }
-      , layer = 0
-      }
+    [ 
     ]
 
 

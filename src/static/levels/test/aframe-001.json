@@ -639,7 +639,7 @@
       "height":384
     }
   },
-  "background":[
+  "backgrounds":[
     {
       "renderType":{
         "type":"image",
