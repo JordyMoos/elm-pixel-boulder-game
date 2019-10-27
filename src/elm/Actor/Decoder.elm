@@ -161,7 +161,7 @@ defaultAframeCamera =
 
 defaultBackgrounds : List RenderComponentData
 defaultBackgrounds =
-    [ 
+    [
     ]
 
 
