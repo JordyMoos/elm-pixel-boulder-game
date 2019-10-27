@@ -575,22 +575,7 @@
     "#":"strongwall",
     "*":"diamond"
   },
-  "background":[
-    {
-      "renderType":{
-        "type":"pixel",
-        "data":{
-          "colors":[
-            {
-              "red":255,
-              "green":255,
-              "blue":255
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "backgrounds":[],
   "scene":[
     "#########################################",
     "#.................o.....o...............#",
