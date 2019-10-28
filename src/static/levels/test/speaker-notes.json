@@ -100,7 +100,7 @@
             "pushStrength": 50,
             "walkOverStrength": 50
           },
-          "steps":5,
+          "steps": 5,
           "control": {
             "type": "input",
             "data": {

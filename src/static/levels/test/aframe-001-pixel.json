@@ -645,14 +645,23 @@
       }
     }
   ],
-  "renderer":{
-    "type":"aframe",
-    "data":{
-      "camera":{
-        "offset":{
-          "x":0,
-          "y":0.5,
-          "z":3
+  "renderer": {
+    "type": "aframe",
+    "data": {
+      "camera": {
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 7
+            }
+          ]
         }
       }
     }
