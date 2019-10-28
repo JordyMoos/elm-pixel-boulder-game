@@ -1,14 +1,14 @@
 {
-  "entities":{
-    "hero":[
+  "entities": {
+    "hero": [
       {
-        "type":"render",
-        "data":{
-          "renderType":{
-            "type":"object",
-            "data":{
+        "type": "render",
+        "data": {
+          "renderType": {
+            "type": "object",
+            "data": {
               "default": "robot-idle",
-              "direction":{
+              "direction": {
                 "right": "robot-walk-right",
                 "left": "robot-walk-left"
               }
@@ -18,17 +18,17 @@
         }
       },
       {
-        "type":"control",
-        "data":{
-          "settings":{
-            "pushStrength":50,
-            "walkOverStrength":50
+        "type": "control",
+        "data": {
+          "settings": {
+            "pushStrength": 50,
+            "walkOverStrength": 50
           },
-          "steps":20,
-          "control":{
-            "type":"input",
-            "data":{
-              "allowedDirections":[
+          "steps": 20,
+          "control": {
+            "type": "input",
+            "data": {
+              "allowedDirections": [
                 "left",
                 "right"
               ]
@@ -37,43 +37,43 @@
         }
       },
       {
-        "type":"movement",
-        "data":{
-          "movingTicks":2
+        "type": "movement",
+        "data": {
+          "movingTicks": 2
         }
       },
       {
-        "type":"collector",
-        "data":{
-          "interestedIn":[
+        "type": "collector",
+        "data": {
+          "interestedIn": [
             "diamond",
             "dirt"
           ]
         }
       },
       {
-        "type":"rigid"
+        "type": "rigid"
       },
       {
-        "type":"camera",
-        "data":{
-          "borderLeft":2,
-          "borderUp":10,
-          "borderRight":13,
-          "borderDown":1
+        "type": "camera",
+        "data": {
+          "borderLeft": 2,
+          "borderUp": 10,
+          "borderRight": 13,
+          "borderDown": 1
         }
       },
       {
-        "type":"physics",
-        "data":{
-          "strength":100,
-          "shape":"square"
+        "type": "physics",
+        "data": {
+          "strength": 100,
+          "shape": "square"
         }
       }
     ]
   },
-  "signs":{
-    "h":"hero"
+  "signs": {
+    "h": "hero"
   },
   "objects": {
     "assets": {
@@ -93,8 +93,8 @@
               "type": "fixed",
               "data": 0.45
             }
-          ]
-          ,"z": [
+          ],
+          "z": [
             {
               "type": "fixed",
               "data": 1.0
@@ -115,8 +115,8 @@
               "type": "fixed",
               "data": 0.45
             }
-          ]
-        ,"z": [
+          ],
+          "z": [
             {
               "type": "fixed",
               "data": 1.0
@@ -137,8 +137,8 @@
               "type": "fixed",
               "data": 0.45
             }
-          ]
-        ,"z": [
+          ],
+          "z": [
             {
               "type": "fixed",
               "data": 1.0
@@ -166,36 +166,45 @@
       }
     }
   },
-  "images":{
+  "images": {
   },
-  "backgrounds":[
+  "backgrounds": [
     {
-        "renderType":{
-          "type":"object",
-          "data":{
-            "default": "light"
-          }
-        },
-        "layer": -20
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "light"
+        }
+      },
+      "layer": -20
     }
   ],
-  "scene":[
+  "scene": [
     "      h"
   ],
-  "config":{
-    "width":16,
-    "height":12,
-    "pixelSize":64,
+  "config": {
+    "width": 16,
+    "height": 12,
+    "pixelSize": 64,
     "additionalViewBorder": 4
   },
-  "renderer":{
-    "type":"aframe",
-    "data":{
-      "camera":{
-        "offset":{
-          "x":0,
-          "y":0.5,
-          "z":3
+  "renderer": {
+    "type": "aframe",
+    "data": {
+      "camera": {
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0.5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 7
+            }
+          ]
         }
       }
     }
