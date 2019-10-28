@@ -146,20 +146,60 @@
           ]
         }
       },
-      "light": {
+      "light-ambient": {
         "settings": {
-          "light": "type: ambient; color: #CCC;"
+          "light": "type: ambient; color: #fff;"
+        }
+      },
+      "light-spot": {
+        "settings": {
+          "light": "type: spot; angle: 45; castShadow: false;"
         },
         "offsets": {
           "x": [
             {
-              "type": "view_offset_x"
+              "type": "fixed",
+              "data": 0
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 0
             }
           ],
           "z": [
             {
               "type": "fixed",
-              "data": -2.2
+              "data": 20
+            }
+          ]
+        }
+      },
+      "ground": {
+        "settings": {
+          "geometry": "primitive: circle; radius: 30",
+          "material": "side: double; color: #e3c29d",
+          "shadow": "receive: false",
+          "rotation": "70 0 0"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 0
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 4.8
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": 0
             }
           ]
         }
@@ -173,10 +213,28 @@
       "renderType": {
         "type": "object",
         "data": {
-          "default": "light"
+          "default": "light-ambient"
         }
       },
-      "layer": -20
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "light-spot"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "ground"
+        }
+      },
+      "layer": 0
     }
   ],
   "scene": [

@@ -1,0 +1,71 @@
+<html>
+<head>
+    <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v6.0.0/dist/aframe-extras.min.js"></script>
+</head>
+<body>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="aloe" src="./output/aloe-glb/aloe.glb"></a-asset-item>
+        <a-asset-item id="cactus01" src="./output/cactus01.glb"></a-asset-item>
+        <a-asset-item id="cactus02" src="./output/cactus02.glb"></a-asset-item>
+        <a-asset-item id="cactus03" src="./output/cactus03.glb"></a-asset-item>
+        <a-asset-item id="rock01" src="./output/rock01.glb"></a-asset-item>
+        <a-asset-item id="rock02" src="./output/rock02.glb"></a-asset-item>
+        <a-asset-item id="rock03" src="./output/rock03.glb"></a-asset-item>
+        <a-asset-item id="rock04" src="./output/rock04.glb"></a-asset-item>
+        <a-asset-item id="rock05" src="./output/rock05.glb"></a-asset-item>
+        <a-asset-item id="rock06" src="./output/rock06.glb"></a-asset-item>
+        <a-asset-item id="rock07" src="./output/rock07.glb"></a-asset-item>
+        <a-asset-item id="rock08" src="./output/rock08.glb"></a-asset-item>
+        <a-asset-item id="robot" src="./output/robot/robot.glb"></a-asset-item>
+        <img id="skybox" src="./skybox.jpg">
+    </a-assets>
+
+    <a-sky color="#8bcff7"></a-sky>
+    <!-- <a-sky src="#skybox"></a-sky> -->
+    <a-entity light="type: ambient; color: #CCC;"></a-entity>
+    <a-entity light="type: spot; angle: 45; castShadow:false;"></a-entity>
+    <a-entity light="type: point; intensity: 0.75; distance: 50; decay: 2; castShadow:false;" position="0 10 10"></a-entity>
+
+    <a-circle id="ground" color="#e3c29d" radius="30" rotation="-90 0 0" shadow="receive: true"></a-circle>
+
+
+    <a-entity gltf-model="#aloe" scale="0.6 1 1" position="1.5 0 -5.2"></a-entity>
+    <a-entity gltf-model="#aloe" scale="0.6 0.6 0.6" position="2 0 -5"></a-entity>
+
+    <a-entity gltf-model="#rock02" scale="3 3 3" position="5 -5 -17"></a-entity>
+
+    <a-entity gltf-model="#cactus02" scale="1 1 1" position="-1 0 -6"></a-entity>
+    <a-entity gltf-model="#cactus02" scale="1 1 1" rotation="10 30 0" position="-4 0 -4"></a-entity>
+
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: RobotArmature|Robot_Running;" position="-2 0 -3" rotation="0 90 0"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: RobotArmature|Robot_Wave;" position="0 0 -3" rotation="0 0 0"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: RobotArmature|Robot_Idle;" position="2 0 -3" rotation="0 -90 0"></a-entity>
+
+    <!-- <a-entity gltf-model="#aloe" position="0 0 -3"></a-entity> -->
+    <!-- <a-entity gltf-model="#cactus01" position="1 0 -3"></a-entity>
+    <a-entity gltf-model="#cactus02" position="2 0 -3"></a-entity>
+    <a-entity gltf-model="#cactus03" position="3 0 -3"></a-entity> -->
+
+    <!--
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: 'Animation RobotArmature|Robot_Dance';" position="-14 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Death*;" position="-12 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Idle*;" position="-10 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Jump*;" position="-8 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *No*;" position="-6 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Punch*;" position="-4 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Running*;" position="-2 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Sitting*;" position="0 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Standing*;" position="2 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *ThumbsUp*;" position="4 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Walking*;" position="6 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *WalkJump*;" position="8 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Wave*;" position="10 0 -2"></a-entity>
+    <a-entity gltf-model="#robot" scale="0.3 0.3 0.3" animation-mixer="clip: *Yes*;" position="12 0 -2"></a-entity>
+    -->
+
+
+</a-scene>
+</body>
+</html>
