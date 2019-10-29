@@ -94,16 +94,25 @@ drawCamera aframeRenderData level viewPositionCoordinate viewPixelOffset acc =
             toFloat viewPositionCoordinate.y + (toFloat level.config.height / 2.0) - yOffset
 
         cameraNode =
-            node "a-camera"
+            node "a-entity"
                 [ attribute "position" <|
                     String.join " "
                         [ String.fromFloat x
                         , String.fromFloat (y * -1)
                         , String.fromFloat computedOffsets.z
                         ]
-                , attribute "wasd-controls" "enabled: false;"
+                , attribute "rotation" <|
+                    String.join " "
+                        [ String.fromFloat aframeRenderData.camera.rotation.x
+                        , String.fromFloat aframeRenderData.camera.rotation.y
+                        , String.fromFloat aframeRenderData.camera.rotation.z
+                        ]
                 ]
-                []
+                [ node "a-camera"
+                    [ attribute "wasd-controls" "enabled: false;"
+                    ]
+                    []
+                ]
     in
     addToDrawAcc 0 cameraNode acc
 

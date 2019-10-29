@@ -77,7 +77,19 @@
   },
   "objects": {
     "assets": {
-      "robot": "./objects/demo/robot/robot.glb"
+      "robot": "./objects/demo/robot/robot.glb",
+      "aloe": "./objects/demo/environment/aloe.glb",
+      "cactus01": "./objects/demo/environment/cactus01.glb",
+      "cactus02": "./objects/demo/environment/cactus02.glb",
+      "cactus03": "./objects/demo/environment/cactus03.glb",
+      "rock01": "./objects/demo/environment/rock01.glb",
+      "rock02": "./objects/demo/environment/rock02.glb",
+      "rock03": "./objects/demo/environment/rock03.glb",
+      "rock04": "./objects/demo/environment/rock04.glb",
+      "rock05": "./objects/demo/environment/rock05.glb",
+      "rock06": "./objects/demo/environment/rock06.glb",
+      "rock07": "./objects/demo/environment/rock07.glb",
+      "rock08": "./objects/demo/environment/rock08.glb"
     },
     "presets": {
       "robot-walk-right": {
@@ -85,7 +97,8 @@
           "gltf-model": "url(./objects/demo/robot/robot.glb)",
           "animation-mixer": "clip: RobotArmature|Robot_Running;",
           "rotation": "0 90 -20",
-          "scale": "0.3 0.3 0.3"
+          "scale": "1 1 1",
+          "shadow": "receive: true: cast: true"
         },
         "offsets": {
           "y": [
@@ -107,7 +120,8 @@
           "gltf-model": "url(./objects/demo/robot/robot.glb)",
           "animation-mixer": "clip: RobotArmature|Robot_Running;",
           "rotation": "0 -70 20",
-          "scale": "0.3 0.3 0.3"
+          "scale": "1 1 1",
+          "shadow": "receive: true: cast: true"
         },
         "offsets": {
           "y": [
@@ -128,14 +142,15 @@
         "settings": {
           "gltf-model": "url(./objects/demo/robot/robot.glb)",
           "animation-mixer": "clip: RobotArmature|Robot_Idle;",
-          "rotation": "0 90 -20",
-          "scale": "0.3 0.3 0.3"
+          "rotation": "0 90 0",
+          "scale": "1 1 1",
+          "shadow": "receive: false: cast: true; type: pcfsoft"
         },
         "offsets": {
           "y": [
             {
               "type": "fixed",
-              "data": 0.45
+              "data": -2.45
             }
           ],
           "z": [
@@ -153,7 +168,7 @@
       },
       "light-spot": {
         "settings": {
-          "light": "type: spot; angle: 45; castShadow: false;"
+          "light": "type: spot; angle: 60; castShadow: true;"
         },
         "offsets": {
           "x": [
@@ -165,23 +180,32 @@
           "y": [
             {
               "type": "fixed",
-              "data": 0
+              "data": -10
             }
           ],
           "z": [
             {
               "type": "fixed",
-              "data": 20
+              "data": 30
             }
           ]
         }
       },
+      "sky": {
+        "settings": {
+          "geometry": "primitive: sphere; radius: 65",
+          "material": "color: #8bcff7; shader: flat; side: back;",
+          "shadow": "receive: true; cast: false;",
+          "rotation": "90 0 0"
+        },
+        "offsets": {}
+      },
       "ground": {
         "settings": {
-          "geometry": "primitive: circle; radius: 30",
+          "geometry": "primitive: circle; radius: 50",
           "material": "side: double; color: #e3c29d",
-          "shadow": "receive: false",
-          "rotation": "70 0 0"
+          "shadow": "receive: true; cast: false;",
+          "rotation": "90 0 0"
         },
         "offsets": {
           "x": [
@@ -199,7 +223,169 @@
           "z": [
             {
               "type": "fixed",
-              "data": 0
+              "data": -20
+            }
+          ]
+        }
+      },
+      "aloe-1": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/aloe.glb)",
+          "rotation": "0 0 0",
+          "scale": "2 2 2",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -3.0
+            }
+          ]
+        }
+      },
+      "aloe-2": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/aloe.glb)",
+          "rotation": "0 0 0",
+          "scale": "2 2 2",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 8
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -6.0
+            }
+          ]
+        }
+      },
+      "aloe-3": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/aloe.glb)",
+          "rotation": "0 0 0",
+          "scale": "2 2 2",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": -5
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -12.0
+            }
+          ]
+        }
+      },
+      "cactus-1": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/cactus01.glb)",
+          "rotation": "0 20 0",
+          "scale": "8 8 8",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": -6
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -18.0
+            }
+          ]
+        }
+      },
+      "cactus-2": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/cactus02.glb)",
+          "rotation": "0 -10 0",
+          "scale": "5 5 5",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 10
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -30.0
+            }
+          ]
+        }
+      },
+      "rock-1": {
+        "settings": {
+          "gltf-model": "url(./objects/demo/environment/rock02.glb)",
+          "rotation": "0 -10 0",
+          "scale": "6 6 6",
+          "shadow": "receive: true; cast: true;"
+        },
+        "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "y": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
+          "z": [
+            {
+              "type": "fixed",
+              "data": -40.0
             }
           ]
         }
@@ -235,6 +421,69 @@
         }
       },
       "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "sky"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "aloe-1"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "aloe-2"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "aloe-3"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "cactus-1"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "cactus-2"
+        }
+      },
+      "layer": 0
+    },
+    {
+      "renderType": {
+        "type": "object",
+        "data": {
+          "default": "rock-1"
+        }
+      },
+      "layer": 0
     }
   ],
   "scene": [
@@ -250,17 +499,28 @@
     "type": "aframe",
     "data": {
       "camera": {
+        "rotation": {
+          "x" : 10,
+          "y" : 0,
+          "z" : 0
+        },
         "offsets": {
+          "x": [
+            {
+              "type": "fixed",
+              "data": 5
+            }
+          ],
           "y": [
             {
               "type": "fixed",
-              "data": 0.5
+              "data": 0
             }
           ],
           "z": [
             {
               "type": "fixed",
-              "data": 7
+              "data": 9
             }
           ]
         }

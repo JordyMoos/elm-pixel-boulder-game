@@ -81,6 +81,7 @@ import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Data.Direction as Direction exposing (Direction)
 import Data.Position exposing (Position)
+import Data.Rotation exposing (Rotation)
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Animation.CurrentTick as CurrentTickAnimation
 import GameState.PlayingLevel.Animation.PseudoRandomTraversal as PseudoRandomTraversalAnimation
@@ -150,19 +151,36 @@ aframeRendererDecoder =
 aframeCameraDecoder : Decoder AframeCamera
 aframeCameraDecoder =
     Decode.succeed AframeCamera
+        |> JDP.optional "rotation" rotationDecoder defaultAframeCamera.rotation
         |> JDP.optional "offsets" positionOffsetsDecoder defaultAframeCamera.offsets
+
+
+rotationDecoder : Decoder Rotation
+rotationDecoder =
+    Decode.succeed Rotation
+        |> JDP.optional "x" Decode.float 0.0
+        |> JDP.optional "y" Decode.float 0.0
+        |> JDP.optional "z" Decode.float 0.0
 
 
 defaultAframeCamera : AframeCamera
 defaultAframeCamera =
-    { offsets = emptyPositionOffsets
+    { rotation = defaultRotation
+    , offsets = emptyPositionOffsets
+    }
+
+
+defaultRotation : Rotation
+defaultRotation =
+    { x = 0.0
+    , y = 0.0
+    , z = 0.0
     }
 
 
 defaultBackgrounds : List RenderComponentData
 defaultBackgrounds =
-    [
-    ]
+    []
 
 
 configDecoder : Decoder Config

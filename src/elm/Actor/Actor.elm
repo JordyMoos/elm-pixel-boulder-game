@@ -99,6 +99,7 @@ import Data.Config exposing (Config)
 import Data.Coordinate exposing (Coordinate)
 import Data.Direction exposing (Direction)
 import Data.Position exposing (Position)
+import Data.Rotation as Rotation
 import Dict exposing (Dict)
 import GameState.PlayingLevel.Msg as PlayingMsg
 
@@ -274,7 +275,9 @@ type alias AframeRendererData =
 
 
 type alias AframeCamera =
-    { offsets : PositionOffsets }
+    { rotation : Rotation.Rotation
+    , offsets : PositionOffsets
+    }
 
 
 type alias Level =

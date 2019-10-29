@@ -14,7 +14,7 @@
         <a-asset-item id="rock02" src="./output/rock02.glb"></a-asset-item>
         <a-asset-item id="rock03" src="./output/rock03.glb"></a-asset-item>
         <a-asset-item id="rock04" src="./output/rock04.glb"></a-asset-item>
-        <a-asset-item id="rock05" src="./output/rock05.glb"></a-asset-item>
+        <a-asset-item id="rock05" src="```./output/rock05.glb"></a-asset-item>
         <a-asset-item id="rock06" src="./output/rock06.glb"></a-asset-item>
         <a-asset-item id="rock07" src="./output/rock07.glb"></a-asset-item>
         <a-asset-item id="rock08" src="./output/rock08.glb"></a-asset-item>
